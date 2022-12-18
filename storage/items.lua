@@ -9,6 +9,10 @@ function storage.updateChests()
   storage.input = peripheral.find("minecraft:barrel")
 end
 
+-- TODO: be smart about which locations we put in and take out of, else we'll end up with fragmented storage
+-- Put in - largest stack first
+-- take out - smallest stack first
+
 --[[
 key = itemName + nbt + durability
 items = {
@@ -110,11 +114,6 @@ function storage.inputLoop()
     return
   end
 
-  if #storage.emptySlots == 0 then
-    print("OUT OF SPACEEEEEE")
-    return
-  end
-
   for k, item in pairs(inputItems) do
     storage.inputItem(k, item)
   end
@@ -129,7 +128,11 @@ function storage.inputItem(slot, item)
   end
   if item.count == 0 then return end
 
-  if #storage.emptySlots == 0 then return end
+  if #storage.emptySlots == 0 then
+    print("Out of empty spaces, can't fit additional " .. item.count .. " of " .. item.name .. " in chests.")
+    return
+  end
+
   local newSlot = table.remove(storage.emptySlots, 1)
   storage.input.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot)
 
