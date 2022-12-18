@@ -6,7 +6,7 @@ function storage.getChests()
   return {peripheral.find("minecraft:chest")}
 end
 
-storage.dropper = peripheral.wrap("bottom")
+storage.dropper = peripheral.find("minecraft:trapped_chest")
 
 --[[
 key = itemName + nbt + durability
@@ -42,7 +42,7 @@ function storage.getItemMapping(chests)
   return items
 end
 
-function storage.dropItem(key, count)
+function storage.dropItem(items, key, count)
   local item = items[key]
   if not item then
     return false
@@ -71,7 +71,7 @@ function storage.dropItems(locations, count)
     end
 
     -- do the drop
-    location.chest.pushItems("bottom", location.chest.slot, toMove)
+    location.chest.pushItems(peripheral.getName(storage.dropper), location.slot, toMove)
 
     if count == 0 then
       break
