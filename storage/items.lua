@@ -135,7 +135,7 @@ function storage.inputItem(slot, item)
 end
 
 function storage.inputItems(item, slot, newItem)
-  local max = item.detail.maxItems
+  local max = item.detail.maxCount
   for _, location in ipairs(item.locations) do
     local canAdd = max - location.count
     if canAdd > 0 then

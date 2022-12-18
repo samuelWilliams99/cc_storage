@@ -4,6 +4,6 @@ dofile("cc_storage/storage/items.lua")
 
 storage.updateChests()
 storage.updateItemMapping()
-storage.dropItem("minecraft:bone", 5)
+storage.startInputTimer()
 
 hook.runLoop()
