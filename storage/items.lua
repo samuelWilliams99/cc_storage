@@ -38,12 +38,12 @@ function storage.saveItem(item, detail, chest, slot)
   table.insert(items[key].locations, {chest = chest, slot = slot, count = item.count})
 end
 
-function storage.updateItemMapping(chests)
+function storage.updateItemMapping()
   storage.items = {}
   storage.emptySlots = {}
   local items = storage.items
 
-  for _, chest in pairs(chests) do
+  for _, chest in pairs(storage.chests) do
     local chestItems = chest.list()
     for k = 1, chest.size() do
       local item = chestItems[k]
@@ -104,7 +104,7 @@ end
 
 function storage.inputLoop()
   local inputItems = storage.input.list()
-  if #inputItems == 0 then
+  if table.isEmpty(inputItems) then
     return
   end
 

@@ -19,3 +19,15 @@ function table.map(t, f)
   end
   return out
 end
+
+function table.count(t)
+  local count = 0
+  for _ in pairs(t) do
+    count = count + 1
+  end
+  return count
+end
+
+function table.isEmpty(t)
+  return next(t) == nil
+end
