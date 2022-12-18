@@ -89,11 +89,13 @@ function storage.dropItems(locations, count)
     -- do the drop
     location.chest.pushItems(peripheral.getName(storage.dropper), location.slot, toMove)
 
-    if count == 0 then
-      break
-    else
+    if location.count == 0 then
       table.remove(locations, 1)
       table.insert(storage.emptySlots, {chest = location.chest, slot = location.slot})
+    end
+
+    if count == 0 then
+      break
     end
   end
 end
