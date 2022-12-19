@@ -3,6 +3,8 @@ dofile("cc_storage/utils/timer.lua")
 dofile("cc_storage/storage/items.lua")
 dofile("cc_storage/ui/button.lua")
 
+print(textutils.serialise(hook))
+
 storage.updateChests()
 storage.updateItemMapping()
 storage.startInputTimer()
