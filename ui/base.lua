@@ -64,7 +64,7 @@ function ui.makeElement(parent)
   else
     table.insert(ui.elements, element)
   end
-  setmetatable(element, Base)
+  setmetatable(element, {__index = Base})
   return element
 end
 
