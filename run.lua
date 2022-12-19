@@ -11,7 +11,7 @@ sleep(1)
 
 local button = ui.button.create()
 button:setPos(4, 4)
-button:setSize(1, 10)
+button:setSize(10, 1)
 button:setText("Click me!")
 function button:onClick()
   self:SetTextColor(colors.green)

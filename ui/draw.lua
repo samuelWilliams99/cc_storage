@@ -47,7 +47,7 @@ function ui.drawFilledBox(_x1, _y1, _x2, _y2, col)
   maintainCursor(paintutils.drawFilledBox, x1, y1, x2, y2, col)
 end
 
-function ui.drawText(text, _x, _y, textCol, bgCol)
+function ui.drawText(_x, _y, text, textCol, bgCol)
   _x = _x or 0
   _y = _y or 0
   local x, y = localisePosition(_x, _y)
