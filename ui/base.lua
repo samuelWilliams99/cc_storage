@@ -75,17 +75,18 @@ function ui.makeElement(parent)
   return element
 end
 
+print("adding hook :)")
 hook.add("mouse_click", "ui_click", function(btn, x, y)
   term.setCursorPos(1, 1)
   term.write(x .. ", " .. y)
-  -- for k = #ui.elements, 1, -1 do
-  --   local element = ui.elements[k]
-  --   local clickedElement = getAtPosition(x, y, element)
-  --   if clickedElement then
-  --     clickedElement:onClick(btn)
-  --     break
-  --   end
-  -- end
+  for k = #ui.elements, 1, -1 do
+    local element = ui.elements[k]
+    local clickedElement = getAtPosition(x, y, element)
+    if clickedElement then
+      clickedElement:onClick(btn)
+      break
+    end
+  end
 end)
 
 local function getAtPosition(x, y, element)
