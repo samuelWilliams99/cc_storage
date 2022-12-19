@@ -29,5 +29,6 @@ function ui.button.create(parent)
     ui.drawText(0, 0, self.text, self.textColor)
   end
 
-  self:invalidateLayout()
+  elem:invalidateLayout()
+  return elem
 end

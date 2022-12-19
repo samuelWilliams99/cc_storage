@@ -11,7 +11,7 @@ ui._drawPositioning = ui._defDrawPositioning
 local function localisePosition(x, y)
   if x < 0 or x > ui._drawPositioning.size.x then error("Attempt to draw out of range") end
   if y < 0 or y > ui._drawPositioning.size.y then error("Attempt to draw out of range") end
-  return x + ui._drawPositioning.x, y + ui._drawPositioning.y
+  return x + ui._drawPositioning.pos.x, y + ui._drawPositioning.pos.y
 end
 
 local function maintainCursor(f, ...)
@@ -68,7 +68,7 @@ end
 
 function ui.classes.Base:doDraw()
   paintutils.drawFilledBox(self.pos.x, self.pos.y, self.pos.x + self.size.x, self.pos.y + self.size.y, colors.black)
-  ui._drawPositioning = {pos = self:localisePosition(0, 0), size = self.size}
+  ui._drawPositioning = {pos = ui.Vector(self:localisePosition(0, 0)), size = self.size}
   self:draw()
   ui._drawPositioning = ui._defDrawPositioning
   for _, child in pairs(self.children) do
