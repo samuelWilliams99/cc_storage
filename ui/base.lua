@@ -26,8 +26,12 @@ function Base:localisePosition(x, y)
 end
 
 function Base:isInBounds(x, y, w, h)
-  if x < 0 or x + w > self.size.x then return false end
-  if y < 0 or y + h > self.size.y then return false end
+  local wBound, hBound = term.getSize()
+  if self.parent then
+    wBound, hBound = self.parent.size.x, self.parent.size.y
+  end
+  if x < 0 or x + w > wBound then return false end
+  if y < 0 or y + h > hBound then return false end
   return true
 end
 
