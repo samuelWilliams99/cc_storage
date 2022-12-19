@@ -15,7 +15,8 @@ function hook.runLoop()
         local handlerTable = hook[data[1]]
         print(data[1])
         if data[1] == "mouse_click" then
-            print(textutils.serialise(handlerTable))
+            print(textutils.serialise(table.keys(handlerTable)))
+        end
         table.remove(data, 1)
 
         for name, handler in pairs(handlerTable or {}) do
