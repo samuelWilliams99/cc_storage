@@ -39,12 +39,14 @@ function Base:setPos(x, y)
   if not self:isInBounds(x, y, self.size.x, self.size.y) then error("Tried to move such that the element is out of bounds") end
   self.pos.x = x
   self.pos.y = y
+  self:invalidateLayout()
 end
 
 function Base:setSize(w, h)
   if not self:isInBounds(self.pos.x, self.pos.y, w, h) then error("Tried to move such that the element is out of bounds") end
   self.size.x = w
   self.size.y = h
+  self:invalidateLayout()
 end
 
 function Base:setPosAndSize(x, y, w, h)
@@ -53,6 +55,7 @@ function Base:setPosAndSize(x, y, w, h)
   self.pos.y = y
   self.size.x = w
   self.size.y = h
+  self:invalidateLayout()
 end
 
 function ui.makeElement(parent)

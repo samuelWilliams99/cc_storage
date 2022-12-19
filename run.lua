@@ -18,6 +18,4 @@ function button:onClick()
   self:setText("Clicked :0")
 end
 
-ui.drawAll()
-
 hook.runLoop()
