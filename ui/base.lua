@@ -77,19 +77,6 @@ function ui.makeElement(parent)
   return element
 end
 
-hook.add("mouse_click", "ui_click", function(btn, x, y)
-  term.setCursorPos(1, 1)
-  term.write(x .. ", " .. y)
-  for k = #ui.elements, 1, -1 do
-    local element = ui.elements[k]
-    local clickedElement = getAtPosition(x, y, element)
-    if clickedElement then
-      clickedElement:onClick(btn)
-      break
-    end
-  end
-end)
-
 local function getAtPosition(x, y, element)
   if x < element.pos.x or x > element.pos.x + element.size.x then return end
   if y < element.pos.y or y > element.pos.y + element.size.y then return end
@@ -104,3 +91,14 @@ local function getAtPosition(x, y, element)
 
   return element
 end
+
+hook.add("mouse_click", "ui_click", function(btn, x, y)
+  for k = #ui.elements, 1, -1 do
+    local element = ui.elements[k]
+    local clickedElement = getAtPosition(x, y, element)
+    if clickedElement then
+      clickedElement:onClick(btn)
+      break
+    end
+  end
+end)
