@@ -46,7 +46,7 @@ function storage.saveItem(item, detail, chest, slot)
   items[key] = items[key] or {count = 0, locations = {}}
   items[key].count = items[key].count + item.count
   items[key].detail = detail
-  local locations = items[keys].locations
+  local locations = items[key].locations
   local locationKey = #locations + 1
   for k, location in ipairs(locations) do
     if item.count < location.count then
