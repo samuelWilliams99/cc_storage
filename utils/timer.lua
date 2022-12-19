@@ -1,11 +1,9 @@
 dofile("cc_storage/utils/hooks.lua")
 
-if timer then return end
-
-timer = {}
-timer.ccTimerIDLookup = {}
-timer.timers = {}
-timer.nameCounter = 0
+timer = timer or {}
+timer.ccTimerIDLookup = timer.ccTimerIDLookup or {}
+timer.timers = timer.timers or {}
+timer.nameCounter = timer.nameCounter or 0
 
 hook.add("timer", "timerLoop", function(ccTimerID)
     local name = timer.ccTimerIDLookup[ccTimerID]

@@ -1,11 +1,9 @@
 dofile("cc_storage/utils/hooks.lua")
 dofile("cc_storage/utils/timer.lua")
 
-if ui then return end
-
-ui = {}
-ui.elements = {}
-ui.elementIdCounter = 0
+ui = ui or {}
+ui.elements = ui.elements or {}
+ui.elementIdCounter = ui.elementIdCounter or 0
 
 ui.classes = {}
 ui.classes.Base = {}
