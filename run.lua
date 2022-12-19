@@ -12,13 +12,21 @@ storage.startInputTimer()
 sleep(1)
 
 term.clear()
-local button = ui.button.create()
-button:setPos(4, 4)
-button:setSize(10, 1)
-button:setText("Click me!")
-function button:onClick()
-  self:SetTextColor(colors.green)
-  self:setText("Clicked :0")
+
+local counter = 0
+for name, item in pairs(storage.items) do
+  counter = counter + 1
+  if counter > 36 then break end
+
+  local button = ui.button.create()
+  button:setPos(counter, 2)
+  button:setSize(90, 1)
+  button:setText(item.detail.displayName .. ": " .. item.count)
+  button:setBgColor(counter % 2 == 0 and colors.gray or colors.black)
+  function button:onClick()
+    storage.dropItem(name, 1)
+    button:setText(item.detail.displayName .. ": " .. item.count)
+  end
 end
 
 hook.runLoop()
