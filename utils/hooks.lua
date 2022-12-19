@@ -12,6 +12,7 @@ function hook.runLoop()
     while true do
         local data = {os.pullEvent()}
         local handlerTable = hook[data[1]]
+        print(data[1])
         table.remove(data, 1)
 
         for _, handler in pairs(handlerTable or {}) do

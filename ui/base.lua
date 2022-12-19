@@ -75,7 +75,6 @@ function ui.makeElement(parent)
   return element
 end
 
-print("adding hook :)")
 hook.add("mouse_click", "ui_click", function(btn, x, y)
   term.setCursorPos(1, 1)
   term.write(x .. ", " .. y)
