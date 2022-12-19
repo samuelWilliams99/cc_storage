@@ -52,8 +52,8 @@ function ui.drawText(_x, _y, text, textCol, bgCol)
   _y = _y or 0
   local x, y = localisePosition(_x, _y)
 
-  if x + #text > ui._drawPositioning.size.x then
-    text = text:sub(1, ui._drawPositioning.size.x - x)
+  if #text > ui._drawPositioning.size.x then
+    text = text:sub(1, ui._drawPositioning.size.x)
   end
 
   textCol = textCol or colors.white

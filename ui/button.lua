@@ -25,7 +25,8 @@ function ui.button.create(parent)
   end
 
   function elem:draw()
-    ui.drawText(0, 0, self.text, self.textColor, self.bgColor)
+    ui.drawFilledBox(0, 0, self.size.x, self.size.y, self.bgColor)
+    ui.drawText(0, 0, self.text, self.textColor)
   end
 
   elem:invalidateLayout()

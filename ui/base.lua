@@ -76,7 +76,8 @@ function ui.makeElement(parent)
 end
 
 hook.add("mouse_click", "ui_click", function(btn, x, y)
-  print(x, y)
+  term.setCursorPos(1, 1)
+  term.write(x .. ", " .. y)
   -- for k = #ui.elements, 1, -1 do
   --   local element = ui.elements[k]
   --   local clickedElement = getAtPosition(x, y, element)

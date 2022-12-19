@@ -9,9 +9,10 @@ storage.startInputTimer()
 
 sleep(1)
 
+term.clear()
 local button = ui.button.create()
 button:setPos(4, 4)
-button:setSize(10, 1)
+button:setSize(20, 1)
 button:setText("Click me!")
 function button:onClick()
   self:SetTextColor(colors.green)
