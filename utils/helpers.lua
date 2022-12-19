@@ -31,3 +31,11 @@ end
 function table.isEmpty(t)
   return next(t) == nil
 end
+
+function table.keys(t)
+  local out = {}
+  for k in pairs(t) do
+    table.insert(out, k)
+  end
+  return out
+end

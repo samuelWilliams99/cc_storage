@@ -5,13 +5,20 @@ storage = {}
 
 function storage.updateChests()
   storage.chests = {peripheral.find("minecraft:chest")}
+  print("Found " .. #storage.chests .. " chests.")
   storage.dropper = peripheral.find("minecraft:trapped_chest")
+  if storage.dropper then
+    print("Found dropper chest.")
+  else
+    error("Could not find dropper chest, please add a trapped_chest to the network")
+  end
   storage.input = peripheral.find("minecraft:barrel")
+  if storage.input then
+    print("Found input barrel.")
+  else
+    print("Could not find input barrel, please add a barrel to the network")
+  end
 end
-
--- TODO: be smart about which locations we put in and take out of, else we'll end up with fragmented storage
--- Put in - largest stack first
--- take out - smallest stack first
 
 --[[
 key = itemName + nbt + durability
@@ -39,27 +46,45 @@ function storage.saveItem(item, detail, chest, slot)
   items[key] = items[key] or {count = 0, locations = {}}
   items[key].count = items[key].count + item.count
   items[key].detail = detail
-  table.insert(items[key].locations, {chest = chest, slot = slot, count = item.count})
+  local locations = items[keys].locations
+  local locationKey = #locations + 1
+  for k, location in ipairs(locations) do
+    if item.count < location.count then
+      locationKey = k
+      break
+    end
+  end
+  table.insert(items[key].locations, locationKey, {chest = chest, slot = slot, count = item.count})
 end
 
 function storage.updateItemMapping()
+  print("Building item matrix...")
   storage.items = {}
   storage.emptySlots = {}
   local items = storage.items
+  local itemCount = 0
 
-  for _, chest in pairs(storage.chests) do
+  for chestKey, chest in pairs(storage.chests) do
     local chestItems = chest.list()
-    for k = 1, chest.size() do
-      local item = chestItems[k]
+    for slot = 1, chest.size() do
+      local item = chestItems[slot]
       if item then
-        local detail = chest.getItemDetail(k)
+        local detail = chest.getItemDetail(slot)
+        itemCount = itemCount + item.count
 
-        storage.saveItem(item, detail, chest, k)
+        storage.saveItem(item, detail, chest, slot)
       else
-        table.insert(storage.emptySlots, {chest = chest, slot = k})
+        table.insert(storage.emptySlots, {chest = chest, slot = slot})
       end
     end
+    print("Indexed chest " .. chestKey .. "/" .. #storage.chests)
   end
+
+  local uniqueItemCount = table.count(items)
+
+  print("Built item matrix.")
+  print("Found " .. itemCount .. " items, " .. uniqueItemCount .. " of which unique.")
+  print("Found " .. #storage.emptySlots .. " empty slots.")
 end
 
 function storage.dropItem(key, count)
@@ -106,6 +131,7 @@ end
 
 function storage.startInputTimer()
   timer.create("input", 0.5, 0, storage.inputLoop)
+  print("Started pickup timer.")
 end
 
 function storage.inputLoop()
@@ -141,7 +167,8 @@ end
 
 function storage.inputItems(item, slot, newItem)
   local max = item.detail.maxCount
-  for _, location in ipairs(item.locations) do
+  for k = #item.locations, 1, -1 do
+    local location = item.locations[k]
     local canAdd = max - location.count
     if canAdd > 0 then
       local toMove = canAdd
