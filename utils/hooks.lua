@@ -15,7 +15,8 @@ function hook.runLoop()
         print(data[1])
         table.remove(data, 1)
 
-        for _, handler in pairs(handlerTable or {}) do
+        for name, handler in pairs(handlerTable or {}) do
+            print(name)
             handler(unpack(data))
         end
     end
