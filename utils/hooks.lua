@@ -3,6 +3,7 @@ hook = {}
 function hook.add(eventName, handlerName, handler)
     hook[eventName] = hook[eventName] or {}
     hook[eventName][handlerName] = handler
+    print("add " .. eventName .. " with " .. handlerName)
 end
 
 hook.run = os.queueEvent
