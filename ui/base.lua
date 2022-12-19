@@ -1,6 +1,8 @@
 dofile("cc_storage/utils/hooks.lua")
 dofile("cc_storage/utils/timer.lua")
 
+if ui then return end
+
 ui = {}
 ui.elements = {}
 ui.elementIdCounter = 0

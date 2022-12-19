@@ -1,5 +1,7 @@
 dofile("cc_storage/utils/hooks.lua")
 
+if timer then return end
+
 timer = {}
 timer.ccTimerIDLookup = {}
 timer.timers = {}

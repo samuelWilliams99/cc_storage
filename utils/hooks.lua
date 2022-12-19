@@ -1,9 +1,10 @@
+if hook then return end
+
 hook = {}
 
 function hook.add(eventName, handlerName, handler)
     hook[eventName] = hook[eventName] or {}
     hook[eventName][handlerName] = handler
-    print("add " .. eventName .. " with " .. handlerName)
 end
 
 hook.run = os.queueEvent
@@ -13,14 +14,9 @@ function hook.runLoop()
     while true do
         local data = {os.pullEvent()}
         local handlerTable = hook[data[1]]
-        print(data[1])
-        if data[1] == "mouse_click" then
-            print(textutils.serialise(table.keys(handlerTable)))
-        end
         table.remove(data, 1)
 
-        for name, handler in pairs(handlerTable or {}) do
-            print(name)
+        for _, handler in pairs(handlerTable or {}) do
             handler(unpack(data))
         end
     end
