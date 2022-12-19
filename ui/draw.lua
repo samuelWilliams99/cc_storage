@@ -1,12 +1,12 @@
 dofile("cc_storage/ui/base.lua")
 dofile("cc_storage/utils/timer.lua")
 
-ui._defDrawPositioning = {pos = ui.Vector(0, 0), size = ui.Vector(term.getSize())}
-ui._drawPositioning = ui._defDrawPositioning
-
 function ui.Vector(x, y)
   return {x = x, y = y}
 end
+
+ui._defDrawPositioning = {pos = ui.Vector(0, 0), size = ui.Vector(term.getSize())}
+ui._drawPositioning = ui._defDrawPositioning
 
 local function localisePosition(x, y)
   if x < 0 or x > ui._drawPositioning.size.x then error("Attempt to draw out of range") end

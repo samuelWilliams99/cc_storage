@@ -5,8 +5,9 @@ ui = {}
 ui.elements = {}
 ui.elementIdCounter = 0
 
+ui.classes = {}
 ui.classes.Base = {}
-local Element = ui.classes.Base
+local Base = ui.classes.Base
 
 function Base:draw() end
 
