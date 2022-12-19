@@ -24,6 +24,7 @@ for name, item in pairs(storage.items) do
   button:setText(item.detail.displayName .. ": " .. item.count)
   button:setBgColor(counter % 2 == 0 and colors.gray or colors.black)
   function button:onClick()
+    if item.count == 0 then return end
     storage.dropItem(name, 1)
     button:setText(item.detail.displayName .. ": " .. item.count)
   end
