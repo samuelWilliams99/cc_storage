@@ -1,5 +1,6 @@
 dofile("cc_storage/ui/base.lua")
 dofile("cc_storage/ui/draw.lua")
+dofile("cc_storage/ui/button.lua")
 
 ui.buttonList = {}
 
