@@ -67,8 +67,8 @@ function ui.drawText(_x, _y, text, textCol, bgCol)
 end
 
 function ui.classes.Base:doDraw()
-  paintutils.drawFilledBox(self.pos.x + 1, self.pos.y + 1, self.pos.x + self.size.x, self.pos.y + self.size.y, colors.black)
   ui._drawPositioning = {pos = ui.Vector(self:localisePosition(0, 0)), size = self.size}
+  ui.drawFilledBox(0, 0, self.size.x, self.size.y, colors.black)
   self:draw()
   ui._drawPositioning = ui._defDrawPositioning
   for _, child in pairs(self.children) do
