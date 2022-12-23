@@ -68,7 +68,7 @@ end
 
 function ui.classes.Base:doDraw()
   ui._drawPositioning = {pos = ui.Vector(self:localisePosition(0, 0)), size = self.size}
-  ui.drawFilledBox(0, 0, self.size.x, self.size.y, colors.black)
+  ui.drawFilledBox(0, 0, self.size.x - 1, self.size.y - 1, colors.black)
   self:draw()
   ui._drawPositioning = ui._defDrawPositioning
   for _, child in pairs(self.children) do
