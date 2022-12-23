@@ -33,9 +33,9 @@ end
 
 function buttonList:handleClick(btn, data)
   if btn == 1 then -- left
-    storage.dropItem(name, 64)
-  elseif btn == 2 then --right
-    storge.dropItem(name, 1)
+    storage.dropItem(data.name, 64)
+  elseif btn == 2 then -- right
+    storage.dropItem(data.name, 1)
   end
 end
 
