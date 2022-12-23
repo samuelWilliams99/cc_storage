@@ -97,7 +97,7 @@ function storage.dropItem(key, count)
   count = math.min(count, item.count)
   item.count = item.count - count
   if item.count <= 0 then
-    storage.items[keys] = nil
+    storage.items[key] = nil
   end
   hook.run("cc_storage_change", key, -count, item)
   return true

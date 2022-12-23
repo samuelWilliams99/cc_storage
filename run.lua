@@ -16,7 +16,8 @@ term.clear()
 local w, h = term.getSize()
 
 local buttonList = ui.buttonList.create()
-buttonList:setSize(w, h)
+buttonList:setSize(w - 4, h - 4)
+buttonList:setPos(2, 2)
 
 local function calcOptions()
   local options = {}
@@ -33,9 +34,9 @@ end
 
 function buttonList:handleClick(btn, data)
   if btn == 1 then -- left
-    storage.dropItem(data.name, 64)
-  elseif btn == 2 then -- right
     storage.dropItem(data.name, 1)
+  elseif btn == 2 then -- right
+    storage.dropItem(data.name, 64)
   end
 end
 
