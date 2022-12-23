@@ -22,7 +22,7 @@ buttonList:setPos(2, 2)
 local function calcOptions()
   local options = {}
   for name, item in pairs(storage.items) do
-    if #options >= h then break end
+    if #options >= buttonList.size.y then break end
 
     table.insert(options, {
       displayText = item.detail.displayName .. ": " .. item.count,

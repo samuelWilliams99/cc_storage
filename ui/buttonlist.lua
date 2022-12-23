@@ -24,6 +24,7 @@ function ui.buttonList.create(parent)
 
   function elem:update()
     for i = 1, #self.options - #self.buttons do
+      if i > self.size.y then error("Ya dun added too many things ya dangus") end
       local button = ui.button.create(self)
       button:setSize(self.size.x, 1)
       button:setPos(0, #self.buttons)
