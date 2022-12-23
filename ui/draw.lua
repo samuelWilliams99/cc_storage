@@ -11,7 +11,7 @@ ui._drawPositioning = ui._defDrawPositioning
 local function localisePosition(x, y)
   if x < 0 or x > ui._drawPositioning.size.x then error("Attempt to draw out of range") end
   if y < 0 or y > ui._drawPositioning.size.y then error("Attempt to draw out of range") end
-  return x + ui._drawPositioning.pos.x, y + ui._drawPositioning.pos.y
+  return x + ui._drawPositioning.pos.x + 1, y + ui._drawPositioning.pos.y + 1
 end
 
 local function maintainCursor(f, ...)
