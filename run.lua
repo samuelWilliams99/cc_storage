@@ -24,16 +24,12 @@ local function calcOptions()
     if #options >= h then break end
 
     table.insert(options, {
-      displayText = item.detail.displayName .. ": " .. item.count
+      displayText = item.detail.displayName .. ": " .. item.count,
       name = name
     })
   end
   return options
 end
-
-hook.add("cc_storage_change", "update_view", function()
-  buttonList:setOptions(calcOptions())
-end)
 
 function buttonList:handleClick(btn, data)
   if btn == 1 then -- left
@@ -42,5 +38,11 @@ function buttonList:handleClick(btn, data)
     storge.dropItem(name, 1)
   end
 end
+
+hook.add("cc_storage_change", "update_view", function()
+  buttonList:setOptions(calcOptions())
+end)
+
+buttonList:setOptions(calcOptions())
 
 hook.runLoop()
