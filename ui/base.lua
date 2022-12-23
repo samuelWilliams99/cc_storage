@@ -97,7 +97,7 @@ local function getAtPosition(x, y, element)
 
   for k = #element.children, 1, -1 do
     local child = element.children[k]
-    local atPosition = getAtPosition(relX, relY)
+    local atPosition = getAtPosition(relX, relY, element)
     if atPosition then return atPosition end
   end
 
