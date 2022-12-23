@@ -90,8 +90,8 @@ function ui.makeElement(parent)
 end
 
 local function getAtPosition(x, y, element)
-  if x < element.pos.x or x > element.pos.x + element.size.x then return end
-  if y < element.pos.y or y > element.pos.y + element.size.y then return end
+  if x < element.pos.x + 1 or x > element.pos.x + element.size.x then return end
+  if y < element.pos.y + 1 or y > element.pos.y + element.size.y then return end
 
   local relX, relY = x - element.pos.x, y - element.pos.y
 

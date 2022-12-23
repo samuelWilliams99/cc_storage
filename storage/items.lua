@@ -94,7 +94,7 @@ function storage.dropItem(key, count)
   end
 
   storage.dropItems(item.locations, count)
-  count = min(count, item.count)
+  count = math.min(count, item.count)
   item.count = item.count - count
   if item.count <= 0 then
     storage.items[keys] = nil
