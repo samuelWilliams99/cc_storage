@@ -39,3 +39,12 @@ function table.keys(t)
   end
   return out
 end
+
+function table.removeByValue(t, valueToRemove)
+  for k, v in pairs(t) do
+    if v == valueToRemove then
+      table.remove(t, k)
+      break
+    end
+  end
+end

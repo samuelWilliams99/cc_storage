@@ -3,7 +3,7 @@ hook.clear()
 
 dofile("cc_storage/utils/timer.lua")
 dofile("cc_storage/storage/items.lua")
-dofile("cc_storage/ui/button.lua")
+dofile("cc_storage/ui/buttonlist.lua")
 
 storage.updateChests()
 storage.updateItemMapping()
@@ -13,20 +13,33 @@ sleep(1)
 
 term.clear()
 
-local counter = 0
-for name, item in pairs(storage.items) do
-  counter = counter + 1
-  if counter > 30 then break end
+local w, h = term.getSize()
 
-  local button = ui.button.create()
-  button:setPos(2, counter)
-  button:setSize(80, 1)
-  button:setText(item.detail.displayName .. ": " .. item.count)
-  button:setBgColor(counter % 2 == 0 and colors.gray or colors.black)
-  function button:onClick()
-    if item.count == 0 then return end
-    storage.dropItem(name, 1)
-    button:setText(item.detail.displayName .. ": " .. item.count)
+local buttonList = ui.buttonList.create()
+buttonList:setSize(w, h)
+
+local function calcOptions()
+  local options = {}
+  for name, item in pairs(storage.items) do
+    if #options >= h then break end
+
+    table.insert(options, {
+      displayText = item.detail.displayName .. ": " .. item.count
+      name = name
+    })
+  end
+  return options
+end
+
+hook.add("cc_storage_change", "update_view", function()
+  buttonList:setOptions(calcOptions())
+end)
+
+function buttonList:handleClick(btn, data)
+  if btn == 1 then -- left
+    storage.dropItem(name, 64)
+  elseif btn == 2 then --right
+    storge.dropItem(name, 1)
   end
 end
 

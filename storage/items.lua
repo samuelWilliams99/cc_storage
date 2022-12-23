@@ -94,10 +94,12 @@ function storage.dropItem(key, count)
   end
 
   storage.dropItems(item.locations, count)
+  count = min(count, item.count)
   item.count = item.count - count
   if item.count <= 0 then
     storage.items[keys] = nil
   end
+  hook.run("cc_storage_change", key, -count, item)
   return true
 end
 
@@ -149,12 +151,20 @@ function storage.inputItem(slot, item)
   local detail = storage.input.getItemDetail(slot)
   local key = storage.getItemKey(item, detail)
   local storedItem = storage.items[key]
+  local startingCount = item.count
   if storedItem then
     storage.inputItems(storedItem, slot, item)
   end
-  if item.count == 0 then return end
+  if item.count == 0 then
+    hook.run("cc_storage_change", key, startingCount, storedItem)
+    return
+  end
 
   if #storage.emptySlots == 0 then
+    if item.count ~= startingCount then
+      hook.run("cc_storage_change", key, startingCount - item.count, storedItem)
+    end
+
     print("Out of empty spaces, can't fit additional " .. item.count .. " of " .. item.name .. " in chests.")
     return
   end
@@ -163,6 +173,8 @@ function storage.inputItem(slot, item)
   storage.input.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot)
 
   storage.saveItem(item, detail, newSlot.chest, newSlot.slot)
+
+  hook.run("cc_storage_change", key, startingCount, storedItem)
 end
 
 function storage.inputItems(item, slot, newItem)

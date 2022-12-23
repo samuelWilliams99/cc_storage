@@ -58,6 +58,20 @@ function Base:setPosAndSize(x, y, w, h)
   self:invalidateLayout()
 end
 
+function Base:remove()
+  if self.parent then
+    table.removeByValue(self.parent.children, self)
+  else
+    table.removeByValue(ui.elements, self)
+  end
+  for _, child in ipairs(self.children) do
+    child:remove()
+  end
+  if self.parent then
+    self.parent:invalidateLayout()
+  end
+end
+
 function ui.makeElement(parent)
   local element = {}
   ui.elementIdCounter = ui.elementIdCounter + 1
