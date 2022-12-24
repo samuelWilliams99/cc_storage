@@ -18,16 +18,14 @@ end
 function hook.runLoop()
   os.queueEvent("initialize")
   while true do
-    local data = table.pack(os.pullEvent())
-    local event = table.remove(data, 1)
-    local handlerTable = hook.handlers[event]
+    local eventData = table.pack(os.pullEvent())
+    local handlerTable = hook.handlers[event[1]]
 
-    -- loop through the routines, if filter matches data[1] then resume them with it
-    -- if they finish after this, remove from routines
+    -- Handle existing routines
     for i = #hook.routines, 1, -1 do
       local routineData = hook.routines[i]
       if routineData.filter == nil or routineData.filter == event then
-        local success, data = coroutine.resume(routineData.routine, table.unpack(data, 1, data.n))
+        local success, data = coroutine.resume(routineData.routine, table.unpack(eventData, 2, data.n))
         if not success then error(data) end
         if coroutine.status(routineData.routine) == "dead" then
           table.remove(hook.routines, i)
@@ -37,8 +35,9 @@ function hook.runLoop()
       end
     end
 
+    -- Run handlers
     for _, handler in pairs(handlerTable or {}) do
-      local co = coroutine.create(function() handler(table.unpack(data, 1, data.n)) end)
+      local co = coroutine.create(function() handler(table.unpack(eventData, 2, eventData.n)) end)
       local success, data = coroutine.resume(co)
       if not success then error(data) end
       if coroutine.status(co) ~= "dead" then
