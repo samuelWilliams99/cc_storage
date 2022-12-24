@@ -13,7 +13,7 @@ local function moveItem(moveData)
   if not slots then return end
   for slot, amt in pairs(slots) do
     local toMove = math.min(amt, item.count)
-    turtle.transferTo(gridTranslation[i], toMove)
+    turtle.transferTo(gridTranslation[slot], toMove)
     if amt == toMove then
       slots[slot] = nil
     else
