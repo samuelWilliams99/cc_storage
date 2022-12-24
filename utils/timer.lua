@@ -8,11 +8,10 @@ timer.nameCounter = timer.nameCounter or 0
 hook.add("timer", "timerLoop", function(ccTimerID)
     local name = timer.ccTimerIDLookup[ccTimerID]
     if not name then return end
+    timer.ccTimerIDLookup[ccTimerID] = nil
 
     local timerData = timer.timers[name]
     if not timerData then return end
-
-    timer.ccTimerIDLookup[ccTimerID] = nil
 
     timerData.callback()
 
