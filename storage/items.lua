@@ -188,6 +188,7 @@ function storage.inputItems(item, slot, newItem)
       end
       storage.input.pushItems(peripheral.getName(location.chest), slot, toMove, location.slot)
       location.count = location.count + toMove
+      item.count = item.count + toMove
       newItem.count = newItem.count - toMove
       if newItem.count == 0 then break end
     end
