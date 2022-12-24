@@ -51,7 +51,7 @@ updatePageCounter()
 
 local rightBtn = ui.text.create()
 rightBtn:setSize(3, 1)
-rightBtn:setPos(math.floor(w / 2) + btnGap, h - 1)
+rightBtn:setPos(math.floor(w / 2) + btnGap + 1, h - 1)
 rightBtn:setText(">>>")
 function rightBtn:onClick()
   if page == pageCount then return end
@@ -69,7 +69,7 @@ local function updateDisplay()
   page = math.min(pageCount, page)
 
   local options = {}
-  for i = (page - 1) * pageSize + 1, min(#itemKeys, page * pageSize) do
+  for i = (page - 1) * pageSize + 1, math.min(#itemKeys, page * pageSize) do
     local name = itemKeys[i]
     local item = storage.items[name]
 
@@ -93,7 +93,7 @@ function buttonList:handleClick(btn, data)
 end
 
 hook.add("cc_storage_change", "update_view", updateDisplay)
-
+updateDisplay()
 
 storage.startInputTimer()
 hook.runLoop()
