@@ -7,20 +7,37 @@ modem.open(craftingPort)
 
 local gridTranslation = {1,2,3,5,6,7,9,10,11}
 
-local function moveItem(data)
+local function moveItem(moveData)
   local item = turtle.getItemDetail()
-  for i = 1, 9 do
-    if data[i] and data[i] == item.name then
-      turtle.transferTo(gridTranslation[i], data.craftCount)
+  local slots = moveData[item.name]
+  if not slots then return end
+  for slot, amt in pairs(slots) do
+    local toMove = math.min(amt, item.count)
+    turtle.transferTo(gridTranslation[i], toMove)
+    if amt == toMove then
+      slots[slot] = nil
+    else
+      slots[slot] = amt - toMove
     end
+    item.count = item.count - toMove
+    if item.count == 0 then break end
   end
 end
 
 hook.add("modem_message", "doCraft", function(_, port, _, data)
   -- Data is mapping 1-9 to an item, alongside "craftCount" as number to make
   turtle.select(16)
+
+  local moveData = {}
+  for i = 1, 9 do
+    if data[i] then
+      moveData[data[i]] = moveData[data[i]] or {}
+      moveData[data[i]][i] = data.craftCount
+    end
+  end
+
   while turtle.suck() do
-    moveItem(data)
+    moveItem(moveData)
   end
   turtle.select(1)
   turtle.craft()
