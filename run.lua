@@ -56,7 +56,7 @@ local function updateSortSwitch()
 end
 updateSortSwitch()
 
-local orderSwtich = ui.text.create()
+local orderSwitch = ui.text.create()
 orderSwitch:setPos(w - 9, 1)
 orderSwitch:setSize(9, 1)
 local function updateOrderSwitch()
