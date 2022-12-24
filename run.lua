@@ -50,10 +50,9 @@ rightBtn:setText("")
 local sortSwitch = ui.text.create()
 sortSwitch:setPos(1, 1)
 local function updateSortSwitch()
-  local sorter = sorters[sorterIndex]
-  local text = "Sort: " .. 
+  local text = "Sort: " .. sorters[sorterIndex].name
   sortSwitch:setSize(#text, 1)
-  sortSwitch:setText("Sort: " .. sorter.name)
+  sortSwitch:setText(text)
 end
 updateSortSwitch()
 
