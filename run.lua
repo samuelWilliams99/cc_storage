@@ -100,7 +100,7 @@ local function updateDisplay()
   if searchString ~= "" then
     itemKeys = table.filter(itemKeys, function(name)
       local displayName = storage.items[name].detail.displayName
-      return string.find(displayName, searchString)
+      return displayName:toLower():find(searchString)
     end)
   end
   local key = sorters[sorterIndex].key
@@ -201,7 +201,7 @@ hook.add("initialize", "add_search", function()
     term.clearLine()
     term.write("Search: ")
     read(nil, nil, function(str)
-      searchString = str
+      searchString = str:toLower()
       updateDisplay()
       return {}
     end)
