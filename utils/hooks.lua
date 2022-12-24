@@ -19,13 +19,14 @@ function hook.runLoop()
   os.queueEvent("initialize")
   while true do
     local eventData = table.pack(os.pullEvent())
-    local handlerTable = hook.handlers[event[1]]
+    local handlerTable = hook.handlers[eventData[1]]
 
     -- Handle existing routines
     for i = #hook.routines, 1, -1 do
       local routineData = hook.routines[i]
       if routineData.filter == nil or routineData.filter == event then
-        local success, data = coroutine.resume(routineData.routine, table.unpack(eventData, 2, data.n))
+        -- We resume coroutines WITH the event name, which differs to running hook handlers, which do NOT take the event name
+        local success, data = coroutine.resume(routineData.routine, table.unpack(eventData, 1, data.n))
         if not success then error(data) end
         if coroutine.status(routineData.routine) == "dead" then
           table.remove(hook.routines, i)
