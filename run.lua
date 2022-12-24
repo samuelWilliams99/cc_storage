@@ -15,10 +15,23 @@ sleep(0.5)
 term.clear()
 
 local w, h = term.getSize()
-
-local buttonList = ui.buttonList.create()
 local page = 1
 local pageCount = 1
+local sorters = {
+  {
+    name = "Name",
+    key = function(item) return item.detail.displayName end
+  },
+  {
+    name = "Count",
+    key = function(item) return item.count end
+  }
+}
+local sorterIndex = 1
+-- true for asc, false for desc
+local order = true
+
+local buttonList = ui.buttonList.create()
 buttonList:setSize(w - 4, h - 4)
 buttonList:setPos(2, 2)
 
@@ -33,6 +46,24 @@ local rightBtn = ui.text.create()
 rightBtn:setSize(3, 1)
 rightBtn:setPos(math.floor(w / 2) + btnGap + 1, h - 1)
 rightBtn:setText("")
+
+local sortSwitch = ui.text.create()
+sortSwitch:setPos(1, 1)
+local function updateSortSwitch()
+  local sorter = sorters[sorterIndex]
+  local text = "Sort: " .. 
+  sortSwitch:setSize(#text, 1)
+  sortSwitch:setText("Sort: " .. sorter.name)
+end
+updateSortSwitch()
+
+local orderSwtich = ui.text.create()
+orderSwitch:setPos(w - 9, 1)
+orderSwitch:setSize(9, 1)
+local function updateOrderSwitch()
+  orderSwitch:setText("Order: " .. order and "/\\" or "\\/")
+end
+updateOrderSwitch()
 
 local pageCounter = ui.text.create()
 local function updatePageCounter()
@@ -56,7 +87,22 @@ updatePageCounter()
 -- TODO: optimise this a lot
 local function updateDisplay()
   local itemKeys = table.keys(storage.items)
-  table.sort(itemKeys, function(a, b) return storage.items[a].detail.displayName < storage.items[b].detail.displayName end)
+  local key = sorters[sorterIndex].key
+  local comp = order and (function(a, b) return a < b end) or (function(a, b) return a > b end)
+
+  -- Sort by the comparator and what not, fall back to display name asc afterwards
+  table.sort(itemKeys, function(aName, bName)
+    local a = storage.items[aName]
+    local b = storage.items[bName]
+    local aKey = key(a)
+    local bKey = key(b)
+    if aKey == bKey then
+      return a.detail.displayName < b.detail.displayName
+    else
+      return comp(aKey, bKey)
+    end
+  end)
+
   local pageSize = buttonList.size.y
 
   pageCount = math.ceil(#itemKeys / pageSize)
@@ -98,8 +144,28 @@ function rightBtn:onClick()
   updateDisplay()
 end
 
+function sortSwitch:onClick()
+  sorterIndex = (sorterIndex % #sorters) + 1
+  updateSortSwitch()
+  updateDisplay()
+end
+
+function orderSwitch:onClick()
+  order = not order
+  updateOrderSwitch()
+  updateDisplay()
+end
+
 hook.add("cc_storage_change", "update_view", updateDisplay)
 updateDisplay()
+
+hook.add("mouse_scroll", "menu_shift", function(dir)
+  if dir == 1 then
+    rightBtn:onClick(1)
+  else
+    leftBtn:onClick(1)
+  end
+end)
 
 storage.startInputTimer()
 hook.runLoop()
