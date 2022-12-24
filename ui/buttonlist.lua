@@ -23,7 +23,7 @@ function ui.buttonList.create(parent)
   end
 
   function elem:update()
-    for i = 1, #self.options - #self.buttons do
+    for i = #self.buttons + 1, #self.options do
       if i > self.size.y then error("Ya dun added too many things ya dangus") end
       local button = ui.button.create(self)
       button:setSize(self.size.x, 1)
@@ -35,7 +35,7 @@ function ui.buttonList.create(parent)
       table.insert(self.buttons, button)
     end
 
-    for i = #self.options, #self.buttons + 1, -1 do
+    for i = #self.buttons, #self.options + 1, -1 do
       self.buttons[i]:remove()
       table.remove(self.buttons, i)
     end
