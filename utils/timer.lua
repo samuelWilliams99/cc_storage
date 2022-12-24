@@ -52,6 +52,7 @@ function timer.remove(name)
     local timerData = timer.timers[name]
     if not timerData then return end
     timer.timers[name] = nil
+    timer.ccTimerIDLookup[timerData.ccTimerID] = nil
 
     os.cancelTimer(timerData.ccTimerID)
 end
