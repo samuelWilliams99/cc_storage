@@ -13,6 +13,7 @@ hook.run = os.queueEvent
 
 function hook.clear()
   hook.handlers = {}
+  hook.routines = {}
 end
 
 function hook.runLoop()

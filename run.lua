@@ -32,6 +32,7 @@ local sorters = {
 local sorterIndex = 1
 -- true for asc, false for desc
 local order = true
+local searchString = ""
 
 local buttonList = ui.buttonList.create()
 buttonList:setSize(w - 4, h - 6)
@@ -96,6 +97,12 @@ updatePageCounter()
 -- TODO: optimise this a lot
 local function updateDisplay()
   local itemKeys = table.keys(storage.items)
+  if searchString ~= "" then
+    itemKeys = table.filter(itemKeys, function(name)
+      local displayName = storage.items[name].detail.displayName
+      return string.find(displayName, searchString)
+    end)
+  end
   local key = sorters[sorterIndex].key
   local comp = order and (function(a, b) return a < b end) or (function(a, b) return a > b end)
 
@@ -185,6 +192,21 @@ hook.add("mouse_scroll", "menu_shift", function(dir)
     rightBtn:onClick(1)
   else
     leftBtn:onClick(1)
+  end
+end)
+
+hook.add("initialize", "add_search", function()
+  while true do
+    term.setCursorPos(3, 3)
+    term.clearLine()
+    term.write("Search: ")
+    read(nil, nil, function(str)
+      searchString = str
+      updateDisplay()
+      return {}
+    end)
+    searchString = ""
+    updateDisplay()
   end
 end)
 

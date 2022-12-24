@@ -1,4 +1,4 @@
-function filter(xs, p)
+function table.filter(xs, p)
   local out = {}
   for i, x in ipairs(xs) do
     if p(x, i) then
