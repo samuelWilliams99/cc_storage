@@ -2,6 +2,7 @@ dofile("cc_storage/utils/hooks.lua")
 hook.clear()
 
 dofile("cc_storage/utils/timer.lua")
+dofile("cc_storage/utils/mutex.lua")
 dofile("cc_storage/storage/items.lua")
 dofile("cc_storage/ui/buttonlist.lua")
 dofile("cc_storage/ui/text.lua")
