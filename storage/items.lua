@@ -133,7 +133,6 @@ end
 
 function storage.startInputTimer()
   timer.create("input", 0.5, 0, storage.inputLoop)
-  print("Started pickup timer.")
 end
 
 function storage.inputLoop()

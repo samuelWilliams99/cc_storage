@@ -7,9 +7,9 @@ dofile("cc_storage/ui/buttonlist.lua")
 
 storage.updateChests()
 storage.updateItemMapping()
-storage.startInputTimer()
+print("Rendering...")
 
-sleep(1)
+sleep(0.5)
 
 term.clear()
 
@@ -46,4 +46,5 @@ end)
 
 buttonList:setOptions(calcOptions())
 
+storage.startInputTimer()
 hook.runLoop()
