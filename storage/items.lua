@@ -1,6 +1,16 @@
 dofile("cc_storage/utils/helpers.lua")
 dofile("cc_storage/utils/timer.lua")
 
+--[[
+
+current bug:
+input loop gets stuck, constantly increments the number of items in storage.items, but doesn't move the item from the barrel
+odd, given it seems the `pushItems` function isn't returning 0
+
+gl
+
+]]
+
 storage = {}
 
 function storage.updateChests()
