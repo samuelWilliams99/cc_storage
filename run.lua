@@ -26,7 +26,7 @@ local btnGap = 4
 
 local leftBtn = ui.text.create()
 leftBtn:setSize(3, 1)
-leftBtn:setPos(math.floor(w / 2) - 3 - btnGap, h)
+leftBtn:setPos(math.floor(w / 2) - 3 - btnGap, h - 1)
 leftBtn:setText("<<<")
 function leftBtn:onClick()
   if page == 1 then return end
@@ -43,16 +43,15 @@ local function updatePageCounter()
   local pageCounterStr = pageStr .. "/" .. pageCountStr
 
   pageCounter:setSize(#pageCounterStr, 1)
-  pageCounter:setPos(math.floor(w / 2) - #pageStr, h)
+  pageCounter:setPos(math.floor(w / 2) - #pageStr, h - 1)
   pageCounter:setText(pageCounterStr)
 end
 
 updatePageCounter()
 
-
 local rightBtn = ui.text.create()
 rightBtn:setSize(3, 1)
-rightBtn:setPos(math.floor(w / 2) + btnGap, h)
+rightBtn:setPos(math.floor(w / 2) + btnGap, h - 1)
 rightBtn:setText(">>>")
 function rightBtn:onClick()
   if page == pageCount then return end
@@ -63,17 +62,16 @@ end
 -- TODO: optimise this a lot
 local function updateDisplay()
   local itemKeys = table.keys(storage.items)
-  table.sort(itemKeys, function(a, b) return a.detail.displayName < b.detail.displayName end)
+  table.sort(itemKeys, function(a, b) return storage.items[a].detail.displayName < storage.items[b].detail.displayName end)
   local pageSize = buttonList.size.y
 
   pageCount = math.ceil(#itemKeys / pageSize)
   page = math.min(pageCount, page)
 
   local options = {}
-  for i = page * pageSize, min(#itemKeys, (page + 1) * pageSize - 1) do
+  for i = (page - 1) * pageSize + 1, min(#itemKeys, page * pageSize) do
     local name = itemKeys[i]
     local item = storage.items[name]
-    if #options >= buttonList.size.y then break end
 
     table.insert(options, {
       displayText = item.detail.displayName .. ": " .. item.count,
