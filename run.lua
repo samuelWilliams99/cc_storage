@@ -32,8 +32,8 @@ local sorterIndex = 1
 local order = true
 
 local buttonList = ui.buttonList.create()
-buttonList:setSize(w - 4, h - 4)
-buttonList:setPos(2, 2)
+buttonList:setSize(w - 4, h - 6)
+buttonList:setPos(2, 4)
 
 local btnGap = 4
 
@@ -48,7 +48,7 @@ rightBtn:setPos(math.floor(w / 2) + btnGap + 1, h - 1)
 rightBtn:setText("")
 
 local sortSwitch = ui.text.create()
-sortSwitch:setPos(1, 1)
+sortSwitch:setPos(0, 0)
 local function updateSortSwitch()
   local text = "Sort: " .. sorters[sorterIndex].name
   sortSwitch:setSize(#text, 1)
@@ -57,10 +57,10 @@ end
 updateSortSwitch()
 
 local orderSwitch = ui.text.create()
-orderSwitch:setPos(w - 9, 1)
+orderSwitch:setPos(w - 9, 0)
 orderSwitch:setSize(9, 1)
 local function updateOrderSwitch()
-  orderSwitch:setText("Order: " .. order and "/\\" or "\\/")
+  orderSwitch:setText("Order: " .. (order and "/\\" or "\\/"))
 end
 updateOrderSwitch()
 
@@ -107,13 +107,20 @@ local function updateDisplay()
   pageCount = math.ceil(#itemKeys / pageSize)
   page = math.min(pageCount, page)
 
+  local maxNameLength = math.floor(w * 0.6)
   local options = {}
   for i = (page - 1) * pageSize + 1, math.min(#itemKeys, page * pageSize) do
     local name = itemKeys[i]
     local item = storage.items[name]
+    local displayNamePadded = item.detail.displayName
+    if #displayNamePadded > maxNameLength then
+      displayNamePadded = displayNamePadded:sub(1, maxNameLength - 3) .. "..."
+    else
+      displayNamePadded = displayNamePadded .. string.rep(" ", maxNameLength - #displayNamePadded)
+    end
 
     table.insert(options, {
-      displayText = item.detail.displayName .. ": " .. item.count,
+      displayText = displayNamePadded .. " | " .. item.count,
       name = name
     })
   end
