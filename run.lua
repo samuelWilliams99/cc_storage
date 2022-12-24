@@ -49,10 +49,18 @@ rightBtn:setText("")
 
 local sortSwitch = ui.text.create()
 sortSwitch:setPos(0, 0)
+
+-- Get correct size
+do
+  local maxLength = 0
+  for _, sorter in ipairs(sorters) do
+    maxLength = math.max(maxLength, #sorter.name)
+  end
+  sortSwitch:setSize(6 + maxLength, 1)
+end
+
 local function updateSortSwitch()
-  local text = "Sort: " .. sorters[sorterIndex].name
-  sortSwitch:setSize(#text, 1)
-  sortSwitch:setText(text)
+  sortSwitch:setText("Sort: " .. sorters[sorterIndex].name)
 end
 updateSortSwitch()
 
@@ -102,13 +110,13 @@ local function updateDisplay()
     end
   end)
 
-  local pageSize = buttonList.size.y
+  local pageSize = buttonList.size.y - 1
 
   pageCount = math.ceil(#itemKeys / pageSize)
   page = math.min(pageCount, page)
 
   local maxNameLength = math.floor(w * 0.6)
-  local options = {}
+  local options = {{displayText = "ITEM NAME" .. string.rep(" ", maxNameLength - 9) .. " | COUNT"}}
   for i = (page - 1) * pageSize + 1, math.min(#itemKeys, page * pageSize) do
     local name = itemKeys[i]
     local item = storage.items[name]
@@ -131,6 +139,7 @@ local function updateDisplay()
 end
 
 function buttonList:handleClick(btn, data)
+  if not data.name then return end
   if btn == 1 then -- left
     storage.dropItem(data.name, 1)
   elseif btn == 2 then -- right
