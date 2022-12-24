@@ -164,6 +164,7 @@ end
 function sortSwitch:onClick()
   sorterIndex = (sorterIndex % #sorters) + 1
   order = sorters[sorterIndex].order
+  page = 1
   updateSortSwitch()
   updateOrderSwitch()
   updateDisplay()
@@ -171,6 +172,7 @@ end
 
 function orderSwitch:onClick()
   order = not order
+  page = 1
   updateOrderSwitch()
   updateDisplay()
 end
@@ -178,12 +180,15 @@ end
 hook.add("cc_storage_change", "update_view", updateDisplay)
 updateDisplay()
 
+local scrollMutex = mutex.create()
 hook.add("mouse_scroll", "menu_shift", function(dir)
-  if dir == 1 then
-    rightBtn:onClick(1)
-  else
-    leftBtn:onClick(1)
-  end
+  --mutex.with(scrollMutex, function()
+    if dir == 1 then
+      rightBtn:onClick(1)
+    else
+      leftBtn:onClick(1)
+    end
+  --end)
 end)
 
 storage.startInputTimer()

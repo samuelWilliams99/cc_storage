@@ -79,6 +79,7 @@ end
 function ui.classes.Base:invalidateLayout()
   local this = self
   timer.create("invalidateLayout" .. self.id, 0.05, 1, function()
+    if this.removed then return end
     this:doDraw()
   end)
 end
