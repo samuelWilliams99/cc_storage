@@ -46,7 +46,9 @@ local function updatePageCounter()
   pageCounter:setText(pageCounterStr)
 
   leftBtn:setText(page == 1 and "" or "<<<")
+  leftBtn:setBgColor(page == 1 and colors.black or colors.gray)
   rightBtn:setText(page == pageCount and "" or ">>>")
+  rightBtn:setBgColor(page == pageCount and colors.black or colors.gray)
 end
 
 updatePageCounter()
