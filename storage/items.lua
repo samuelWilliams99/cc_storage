@@ -8,7 +8,7 @@ function storage.updateChests()
   storage.chests = {}
   storage.crafting.candidates = {}
   for _, chest in ipairs(chests) do
-    if chest.getSize() == 27 and table.isEmpty(chest.list()) then
+    if chest.size() == 27 and table.isEmpty(chest.list()) then
       table.insert(storage.crafting.candidates, chest)
     else
       table.insert(storage.chests, chest)
@@ -98,7 +98,7 @@ function storage.updateItemMapping()
 end
 
 function storage.addEmptyChest(chest)
-  for slot = 1, chest.getSize() do
+  for slot = 1, chest.size() do
     table.insert(storage.emptySlots, {chest = chest, slot = slot})
   end
 end
