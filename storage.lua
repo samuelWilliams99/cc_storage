@@ -3,11 +3,13 @@ hook.clear()
 
 dofile("cc_storage/utils/timer.lua")
 dofile("cc_storage/storage/items.lua")
+dofile("cc_storage/storage/crafting.lua")
 dofile("cc_storage/ui/buttonlist.lua")
 dofile("cc_storage/ui/text.lua")
 
 storage.updateChests()
 storage.updateItemMapping()
+storage.crafting.setupCrafters()
 print("Rendering...")
 
 sleep(0.5)

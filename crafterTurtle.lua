@@ -24,7 +24,7 @@ local function moveItem(moveData)
   end
 end
 
-hook.add("modem_message", "doCraft", function(_, port, _, data)
+local function handleCrafting(data)
   -- Data is mapping 1-9 to an item, alongside "craftCount" as number to make
   turtle.select(16)
 
@@ -46,7 +46,15 @@ hook.add("modem_message", "doCraft", function(_, port, _, data)
     if turtle.getItemCount() == 0 then break end
     turtle.drop()
   end
-  modem.transmit(craftingPort, craftingPort)
+  modem.transmit(craftingPort, craftingPort, {type = "craft"})
+end
+
+hook.add("modem_message", "doCraft", function(_, port, _, data)
+  if data.type == "craft" then
+    handleCrafting(data)
+  elseif data.type == "scan" then
+    modem.transmit(craftingPort, craftingPort, {type = "scan", computerID = os.getComputerID()})
+  end
 end)
 
 hook.runLoop()

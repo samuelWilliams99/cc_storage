@@ -1,11 +1,21 @@
 dofile("cc_storage/utils/helpers.lua")
 dofile("cc_storage/utils/timer.lua")
-
 storage = {}
+dofile("cc_storage/storage/crafting.lua")
 
 function storage.updateChests()
-  storage.chests = {peripheral.find("minecraft:chest")}
-  print("Found " .. #storage.chests .. " chests.")
+  local chests = {peripheral.find("minecraft:chest")}
+  storage.chests = {}
+  storage.crafting.candidates = {}
+  for _, chest in ipairs(chests) do
+    if chest.getSize() == 27 and table.isEmpty(chest.list()) then
+      table.insert(storage.crafting.candidates, chest)
+    else
+      table.insert(storage.chests, chest)
+    end
+  end
+
+  print("Found " .. #storage.chests .. " chests and " .. #storage.crafting.candidates .. " crafter candidates")
   storage.dropper = peripheral.find("minecraft:trapped_chest")
   if storage.dropper then
     print("Found dropper chest.")
@@ -85,6 +95,12 @@ function storage.updateItemMapping()
   print("Built item matrix.")
   print("Found " .. itemCount .. " items, " .. uniqueItemCount .. " of which unique.")
   print("Found " .. #storage.emptySlots .. " empty slots.")
+end
+
+function storage.addEmptyChest(chest)
+  for slot = 1, chest.getSize() do
+    table.insert(storage.emptySlots, {chest = chest, slot = slot})
+  end
 end
 
 function storage.dropItem(key, count)
