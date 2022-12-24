@@ -27,15 +27,14 @@ local btnGap = 4
 local leftBtn = ui.text.create()
 leftBtn:setSize(3, 1)
 leftBtn:setPos(math.floor(w / 2) - 3 - btnGap, h - 1)
-leftBtn:setText("<<<")
-function leftBtn:onClick()
-  if page == 1 then return end
-  page = page - 1
-  updateDisplay()
-end
+leftBtn:setText("")
+
+local rightBtn = ui.text.create()
+rightBtn:setSize(3, 1)
+rightBtn:setPos(math.floor(w / 2) + btnGap + 1, h - 1)
+rightBtn:setText("")
 
 local pageCounter = ui.text.create()
-
 local function updatePageCounter()
   local pageCountStr = tostring(pageCount)
   local pageStr = tostring(page)
@@ -45,19 +44,12 @@ local function updatePageCounter()
   pageCounter:setSize(#pageCounterStr, 1)
   pageCounter:setPos(math.floor(w / 2) - #pageStr, h - 1)
   pageCounter:setText(pageCounterStr)
+
+  leftBtn:setText(page == 1 and "" or "<<<")
+  rightBtn:setText(page == pageCount and "" or ">>>")
 end
 
 updatePageCounter()
-
-local rightBtn = ui.text.create()
-rightBtn:setSize(3, 1)
-rightBtn:setPos(math.floor(w / 2) + btnGap + 1, h - 1)
-rightBtn:setText(">>>")
-function rightBtn:onClick()
-  if page == pageCount then return end
-  page = page + 1
-  updateDisplay()
-end
 
 -- TODO: optimise this a lot
 local function updateDisplay()
@@ -90,6 +82,18 @@ function buttonList:handleClick(btn, data)
   elseif btn == 2 then -- right
     storage.dropItem(data.name, 64)
   end
+end
+
+function leftBtn:onClick()
+  if page == 1 then return end
+  page = page - 1
+  updateDisplay()
+end
+
+function rightBtn:onClick()
+  if page == pageCount then return end
+  page = page + 1
+  updateDisplay()
 end
 
 hook.add("cc_storage_change", "update_view", updateDisplay)
