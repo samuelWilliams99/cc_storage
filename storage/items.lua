@@ -146,15 +146,6 @@ function storage.inputLoop()
   end
 end
 
-function checkerr(n)
-  if n == 0 then
-    term.clear()
-    print("IT PUSHED 0 ITEMS!")
-    print(debug.traceback())
-    error("lol")
-  end
-end
-
 function storage.inputItem(slot, item)
   local detail = storage.input.getItemDetail(slot)
   local key = storage.getItemKey(item, detail)
@@ -172,13 +163,12 @@ function storage.inputItem(slot, item)
     if item.count ~= startingCount then
       hook.run("cc_storage_change", key, startingCount - item.count, storedItem)
     end
-
-    print("Out of empty spaces, can't fit additional " .. item.count .. " of " .. item.name .. " in chests.")
+    -- print("Out of empty spaces, can't fit additional " .. item.count .. " of " .. item.name .. " in chests.")
     return
   end
 
   local newSlot = table.remove(storage.emptySlots, 1)
-  checkerr(storage.input.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot))
+  storage.input.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot)
 
   storage.saveItem(item, detail, newSlot.chest, newSlot.slot)
 
@@ -195,7 +185,7 @@ function storage.inputItems(item, slot, newItem)
       if canAdd >= newItem.count then
         toMove = newItem.count
       end
-      checkerr(storage.input.pushItems(peripheral.getName(location.chest), slot, toMove, location.slot))
+      storage.input.pushItems(peripheral.getName(location.chest), slot, toMove, location.slot)
       location.count = location.count + toMove
       item.count = item.count + toMove
       newItem.count = newItem.count - toMove

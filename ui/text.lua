@@ -1,12 +1,12 @@
 dofile("cc_storage/ui/base.lua")
 dofile("cc_storage/ui/draw.lua")
 
-ui.button = {}
+ui.text = {}
 
-function ui.button.create(parent)
+function ui.text.create(parent)
   local elem = ui.makeElement(parent)
-  elem:setSize(6, 1)
-  elem.text = "button"
+  elem:setSize(4, 1)
+  elem.text = "text"
   elem.bgColor = colors.gray
   elem.textColor = colors.white
   function elem:setText(text)
