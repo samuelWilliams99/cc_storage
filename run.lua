@@ -20,11 +20,13 @@ local pageCount = 1
 local sorters = {
   {
     name = "Name",
-    key = function(item) return item.detail.displayName end
+    key = function(item) return item.detail.displayName end,
+    order = true
   },
   {
     name = "Count",
-    key = function(item) return item.count end
+    key = function(item) return item.count end,
+    order = false
   }
 }
 local sorterIndex = 1
@@ -161,7 +163,9 @@ end
 
 function sortSwitch:onClick()
   sorterIndex = (sorterIndex % #sorters) + 1
+  order = sorters[sorterIndex].order
   updateSortSwitch()
+  updateOrderSwitch()
   updateDisplay()
 end
 
