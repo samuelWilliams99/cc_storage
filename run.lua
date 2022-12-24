@@ -121,7 +121,7 @@ local function updateDisplay()
 
   local pageSize = buttonList.size.y - 1
 
-  pageCount = math.ceil(#itemKeys / pageSize)
+  pageCount = math.min(1, math.ceil(#itemKeys / pageSize))
   page = math.min(pageCount, page)
 
   local maxNameLength = math.floor(w * 0.6)
