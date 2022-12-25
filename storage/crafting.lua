@@ -81,7 +81,7 @@ function storage.crafting.setupCrafters()
   print("pushed item to storage")
   storage.dropItemTo(firstItemName, 1, storage.input)
 
-  checkChests(chests, item.name, storage.input)
+  checkChests(chests, item.detail.name, storage.input)
   print("Found chests for " .. table.count(storage.crafting.crafters) .. " crafting turtles and registered them.")
 
   print(#chests .. " crafting chest candidates turned out to be normal chests.")

@@ -10,6 +10,9 @@ dofile("cc_storage/ui/text.lua")
 storage.updateChests()
 storage.updateItemMapping()
 storage.crafting.setupCrafters()
+
+sleep(20)
+
 print("Rendering...")
 
 sleep(0.5)
