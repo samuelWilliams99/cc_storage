@@ -46,7 +46,7 @@ local function handleCrafting(data)
     if turtle.getItemCount() == 0 then break end
     turtle.drop()
   end
-  modem.transmit(craftingPort, craftingPort, {type = "craft"})
+  modem.transmit(craftingPort, craftingPort, {type = "craft", computerID = os.getComputerID()})
 end
 
 hook.add("modem_message", "doCraft", function(_, port, _, data)
@@ -54,6 +54,12 @@ hook.add("modem_message", "doCraft", function(_, port, _, data)
     handleCrafting(data)
   elseif data.type == "scan" then
     modem.transmit(craftingPort, craftingPort, {type = "scan", computerID = os.getComputerID()})
+  elseif data.type == "check" then
+    turtle.select(1)
+    turtle.suck()
+    local item = turtle.getItemDetail(1)
+    modem.transmit(craftingPort, craftingPort, {type = "check", found = item and item.name == data.name, computerID = os.getComputerID()})
+    turtle.drop()
   end
 end)
 

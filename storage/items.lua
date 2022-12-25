@@ -104,12 +104,16 @@ function storage.addEmptyChest(chest)
 end
 
 function storage.dropItem(key, count)
+  return storage.dropItemTo(key, count, storage.dropper)
+end
+
+function storage.dropItemTo(key, count, chest)
   local item = storage.items[key]
   if not item then
     return false
   end
 
-  storage.dropItems(item.locations, count)
+  storage.dropItemsTo(item.locations, count, chest)
   count = math.min(count, item.count)
   item.count = item.count - count
   if item.count <= 0 then
@@ -119,7 +123,7 @@ function storage.dropItem(key, count)
   return true
 end
 
-function storage.dropItems(locations, count)
+function storage.dropItemsTo(locations, count, chest)
   while #locations > 0 do
     local location = locations[1]
     local toMove
@@ -134,7 +138,7 @@ function storage.dropItems(locations, count)
     end
 
     -- do the drop
-    location.chest.pushItems(peripheral.getName(storage.dropper), location.slot, toMove)
+    location.chest.pushItems(peripheral.getName(chest), location.slot, toMove)
 
     if location.count == 0 then
       table.remove(locations, 1)

@@ -48,3 +48,11 @@ function table.removeByValue(t, valueToRemove)
     end
   end
 end
+
+function table.shallowCopy(t)
+  local out = {}
+  for k, v in pairs(t) do
+    out[k] = v
+  end
+  return out
+end
