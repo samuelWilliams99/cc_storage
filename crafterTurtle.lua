@@ -64,11 +64,16 @@ hook.add("modem_message", "doCraft", function(_, port, _, data)
     end
   elseif data.type == "scan" then
     modem.transmit(craftingPortOut, craftingPortIn, {type = "scan", computerID = os.getComputerID()})
+    print("Replied to crafter ping!")
   elseif data.type == "check" then
+    print("Got a message message, looking for " .. data.name)
     turtle.select(1)
     turtle.suck()
     local item = turtle.getItemDetail(1)
-    modem.transmit(craftingPortOut, craftingPortIn, {type = "check", found = toBool(item and item.name == data.name), computerID = os.getComputerID()})
+    local found = toBool(item and item.name == data.name)
+    print("Status: " .. found)
+    print(textutils.serialise(item))
+    modem.transmit(craftingPortOut, craftingPortIn, {type = "check", found = found, computerID = os.getComputerID()})
     turtle.drop()
   end
 end)

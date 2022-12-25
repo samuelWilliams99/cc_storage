@@ -45,14 +45,18 @@ local function checkChests(chests, itemName, lastChest)
     local chest = chests[i]
     lastChest.pushItems(peripheral.getName(chest), 1, 1, 1)
     lastChest = chest
+    print("moved item to chest " .. i .. ", submitting message")
     modem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = itemName})
     handleAllReplies(function(data)
+      print("got reply: " .. data.found)
       if data.found then
-        storage.crafting.crafters[data.computerID] = {computerID = data.computerID, chest = chest, active = false}
+        storage.crafting.crafters[data.computerID] = {computerID = data.computerID, chest = chest}
         table.remove(chests, i)
       end
     end, storage.crafting.crafterIDs)
+    sleep(5)
   end
+  print("finished, moving back")
   storage.inputChest(lastChest)
 end
 
@@ -74,6 +78,7 @@ function storage.crafting.setupCrafters()
   if table.isEmpty(storage.items) then error("Please place at least 1 item in one of the chests to initialise the system") end
   local firstItemName, item = next(storage.items)
 
+  print("pushed item to storage")
   storage.dropItemTo(firstItemName, 1, storage.input)
 
   checkChests(chests, item.name, storage.input)
