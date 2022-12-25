@@ -72,7 +72,6 @@ hook.add("modem_message", "doCraft", function(_, port, _, data)
     local item = turtle.getItemDetail(1)
     local found = toBool(item and item.name == data.name)
     print(found and "Found item" or "Did not find item")
-    print(textutils.serialise(item))
     modem.transmit(craftingPortOut, craftingPortIn, {type = "check", found = found, computerID = os.getComputerID()})
     turtle.drop()
   end

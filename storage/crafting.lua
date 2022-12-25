@@ -27,7 +27,7 @@ local function handleAllReplies(handler, ids)
   while true do
     local data = {os.pullEvent()}
     if data[1] == "modem_message" and data[3] == craftingPortIn then
-      handler(data)
+      handler(data[5])
       if ids then
         table.removeByValue(remaining, data.computerID)
         if table.isEmpty(remaining) then break end
@@ -48,7 +48,7 @@ local function checkChests(chests, itemName, lastChest)
     print("moved item to chest " .. i .. ", submitting message")
     modem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = itemName})
     handleAllReplies(function(data)
-      print("got reply: " .. data.found)
+      print("got reply: " .. tostring(data.found))
       if data.found then
         storage.crafting.crafters[data.computerID] = {computerID = data.computerID, chest = chest}
         table.remove(chests, i)
@@ -69,7 +69,7 @@ function storage.crafting.setupCrafters()
   storage.crafting.crafterIDs = {}
 
   handleAllReplies(function(data)
-    local compID = data[5].computerID
+    local compID = data.computerID
     table.insert(storage.crafting.crafterIDs, compID)
   end)
 
