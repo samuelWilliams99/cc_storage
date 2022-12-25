@@ -45,10 +45,10 @@ local function checkChests(chests, itemName, lastChest)
     local chest = chests[i]
     lastChest.pushItems(peripheral.getName(chest))
     lastChest = chest
-    modem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = firstItemName})
+    modem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = itemName})
     handleAllReplies(function(data)
       if data.found then
-        storage.crafting.crafters[data.computerID] = {computerID = data.computerID, chest = chest, active = false})
+        storage.crafting.crafters[data.computerID] = {computerID = data.computerID, chest = chest, active = false}
         table.remove(chests, i)
       end
     end, storage.crafting.crafterIDs)
@@ -109,16 +109,16 @@ function storage.crafting.getCraftAmounts(recipe)
   for itemName, count in pairs(recipe.ingredients) do
     local item = storage.items[itemName]
     if not item then return 0 end
-    local maxStackForIngedient = math.floor(item.detail.maxCount / count)
+    local maxStackForIngredient = math.floor(item.detail.maxCount / count)
     local maxCraftsForIngredient = math.floor(item.count / count)
-    if maxStackForIngedient < minStack then
-      minStack = maxStackForIngedient
+    if maxStackForIngredient < minStack then
+      minStack = maxStackForIngredient
     end
     if maxCraftsForIngredient < maxCrafts then
       maxCrafts = maxCraftsForIngredient
     end
   end
-  return maxCraftsForIngredient, minStack
+  return maxCrafts, minStack
 end
 
 -- Crafts an item, parallelising if needed, taking a callback for when finished
