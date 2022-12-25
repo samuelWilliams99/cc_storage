@@ -32,7 +32,7 @@ local function handleCrafting(data)
   local placement = data.placement
   local moveData = {}
   for i = 1, 9 do
-    if data[i] then
+    if placement[i] then
       moveData[placement[i]] = moveData[placement[i]] or {}
       moveData[placement[i]][i] = data.craftCount
     end

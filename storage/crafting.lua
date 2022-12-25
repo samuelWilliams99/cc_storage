@@ -135,7 +135,7 @@ function storage.crafting.craftShallow(itemName, itemCount, cb)
 
   -- Given we cannot assume maxCraftsPerCrafter fits into craftCount integer times, we do `repeatedCraftCount` jobs of maxCraftsPerCrafter crafts, alongside a "change" job
   -- this is the number of JOBs
-  local repeatedJobCount = math.floor(maxCrafts / craftCount)
+  local repeatedJobCount = math.floor(craftCount / maxCraftsPerCrafter)
   -- this is the number of crafts for the change `job`
   local changeCount = craftCount - repeatedJobCount * maxCraftsPerCrafter
 
