@@ -152,27 +152,27 @@ function storage.dropItemsTo(locations, count, chest)
 end
 
 function storage.startInputTimer()
-  timer.create("input", 0.5, 0, storage.inputLoop)
+  timer.create("input", 0.5, 0, function() storage.inputChest(storage.input) end)
 end
 
-function storage.inputLoop()
-  local inputItems = storage.input.list()
+function storage.inputChest(chest)
+  local inputItems = chest.list()
   if table.isEmpty(inputItems) then
     return
   end
 
   for k, item in pairs(inputItems) do
-    storage.inputItem(k, item)
+    storage.inputItemFrom(k, item, chest)
   end
 end
 
-function storage.inputItem(slot, item)
-  local detail = storage.input.getItemDetail(slot)
+function storage.inputItemFrom(slot, item, chest)
+  local detail = chest.getItemDetail(slot)
   local key = storage.getItemKey(item, detail)
   local storedItem = storage.items[key]
   local startingCount = item.count
   if storedItem then
-    storage.inputItems(storedItem, slot, item)
+    storage.inputItemsFrom(storedItem, slot, item, chest)
   end
   if item.count == 0 then
     hook.run("cc_storage_change", key, startingCount, storedItem)
@@ -188,14 +188,14 @@ function storage.inputItem(slot, item)
   end
 
   local newSlot = table.remove(storage.emptySlots, 1)
-  storage.input.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot)
+  chest.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot)
 
   storage.saveItem(item, detail, newSlot.chest, newSlot.slot)
 
   hook.run("cc_storage_change", key, startingCount, storedItem)
 end
 
-function storage.inputItems(item, slot, newItem)
+function storage.inputItemsFrom(item, slot, newItem, chest)
   local max = item.detail.maxCount
   for k = #item.locations, 1, -1 do
     local location = item.locations[k]
@@ -205,7 +205,7 @@ function storage.inputItems(item, slot, newItem)
       if canAdd >= newItem.count then
         toMove = newItem.count
       end
-      storage.input.pushItems(peripheral.getName(location.chest), slot, toMove, location.slot)
+      chest.pushItems(peripheral.getName(location.chest), slot, toMove, location.slot)
       location.count = location.count + toMove
       item.count = item.count + toMove
       newItem.count = newItem.count - toMove
