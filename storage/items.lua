@@ -3,6 +3,9 @@ dofile("cc_storage/utils/timer.lua")
 storage = {}
 dofile("cc_storage/storage/crafting.lua")
 
+-- TODO: the entry point input/output functions (so dropItemTo and inputItemTo) need a mutex and busy waiting
+-- as currently when crafts finish, they input at the same time and clash
+
 function storage.updateChests()
   local chests = {peripheral.find("minecraft:chest")}
   storage.chests = {}
