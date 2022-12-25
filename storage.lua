@@ -11,8 +11,6 @@ storage.updateChests()
 storage.updateItemMapping()
 storage.crafting.setupCrafters()
 
-sleep(20)
-
 print("Rendering...")
 
 sleep(0.5)
@@ -215,10 +213,10 @@ hook.add("initialize", "add_search", function()
   end
 end)
 
--- hook.add("initialize", "test_craft", function()
---   sleep(1)
---   storage.crafting.craftShallow("minecraft:stick", 1)
--- end)
+hook.add("initialize", "test_craft", function()
+  sleep(5)
+  storage.crafting.craftShallow("minecraft:stick", 1)
+end)
 
 storage.startInputTimer()
 hook.runLoop()

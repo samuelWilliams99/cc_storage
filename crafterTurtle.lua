@@ -60,7 +60,9 @@ end
 hook.add("modem_message", "doCraft", function(_, port, _, data)
   if data.type == "craft" then
     if data.computerID == os.getComputerID() then
+      print("Received a craft request, handling...")
       handleCrafting(data)
+      print("Finished!")
     end
   elseif data.type == "scan" then
     modem.transmit(craftingPortOut, craftingPortIn, {type = "scan", computerID = os.getComputerID()})
