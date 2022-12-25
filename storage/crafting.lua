@@ -43,7 +43,7 @@ local function checkChests(chests, itemName, lastChest)
   storage.crafting.crafters = {}
   for i = #chests, 1, -1 do
     local chest = chests[i]
-    lastChest.pushItems(peripheral.getName(chest))
+    lastChest.pushItems(peripheral.getName(chest), 1, 1, 1)
     lastChest = chest
     modem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = itemName})
     handleAllReplies(function(data)
