@@ -215,8 +215,8 @@ end)
 
 hook.add("initialize", "test_craft", function()
   sleep(10)
-  -- Make 2 stacks to test parallelism
-  storage.crafting.craftShallow("minecraft:oak_button", 128)
+  -- Make 4 stacks to test parallelism 
+  storage.crafting.craftShallow("minecraft:stick", 256)
 end)
 
 storage.startInputTimer()
