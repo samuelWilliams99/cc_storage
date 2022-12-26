@@ -119,8 +119,6 @@ function storage.withLock(f)
   end
 end
 
-storage.dropItemTo = storage.withLock(storage.dropItemToUnsafe)
-
 function storage.dropItemToUnsafe(key, count, chest)
   local item = storage.items[key]
   if not item then
@@ -136,6 +134,8 @@ function storage.dropItemToUnsafe(key, count, chest)
   hook.run("cc_storage_change", key, -count, item)
   return true
 end
+
+storage.dropItemTo = storage.withLock(storage.dropItemToUnsafe)
 
 function storage.dropItemsTo(locations, count, chest)
   while #locations > 0 do
@@ -180,8 +180,6 @@ function storage.inputChest(chest)
   end
 end
 
-storage.inputItemFrom = storage.withLock(storage.inputItemFromUnsafe)
-
 function storage.inputItemFromUnsafe(slot, item, chest)
   local detail = chest.getItemDetail(slot)
   local key = storage.getItemKey(item, detail)
@@ -194,7 +192,7 @@ function storage.inputItemFromUnsafe(slot, item, chest)
     hook.run("cc_storage_change", key, startingCount, storedItem)
     return
   end
-
+  
   if #storage.emptySlots == 0 then
     if item.count ~= startingCount then
       hook.run("cc_storage_change", key, startingCount - item.count, storedItem)
@@ -202,14 +200,16 @@ function storage.inputItemFromUnsafe(slot, item, chest)
     -- print("Out of empty spaces, can't fit additional " .. item.count .. " of " .. item.name .. " in chests.")
     return
   end
-
+  
   local newSlot = table.remove(storage.emptySlots, 1)
   chest.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot)
-
+  
   storage.saveItem(item, detail, newSlot.chest, newSlot.slot)
-
+  
   hook.run("cc_storage_change", key, startingCount, storedItem)
 end
+
+storage.inputItemFrom = storage.withLock(storage.inputItemFromUnsafe)
 
 function storage.inputItemsFrom(item, slot, newItem, chest)
   local max = item.detail.maxCount
