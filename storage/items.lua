@@ -107,6 +107,18 @@ function storage.dropItem(key, count)
   return storage.dropItemTo(key, count, storage.dropper)
 end
 
+function storage.withLock(f)
+  return function(...)
+    while storage.lock do
+      sleep(0.1)
+    end
+    storage.lock = true
+    local res = table.pack(f(...))
+    storage.lock = false
+    return table.unpack(res, 1, res.n)
+  end
+end
+
 storage.dropItemTo = storage.withLock(storage.dropItemToUnsafe)
 
 function storage.dropItemToUnsafe(key, count, chest)
@@ -165,18 +177,6 @@ function storage.inputChest(chest)
 
   for k, item in pairs(inputItems) do
     storage.inputItemFrom(k, item, chest)
-  end
-end
-
-function storage.withLock(f)
-  return function(...)
-    while storage.lock do
-      sleep(0.1)
-    end
-    storage.lock = true
-    local res = table.pack(f(...))
-    storage.lock = false
-    return table.unpack(res, 1, res.n)
   end
 end
 
