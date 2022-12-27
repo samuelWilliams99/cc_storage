@@ -7,11 +7,6 @@ storage.crafting.jobQueue = {}
 -- a task is created by .craft or .craftShallow, and contains many jobs.
 storage.crafting.tasks = {}
 
--- TODO (alterative next): save recipes to disk
---   just put on disk, saving a new that already exists should override
---   write using textutils.serialize(t, true) -- for compact mode
---   read with textutils.deserialize
-
 -- TODO: deep crafting
 -- Make a function that creates a crafting plan AND reserves all the materials it intends to use.
 --   This should take the item we want and the amount we want to make
