@@ -1,16 +1,12 @@
 storage.crafting = storage.crafting or {}
-storage.crafting.recipes = storage.crafting.recipes or {}
+dofile("cc_storage/storage/recipes.lua")
+
 storage.crafting.crafters = {}
 -- the jobQueue list is a queue of jobs to be run
 storage.crafting.jobQueue = {}
 -- a task is created by .craft or .craftShallow, and contains many jobs.
 storage.crafting.tasks = {}
 
--- TODO (next): must bring all items needed for crafting into some sort of "temp location", or perhaps simply remove from the UI
--- so users may not take crafting ingredients as they are used
---   we can do this by changing storage items to have a count + reserved count, where the UI and furture crafts only allow dropping of count - reserved
---   we may also consider a flag on `dropping` that allows using reserved materials, and set it false on anything that hasn't reserved anything
---   (putting the trust on the code writer - me - rather than the UI user - me also, but maybe others as well :) )
 -- TODO (alterative next): save recipes to disk
 --   just put on disk, saving a new that already exists should override
 --   write using textutils.serialize(t, true) -- for compact mode
@@ -99,25 +95,6 @@ function storage.crafting.setupCrafters()
   for _, chest in pairs(chests) do
     storage.addEmptyChest(chest)
   end
-end
-
--- Must provide a display name for when we dont have any
--- This can ofc be calculated when adding the recipe and saved to disk
-function storage.crafting.addRecipe(itemName, displayName, recipePlacement, count)
-  count = count or 1
-  local ingredients = {}
-  for i = 1, 9 do
-    if recipePlacement[i] then
-      ingredients[recipePlacement[i]] = (ingredients[recipePlacement[i]] or 0) + 1
-    end
-  end
-  storage.crafting.recipes[itemName] = {
-    placement = recipePlacement,
-    ingredients = ingredients,
-    itemName = itemName,
-    count = count,
-    displayName = displayName
-  }
 end
 
 -- Takes a recipe and works out the max number of times you can craft (note, if count > 1, this is different to max items), and the max per crafter
@@ -243,6 +220,3 @@ hook.add("modem_message", "crafting_reply", function(_, port, _, data)
     storage.crafting.runCrafter(nextJob, crafter)
   end
 end)
-
--- Add a testing recipe, sticks
-storage.crafting.addRecipe("minecraft:stick", "Stick", {[1] = "minecraft:oak_planks", [4] = "minecraft:oak_planks"}, 4)

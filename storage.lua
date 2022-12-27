@@ -9,6 +9,7 @@ dofile("cc_storage/ui/text.lua")
 
 storage.updateChests()
 storage.updateItemMapping()
+storage.crafting.loadRecipes()
 storage.crafting.setupCrafters()
 
 print("Rendering...")
@@ -213,7 +214,9 @@ function orderSwitch:onClick()
   updateDisplay()
 end
 
-hook.add("cc_storage_change", "update_view", updateDisplay)
+hook.add("cc_storage_change", "update_view", function()
+  timer.create("inventory_delay", 0.1, 1, updateDisplay)
+end)
 updateDisplay()
 
 hook.add("mouse_scroll", "menu_shift", function(dir)

@@ -53,7 +53,7 @@ function storage.saveItem(item, detail, chest, slot)
   local items = storage.items
   local key = storage.getItemKey(item, detail)
 
-  items[key] = items[key] or {count = 0, locations = {}}
+  items[key] = items[key] or {count = 0, locations = {}, reservedCount = 0}
   items[key].count = items[key].count + item.count
   items[key].detail = detail
   local locations = items[key].locations
@@ -65,6 +65,24 @@ function storage.saveItem(item, detail, chest, slot)
     end
   end
   table.insert(items[key].locations, locationKey, {chest = chest, slot = slot, count = item.count})
+end
+
+function storage.reserveItems(key, count)
+  local item = storage.items[key]
+  if not item then return false, "No such item" end
+  if count > 0 then
+    if item.count < count then return false, "Not enough items" end
+  else
+    if item.reservedCount < -count then return false, "Not enough items" end
+  end
+  item.count = item.count - count
+  item.reservedCount = item.reservedCount + count
+  hook.run("cc_storage_change", key, -count, item)
+  return true
+end
+
+function storage.unreserveItems(key, count)
+  return storage.reserveItems(key, -count)
 end
 
 function storage.updateItemMapping()
@@ -103,8 +121,8 @@ function storage.addEmptyChest(chest)
   end
 end
 
-function storage.dropItem(key, count)
-  return storage.dropItemTo(key, count, storage.dropper)
+function storage.dropItem(key, count, useReserved)
+  return storage.dropItemTo(key, count, storage.dropper, useReserved)
 end
 
 function storage.withLock(f)
@@ -119,19 +137,30 @@ function storage.withLock(f)
   end
 end
 
-function storage.dropItemToUnsafe(key, count, chest)
+function storage.dropItemToUnsafe(key, count, chest, useReserved)
   local item = storage.items[key]
   if not item then
     return false
   end
 
+  if useReserved then
+    if item.reservedCount < count then return false end
+    item.reservedCount = item.reservedCount - count
+    item.count = item.count + count
+  end
+
+  if item.count == 0 then return false end
+
   storage.dropItemsTo(item.locations, count, chest)
   count = math.min(count, item.count)
   item.count = item.count - count
-  if item.count <= 0 then
+  if item.count == 0 and item.reservedCount == 0 then
     storage.items[key] = nil
   end
-  hook.run("cc_storage_change", key, -count, item)
+
+  if not useReserved then
+    hook.run("cc_storage_change", key, -count, item)
+  end
   return true
 end
 

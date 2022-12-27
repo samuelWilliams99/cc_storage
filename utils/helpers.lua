@@ -56,3 +56,18 @@ function table.shallowCopy(t)
   end
   return out
 end
+
+function readFile(path)
+  local handle = io.open(path, "r")
+  if not handle then return end
+  local data = handle:read("a")
+  handle:close()
+  return textutils.deserialize(data)
+end
+
+function writeFile(path, t)
+  local handle = io.open(path, "w")
+  if not handle then error("Couldn't create file") end
+  handle:write(textutils.serialize(t, true))
+  handle:close()
+end
