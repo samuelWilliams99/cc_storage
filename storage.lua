@@ -100,10 +100,23 @@ updatePageCounter()
 -- TODO: optimise this a lot
 local function updateDisplay()
   local itemKeys = table.keys(storage.items)
+
+  for name, recipe in pairs(storage.crafting.recipes) do
+    if not storage.items[name] then
+      table.insert(itemKeys, name)
+    end
+  end
+
+  local function getItemData(name)
+    if storage.items[name] then return storage.items[name] end
+    local recipe = storage.crafting.recipes[name]
+    return {detail = {displayName = recipe.displayName}, count = 0, isRecipe = true}
+  end
+
   if searchString ~= "" then
     itemKeys = table.filter(itemKeys, function(name)
-      local displayName = storage.items[name].detail.displayName
-      return displayName:lower():find(searchString)
+      local itemData = getItemData(name)
+      return itemData.detail.displayName:lower():find(searchString)
     end)
   end
   local key = sorters[sorterIndex].key
@@ -111,8 +124,8 @@ local function updateDisplay()
 
   -- Sort by the comparator and what not, fall back to display name asc afterwards
   table.sort(itemKeys, function(aName, bName)
-    local a = storage.items[aName]
-    local b = storage.items[bName]
+    local a = getItemData(aName)
+    local b = getItemData(bName)
     local aKey = key(a)
     local bKey = key(b)
     if aKey == bKey then
@@ -131,7 +144,7 @@ local function updateDisplay()
   local options = {{displayText = "ITEM NAME" .. string.rep(" ", maxNameLength - 9) .. " | COUNT"}}
   for i = (page - 1) * pageSize + 1, math.min(#itemKeys, page * pageSize) do
     local name = itemKeys[i]
-    local item = storage.items[name]
+    local item = getItemData(name)
     local displayNamePadded = item.detail.displayName
     if #displayNamePadded > maxNameLength then
       displayNamePadded = displayNamePadded:sub(1, maxNameLength - 3) .. "..."
@@ -139,8 +152,13 @@ local function updateDisplay()
       displayNamePadded = displayNamePadded .. string.rep(" ", maxNameLength - #displayNamePadded)
     end
 
+    local countText = item.isRecipe and "CRAFT" or tostring(item.count)
+    if not item.isRecipe and storage.crafting.recipes[name] then -- If we have some but its also craftable
+      countText = countText .. " *" -- Add a star :)
+    end
+
     table.insert(options, {
-      displayText = displayNamePadded .. " | " .. item.count,
+      displayText = displayNamePadded .. " | " .. countText,
       name = name
     })
   end
@@ -152,10 +170,18 @@ end
 
 function buttonList:handleClick(btn, data)
   if not data.name then return end
-  if btn == 1 then -- left
-    storage.dropItem(data.name, 1)
-  elseif btn == 2 then -- right
-    storage.dropItem(data.name, 64)
+
+  local action
+  if storage.items[data.name] and btn ~= 3 then
+    action = storage.dropItem
+  else
+    action = storage.crafting.craftShallow
+  end
+
+  if btn == 2 then -- right
+    action(data.name, 64)
+  else -- left or middle
+    action(data.name, 1)
   end
 end
 
@@ -211,12 +237,6 @@ hook.add("initialize", "add_search", function()
     searchString = ""
     updateDisplay()
   end
-end)
-
-hook.add("initialize", "test_craft", function()
-  sleep(10)
-  -- Make 4 stacks to test parallelism 
-  storage.crafting.craftShallow("minecraft:stick", 256)
 end)
 
 storage.startInputTimer()

@@ -8,6 +8,7 @@ storage.crafting.tasks = {}
 
 -- TODO (next): must bring all items needed for crafting into some sort of "temp location", or perhaps simply remove from the UI
 -- so users may not take crafting ingredients as they are used
+-- TODO (alterative next): save recipes to disk
 
 -- TODO (later): the scan should happen BEFORE the chest lookup, and turtles should empty the chest into their own inv before replying to the scan
 -- then, on successful check, turtles should empty their inv back into the chest, and the comp should input all the items
@@ -85,7 +86,9 @@ function storage.crafting.setupCrafters()
   end
 end
 
-function storage.crafting.addRecipe(itemName, recipePlacement, count)
+-- Must provide a display name for when we dont have any
+-- This can ofc be calculated when adding the recipe and saved to disk
+function storage.crafting.addRecipe(itemName, displayName, recipePlacement, count)
   count = count or 1
   local ingredients = {}
   for i = 1, 9 do
@@ -97,7 +100,8 @@ function storage.crafting.addRecipe(itemName, recipePlacement, count)
     placement = recipePlacement,
     ingredients = ingredients,
     itemName = itemName,
-    count = count
+    count = count,
+    displayName = displayName
   }
 end
 
@@ -226,4 +230,4 @@ hook.add("modem_message", "crafting_reply", function(_, port, _, data)
 end)
 
 -- Add a testing recipe, sticks
-storage.crafting.addRecipe("minecraft:stick", {[1] = "minecraft:oak_planks", [4] = "minecraft:oak_planks"}, 4)
+storage.crafting.addRecipe("minecraft:stick", "Stick", {[1] = "minecraft:oak_planks", [4] = "minecraft:oak_planks"}, 4)
