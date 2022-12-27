@@ -218,9 +218,9 @@ updateDisplay()
 
 hook.add("mouse_scroll", "menu_shift", function(dir)
   if dir == 1 then
-    rightBtn:onClick(1)
+    rightBtn:onClick()
   else
-    leftBtn:onClick(1)
+    leftBtn:onClick()
   end
 end)
 

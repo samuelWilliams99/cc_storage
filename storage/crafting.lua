@@ -8,7 +8,22 @@ storage.crafting.tasks = {}
 
 -- TODO (next): must bring all items needed for crafting into some sort of "temp location", or perhaps simply remove from the UI
 -- so users may not take crafting ingredients as they are used
+--   we can do this by changing storage items to have a count + reserved count, where the UI and furture crafts only allow dropping of count - reserved
+--   we may also consider a flag on `dropping` that allows using reserved materials, and set it false on anything that hasn't reserved anything
+--   (putting the trust on the code writer - me - rather than the UI user - me also, but maybe others as well :) )
 -- TODO (alterative next): save recipes to disk
+--   just put on disk, saving a new that already exists should override
+--   write using textutils.serialize(t, true) -- for compact mode
+--   read with textutils.deserialize
+
+-- TODO: deep crafting
+-- Make a function that creates a crafting plan AND reserves all the materials it intends to use.
+--   This should take the item we want and the amount we want to make
+--   The plan should include an easy to display index of all materials needed
+--   Note - if we do not have the materials for this, it should _not_ reserve items, still provide the material index, and also provide a list of items that we do not have enough for
+--   we'll then use this plan, alongside the current storage.items to show useful information
+-- Make a function that rejects a crafting plan - unreserving all its materials
+-- Make a function that executes a crafting plan, making all the stuff
 
 -- TODO (later): the scan should happen BEFORE the chest lookup, and turtles should empty the chest into their own inv before replying to the scan
 -- then, on successful check, turtles should empty their inv back into the chest, and the comp should input all the items
