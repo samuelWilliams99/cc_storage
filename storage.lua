@@ -152,7 +152,11 @@ local function updateDisplay()
       displayNamePadded = displayNamePadded .. " (" .. (item.detail.maxDamage - item.detail.damage) .. "/" .. item.detail.maxDamage .. ")"
     end
     if item.detail.enchantments then
-      displayNamePadded = displayNamePadded .. " (+ " .. #item.detail.enchantments .. " enchantments)"
+      if #item.detail.enchantments == 1 then
+        displayNamePadded = displayNamePadded .. "(" .. item.detail.enchantments[1].displayName .. ")"
+      else
+        displayNamePadded = displayNamePadded .. " (+ " .. #item.detail.enchantments .. " enchantments)"
+      end
     end
 
     if #displayNamePadded > maxNameLength then
