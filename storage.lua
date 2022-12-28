@@ -254,5 +254,11 @@ hook.add("initialize", "add_search", function()
   end
 end)
 
+hook.add("mouse_click", "clear_search", function(btn, x, y)
+  if y == 3 and btn == 2 then
+    hook.run("key", 257, false)
+  end
+end)
+
 storage.startInputTimer()
 hook.runLoop()
