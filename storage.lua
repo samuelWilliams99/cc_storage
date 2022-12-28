@@ -153,7 +153,7 @@ local function updateDisplay()
     end
     if item.detail.enchantments then
       if #item.detail.enchantments == 1 then
-        displayNamePadded = displayNamePadded .. "(" .. item.detail.enchantments[1].displayName .. ")"
+        displayNamePadded = displayNamePadded .. " (" .. item.detail.enchantments[1].displayName .. ")"
       else
         displayNamePadded = displayNamePadded .. " (+ " .. #item.detail.enchantments .. " enchantments)"
       end

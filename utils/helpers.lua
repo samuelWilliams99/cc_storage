@@ -1,3 +1,7 @@
+function startsWith(s, s2)
+  return s:sub(1, #s2) == s2
+end
+
 function table.filter(xs, p)
   local out = {}
   for i, x in ipairs(xs) do
@@ -6,10 +10,6 @@ function table.filter(xs, p)
     end
   end
   return out
-end
-
-function startsWith(s, s2)
-  return s:sub(1, #s2) == s2
 end
 
 function table.map(t, f)

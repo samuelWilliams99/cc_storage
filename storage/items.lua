@@ -3,8 +3,13 @@ dofile("cc_storage/utils/timer.lua")
 storage = {}
 dofile("cc_storage/storage/crafting.lua")
 
+-- Must not use peripherals that are wrapped sides, as pushItems doesn't work with them. Must instead be through the wired modem.
+local function avoidSides(name)
+  if name:find("_") then return true end
+end
+
 function storage.updateChests()
-  local chests = {peripheral.find("minecraft:chest")}
+  local chests = {peripheral.find("minecraft:chest", avoidSides)}
   storage.chests = {}
   storage.crafting.candidates = {}
   for _, chest in ipairs(chests) do
@@ -16,13 +21,13 @@ function storage.updateChests()
   end
 
   print("Found " .. #storage.chests .. " chests and " .. #storage.crafting.candidates .. " crafter candidates")
-  storage.dropper = peripheral.find("minecraft:trapped_chest")
+  storage.dropper = peripheral.find("minecraft:trapped_chest", avoidSides)
   if storage.dropper then
     print("Found dropper chest.")
   else
     error("Could not find dropper chest, please add a trapped_chest to the network")
   end
-  storage.input = peripheral.find("minecraft:barrel")
+  storage.input = peripheral.find("minecraft:barrel", avoidSides)
   if storage.input then
     print("Found input barrel.")
   else
