@@ -147,6 +147,14 @@ local function updateDisplay()
     local name = itemKeys[i]
     local item = getItemData(name)
     local displayNamePadded = item.detail.displayName
+
+    if item.detail.damage then
+      displayNamePadded = displayNamePadded .. " (" .. (item.detail.maxDamage - item.detail.damage) .. "/" .. item.detail.maxDamage .. ")"
+    end
+    if item.detail.enchantments then
+      displayNamePadded = displayNamePadded .. " (+ " .. #item.detail.enchantments .. " enchantments)"
+    end
+
     if #displayNamePadded > maxNameLength then
       displayNamePadded = displayNamePadded:sub(1, maxNameLength - 3) .. "..."
     else
