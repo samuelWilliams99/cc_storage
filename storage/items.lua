@@ -49,12 +49,16 @@ function storage.getItemKey(item, detail)
   return item.name .. (detail.nbt or "") .. (detail.damage or "")
 end
 
-function storage.saveItem(item, detail, chest, slot)
+function storage.saveItem(item, detail, chest, slot, useReserved)
   local items = storage.items
   local key = storage.getItemKey(item, detail)
 
   items[key] = items[key] or {count = 0, locations = {}, reservedCount = 0}
-  items[key].count = items[key].count + item.count
+  if useReserved then
+    items[key].reservedCount = items[key].reservedCount + item.count
+  else
+    items[key].count = items[key].count + item.count
+  end
   items[key].detail = detail
   local locations = items[key].locations
   local locationKey = #locations + 1
@@ -198,32 +202,34 @@ function storage.startInputTimer()
   timer.create("input", 0.5, 0, function() storage.inputChest(storage.input) end)
 end
 
-function storage.inputChest(chest)
+function storage.inputChest(chest, useReserved)
   local inputItems = chest.list()
   if table.isEmpty(inputItems) then
     return
   end
 
   for k, item in pairs(inputItems) do
-    storage.inputItemFrom(k, item, chest)
+    storage.inputItemFrom(k, item, chest, useReserved)
   end
 end
 
-function storage.inputItemFromUnsafe(slot, item, chest)
+function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
   local detail = chest.getItemDetail(slot)
   local key = storage.getItemKey(item, detail)
   local storedItem = storage.items[key]
   local startingCount = item.count
   if storedItem then
-    storage.inputItemsFrom(storedItem, slot, item, chest)
+    storage.inputItemsFrom(storedItem, slot, item, chest, useReserved)
   end
   if item.count == 0 then
-    hook.run("cc_storage_change", key, startingCount, storedItem)
+    if not useReserved then
+      hook.run("cc_storage_change", key, startingCount, storedItem)
+    end
     return
   end
   
   if #storage.emptySlots == 0 then
-    if item.count ~= startingCount then
+    if item.count ~= startingCount and not useReserved then
       hook.run("cc_storage_change", key, startingCount - item.count, storedItem)
     end
     -- print("Out of empty spaces, can't fit additional " .. item.count .. " of " .. item.name .. " in chests.")
@@ -233,14 +239,16 @@ function storage.inputItemFromUnsafe(slot, item, chest)
   local newSlot = table.remove(storage.emptySlots, 1)
   chest.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot)
   
-  storage.saveItem(item, detail, newSlot.chest, newSlot.slot)
+  storage.saveItem(item, detail, newSlot.chest, newSlot.slot, useReserved)
   
-  hook.run("cc_storage_change", key, startingCount, storedItem)
+  if not useReserved then
+    hook.run("cc_storage_change", key, startingCount, storedItem)
+  end
 end
 
 storage.inputItemFrom = storage.withLock(storage.inputItemFromUnsafe)
 
-function storage.inputItemsFrom(item, slot, newItem, chest)
+function storage.inputItemsFrom(item, slot, newItem, chest, useReserved)
   local max = item.detail.maxCount
   for k = #item.locations, 1, -1 do
     local location = item.locations[k]
@@ -252,7 +260,13 @@ function storage.inputItemsFrom(item, slot, newItem, chest)
       end
       chest.pushItems(peripheral.getName(location.chest), slot, toMove, location.slot)
       location.count = location.count + toMove
-      item.count = item.count + toMove
+
+      if useReserved then
+        item.reservedCount = item.reservedCount + toMove
+      else
+        item.count = item.count + toMove
+      end
+
       newItem.count = newItem.count - toMove
       if newItem.count == 0 then break end
     end
