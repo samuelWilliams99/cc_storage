@@ -47,4 +47,4 @@ function storage.crafting.preCacheRecipe(rawRecipe)
 end
 
 -- Add a testing recipe, sticks
-storage.crafting.addRecipe("minecraft:stick", "Stick", {[1] = "minecraft:oak_planks", [4] = "minecraft:oak_planks"}, 4)
+-- storage.crafting.addRecipe("minecraft:stick", "Stick", {[1] = "minecraft:oak_planks", [4] = "minecraft:oak_planks"}, 4)

@@ -142,6 +142,41 @@ we'll need some way to keep track of those to unreserve at the end
   ofc, be sure to add in the goal item as well (easy example is crafting 1 stick, as the craftedItems will actually be 4, 
     so be sure to take into account that we may craft more of the TARGET than requested)
 
+
+
+ABORT
+this doesnt work
+say im making an iron sword, it'll wait for the iron to smelt before crafting the sticks - no
+
+do opportunistic crafting, and think about prioritisation later
+so, we make a DAG with one node per item
+  each element stores a list of "parents", which is to the say the items to be crafted
+finally, we get a list of leaves, which are the ingredients
+next we need the first crafts, which are all the parents of those leaves that don't have any other children - or, those where we have enough of all child elements
+  we will keep a mapping of items in the craft - including initial ingredients then also intermediates made
+we set these crafting
+whenever any of them finish, we look at its parents
+  filter out any that we can't craft yet (so children aren't satisfied)
+  trigger all the jobs we can (depending on how many items were complete) - given smelting is like 1 (possible more if more furnaces) at a time, and crafting is up to 64
+    for now, this is ordered arbitrarily, we will add prioritisation here later
+  rince and repeat
+
+also, the `table.remove(jobs, 1)` part in the craft complete handler can be any index, as there is no order in queued jobs
+  so we can run a prioritisation step there too
+
+
+prioritisation - 2 metrics
+  doing long jobs first - anything that uses a furnace or non crafter should be done first, and any predicates (direct or non direct) should take priority
+  avoiding small repeat jobs - if we can avoid doing, say: 1x, some y, 1x, some y, 1x ... and instead do some y, some y, some y, 3x - we save crafting time
+    this is to say, jobs that _arent_ holding us up, that have slow ingredient crafting, should wait until all their ingredients are ready (or there are no other jobs) before running
+      -> or at the very least, these are low priority
+  we may see this as 2 scores
+    one is a time score put on everything
+    and the other is a "completeness" score, as a "number i can craft now / total number i'll need to craft"
+    higher the better on both, but time is more important
+
+
+
 ]]
 
 function storage.crafting.makeCraftPlan(itemName, count)
