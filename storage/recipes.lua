@@ -24,6 +24,7 @@ end
 
 function storage.crafting.loadRecipes()
   local recipeData = readFile(storage.crafting.recipeFilePath)
+  if not recipeData then return end
   for _, rawRecipe in pairs(recipeData) do
     storage.crafting.preCacheRecipe(rawRecipe)
   end
