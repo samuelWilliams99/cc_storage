@@ -123,7 +123,6 @@ plan = {
   -- outer lists MUST happen after eachother, so iterate once _all_ crafts in the previous list are complete
   -- technically some nodes could be unblocked before the previous step completes, however single crafts take like 1 second, so it'd at max waste that much time
   -- This is not provided if items are missing
-  steps?: [ [ {itemName: string, count: int} ] ]
   -- total ingredients it would use to create (including any missing), if a recipe is uncraftable, this will be greater than what we have in storage
   ingredients: { [itemName]: count }
   missingItems?: { [itemName]: count }
@@ -179,8 +178,94 @@ prioritisation - 2 metrics
 
 ]]
 
+-- Creates a crafting plan for an item recursively.
+-- Useful fields for the UI include
+-- plan.craftable = boolean -- is the plan executable
+-- plan.ingredients = {[itemName] = count}
+-- plan.missingIngredients = {[itemName] = count} -- empty if craftable
+-- recommended to call reserve plan directly afterwards
 function storage.crafting.makeCraftPlan(itemName, count)
-  -- write me please
+  -- wrapper function so VScode doesn't see the `plan` and `parent` argument
+  local plan = {
+    nodes = {},
+    leaves = {},
+    ingredients = {},
+    missingIngredients = {},
+    craftedItems = {},
+    craftable = true
+  }
+  storage.crafting.makeCraftPlanAux(itemName, count, plan)
+  plan.leaves = table.keys(plan.leaves)
+  plan.craftedItems[itemName] = (plan.craftedItems[itemName] or 0) + count
+end
+
+function storage.crafting.makeCraftPlanAux(itemName, count, plan, parent)
+  local isRoot = not parent
+
+  local recipe = storage.crafting.recipes[itemName]
+
+  local hadCraftedItems = not not plan.craftedItems[itemName]
+
+  if hadCraftedItems then
+    local amountToUse = math.min(plan.craftedItems[itemName], count)
+    plan.craftedItems[itemName] = plan.craftedItems[itemName] - amountToUse
+    if plan.craftedItems[itemName] == 0 then plan.craftedItems[itemName] = nil end
+    count = count - amountToUse
+
+    -- If an item is in craftedItems, there is definitely a node for it
+    -- We can also assume we'll have a parent, as craftedItems will be empty in the isRoot call
+    local node = plan.nodes[itemName]
+    table.insert(node.parents, parent)
+    plan.leaves[parent.itemName] = nil
+  end
+
+  if not isRoot then
+    local item = storage.items[itemName]
+    local amountUsed = plan.ingredients[itemName] or 0
+    local amountInStorage = item and item.count or 0
+    local amountLeft = amountInStorage - amountUsed
+
+    local amountToUse = math.min(count, amountLeft)
+    count = count - amountToUse
+    plan.ingredients[itemName] = amountUsed + amountToUse
+  end
+
+  if count == 0 then return end
+
+  if not recipe then
+    plan.craftable = false
+    plan.missingIngredients[itemName] = (plan.missingIngredients[itemName] or 0) + count
+    plan.ingredients[itemName] = (plan.ingredients[itemName] or 0) + count
+    return
+  end
+
+  -- We have a recipe
+  local craftCount = math.ceil(count / recipe.count)
+  local excessItems = count - craftCount * recipe.count
+  if excessItems > 0 then
+    plan.craftedItems[itemName] = (plan.craftedItems[itemName] or 0) + excessItems
+  end
+
+  local node = plan.nodes[itemName]
+  if not node then
+    node = {
+      parents = {},
+      count = craftCount,
+      isRoot = isRoot,
+      itemName = itemName
+    }
+    plan.nodes[itemName] = node
+    plan.leaves[itemName] = true
+  end
+
+  if not isRoot and not hadCraftedItems then
+    table.insert(node.parents, parent)
+    plan.leaves[parent.itemName] = nil
+  end
+
+  for ingredientName, ingredientCount in pairs(recipe.ingredients) do
+    storage.crafting.makeCraftPlanAux(ingredientName, ingredientCount, plan, node)
+  end
 end
 
 function storage.crafting.reservePlan(plan)
@@ -200,23 +285,6 @@ end
 function storage.crafting.runPlan(plan, cb)
   if not plan.craftable then return false, "Uncraftable plan" end
 
-  if table.isEmpty(plan.steps) then
-    for itemName, count in pairs(plan.craftedItems) do
-      storage.unreserveItems(itemName, count)
-    end
-    cb()
-  end
-
-  local step = table.remove(plan.steps, 1)
-  local stepPartsRemaining = #step
-  for _, task in ipairs(step) do
-    storage.crafting.craftShallow(task.itemName, task.count, function()
-      stepPartsRemaining = stepPartsRemaining - 1
-      if stepPartsRemaining == 0 then
-        storage.crafting.runPlan(plan, cb)
-      end
-    end, true)
-  end
 
 end
 
@@ -234,15 +302,13 @@ function storage.crafting.getMaxPerCrafter(recipe)
   return minStack
 end
 
--- Crafts an item, parallelising if needed, taking a callback for when finished
+-- Crafts an item, parallelising if needed, taking a callback for when finished, as well as a flag for using reserved items (likely always true?)
 -- returns `true, errMessage` or `false, jobCount` based on if possible
 -- Shallow - as does not attempt to craft any missing ingredients
--- will need a second `craft` function for crafting plans
-function storage.crafting.craftShallow(itemName, itemCount, cb, useReserved)
-  if itemCount == 0 then return false, "Cannot craft 0" end
+function storage.crafting.craftShallow(itemName, craftCount, cb, useReserved)
+  if craftCount == 0 then return false, "Cannot craft 0" end
   local recipe = storage.crafting.recipes[itemName]
   if not recipe then return false, "No recipe for " .. itemName end
-  local craftCount = math.ceil(itemCount / recipe.count)
   local maxCraftsPerCrafter = storage.crafting.getMaxPerCrafter(recipe)
   if not maxCraftsPerCrafter then return false, "Not enough ingredients to craft this many items" end
 
