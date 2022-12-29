@@ -13,7 +13,10 @@ storage.crafting.loadRecipes()
 storage.crafting.setupCrafters()
 
 local plan = storage.crafting.makeCraftPlan("minecraft:wooden_sword", 1)
-print(textutils.serialize(plan))
+print("ingredients:")
+print(textutils.serialize(plan.ingredients))
+print("crafts:")
+print(textutils.serialize(plan.craftedItems))
 
 print("Rendering...")
 

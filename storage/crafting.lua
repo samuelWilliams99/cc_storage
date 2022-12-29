@@ -197,6 +197,7 @@ function storage.crafting.makeCraftPlan(itemName, count)
   storage.crafting.makeCraftPlanAux(itemName, count, plan)
   plan.leaves = table.keys(plan.leaves)
   plan.craftedItems[itemName] = (plan.craftedItems[itemName] or 0) + count
+  return plan
 end
 
 function storage.crafting.makeCraftPlanAux(itemName, count, plan, parent)
