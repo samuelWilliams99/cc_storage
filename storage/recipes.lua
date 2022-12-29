@@ -17,14 +17,18 @@ function storage.crafting.addRecipe(itemName, displayName, recipePlacement, coun
 end
 
 function storage.crafting.saveRecipe(rawRecipe)
-  local recipeData = readFile(storage.crafting.recipeFilePath)
+  local recipeData = readFile(storage.crafting.recipeFilePath) or {}
   recipeData[rawRecipe.itemName] = rawRecipe
   writeFile(storage.crafting.recipeFilePath, recipeData)
 end
 
 function storage.crafting.loadRecipes()
+  print("Loading recipes...")
   local recipeData = readFile(storage.crafting.recipeFilePath)
-  if not recipeData then return end
+  if not recipeData then
+    print("Found no recipes files")
+    return
+  end
   for _, rawRecipe in pairs(recipeData) do
     storage.crafting.preCacheRecipe(rawRecipe)
   end

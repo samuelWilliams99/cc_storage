@@ -62,12 +62,12 @@ function readFile(path)
   if not handle then return end
   local data = handle:read("a")
   handle:close()
-  return textutils.deserialize(data)
+  return textutils.unserialize(data)
 end
 
 function writeFile(path, t)
   local handle = io.open(path, "w")
   if not handle then error("Couldn't create file") end
-  handle:write(textutils.serialize(t, true))
+  handle:write(textutils.serialize(t, {compact = true}))
   handle:close()
 end

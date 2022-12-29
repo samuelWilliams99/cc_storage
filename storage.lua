@@ -12,15 +12,9 @@ storage.updateItemMapping()
 storage.crafting.loadRecipes()
 storage.crafting.setupCrafters()
 
-local plan = storage.crafting.makeCraftPlan("minecraft:wooden_sword", 1)
-print("ingredients:")
-print(textutils.serialize(plan.ingredients))
-print("crafts:")
-print(textutils.serialize(plan.craftedItems))
-
 print("Rendering...")
 
-sleep(100)
+sleep(1)
 
 term.clear()
 

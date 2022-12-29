@@ -23,13 +23,13 @@ function storage.updateChests()
   print("Found " .. #storage.chests .. " chests and " .. #storage.crafting.candidates .. " crafter candidates")
   storage.dropper = peripheral.find("minecraft:trapped_chest", avoidSides)
   if storage.dropper then
-    print("Found dropper chest.")
+    print("Found dropper chest")
   else
     error("Could not find dropper chest, please add a trapped_chest to the network")
   end
   storage.input = peripheral.find("minecraft:barrel", avoidSides)
   if storage.input then
-    print("Found input barrel.")
+    print("Found input barrel")
   else
     print("Could not find input barrel, please add a barrel to the network")
   end
