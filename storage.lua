@@ -11,6 +11,7 @@ storage.updateChests()
 storage.updateItemMapping()
 storage.crafting.loadRecipes()
 storage.crafting.setupCrafters()
+local hasCrafters = not table.isEmpty(storage.crafting.crafters)
 
 print("Rendering...")
 
@@ -102,9 +103,11 @@ updatePageCounter()
 local function updateDisplay()
   local itemKeys = table.keys(storage.items)
 
-  for name, recipe in pairs(storage.crafting.recipes) do
-    if not storage.items[name] then
-      table.insert(itemKeys, name)
+  if hasCrafters then
+    for name in pairs(storage.crafting.recipes) do
+      if not storage.items[name] then
+        table.insert(itemKeys, name)
+      end
     end
   end
 
@@ -166,7 +169,7 @@ local function updateDisplay()
     end
 
     local countText = item.isRecipe and "CRAFT" or tostring(item.count)
-    if not item.isRecipe and storage.crafting.recipes[name] then -- If we have some but its also craftable
+    if not item.isRecipe and storage.crafting.recipes[name] and hasCrafters then -- If we have some but its also craftable
       countText = countText .. " *" -- Add a star :)
     end
 
@@ -185,7 +188,7 @@ function buttonList:handleClick(btn, data)
   if not data.name then return end
 
   local action
-  if storage.items[data.name] and btn ~= 3 then
+  if (storage.items[data.name] and btn ~= 3) or not hasCrafters then
     action = storage.dropItem
   else
     action = storage.crafting.craftShallow
