@@ -1,7 +1,8 @@
-dofile("cc_storage/utils/helpers.lua")
-dofile("cc_storage/utils/timer.lua")
+require "cc_storage.utils.helpers"
+require "cc_storage.utils.timer"
+
 storage = {}
-dofile("cc_storage/storage/crafting.lua")
+require "cc_storage.storage.crafting"
 
 -- Must not use peripherals that are wrapped sides, as pushItems doesn't work with them. Must instead be through the wired modem.
 local function avoidSides(name)
@@ -50,6 +51,11 @@ items = {
 }
 ]]
 
+local function itemChanged(key, count, item)
+  hook.run("cc_storage_change_item", key, count, item)
+  hook.run("cc_storage_change")
+end
+
 function storage.getItemKey(item, detail)
   return item.name .. (detail.nbt or "") .. (detail.damage or "")
 end
@@ -76,22 +82,28 @@ function storage.saveItem(item, detail, chest, slot, useReserved)
   table.insert(items[key].locations, locationKey, {chest = chest, slot = slot, count = item.count})
 end
 
-function storage.reserveItems(key, count)
-  local item = storage.items[key]
-  if not item then return false, "No such item" end
-  if count > 0 then
-    if item.count < count then return false, "Not enough items" end
-  else
-    if item.reservedCount < -count then return false, "Not enough items" end
+function storage.reserveItemsUnsafe(items, shouldUnreserve)
+  for key, count in pairs(items) do
+    local item = storage.items[key]
+    if not item then return false, "No such item" end
+    if shouldUnreserve then
+      if item.reservedCount < count then return false, "Not enough items" end
+      count = -count
+    else
+      if item.count < count then return false, "Not enough items" end
+    end
+    item.count = item.count - count
+    item.reservedCount = item.reservedCount + count
+    hook.run("cc_storage_change_item", key, -count, item)
   end
-  item.count = item.count - count
-  item.reservedCount = item.reservedCount + count
-  hook.run("cc_storage_change", key, -count, item)
+  hook.run("cc_storage_change")
   return true
 end
 
-function storage.unreserveItems(key, count)
-  return storage.reserveItems(key, -count)
+storage.reserveItems = storage.withLock(storage.reserveItemsUnsafe)
+
+function storage.unreserveItems(items)
+  return storage.reserveItems(items, true)
 end
 
 function storage.updateItemMapping()
@@ -168,7 +180,7 @@ function storage.dropItemToUnsafe(key, count, chest, useReserved)
   end
 
   if not useReserved then
-    hook.run("cc_storage_change", key, -count, item)
+    itemChanged(key, -count, item)
   end
   return true
 end
@@ -228,14 +240,14 @@ function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
   end
   if item.count == 0 then
     if not useReserved then
-      hook.run("cc_storage_change", key, startingCount, storedItem)
+      itemChanged(key, startingCount, storedItem)
     end
     return
   end
   
   if #storage.emptySlots == 0 then
     if item.count ~= startingCount and not useReserved then
-      hook.run("cc_storage_change", key, startingCount - item.count, storedItem)
+      itemChanged(key, startingCount - item.count, storedItem)
     end
     -- print("Out of empty spaces, can't fit additional " .. item.count .. " of " .. item.name .. " in chests.")
     return
@@ -247,7 +259,7 @@ function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
   storage.saveItem(item, detail, newSlot.chest, newSlot.slot, useReserved)
   
   if not useReserved then
-    hook.run("cc_storage_change", key, startingCount, storedItem)
+    itemChanged(key, startingCount, storedItem)
   end
 end
 

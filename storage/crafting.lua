@@ -1,5 +1,6 @@
 storage.crafting = storage.crafting or {}
-dofile("cc_storage/storage/recipes.lua")
+require "cc_storage.storage.recipes"
+require "cc_storage.utils.helpers"
 
 storage.crafting.crafters = {}
 -- the jobQueue list is a queue of jobs to be run
@@ -100,28 +101,10 @@ plan = {
   craftable: bool
   -- below both needed for unreserving
   craftedItems: { [itemName]: count }
+
+  -- while running plan, extended with:
+  intermediates: { [itemName]: count } -- to avoid using resources crafted by other concurrent plans
 }
-
-ABORT
-this doesnt work
-say im making an iron sword, it'll wait for the iron to smelt before crafting the sticks - no
-
-do opportunistic crafting, and think about prioritisation later
-so, we make a DAG with one node per item
-  each element stores a list of "parents", which is to the say the items to be crafted
-finally, we get a list of leaves, which are the ingredients
-next we need the first crafts, which are all the parents of those leaves that don't have any other children - or, those where we have enough of all child elements
-  we will keep a mapping of items in the craft - including initial ingredients then also intermediates made
-we set these crafting
-whenever any of them finish, we look at its parents
-  filter out any that we can't craft yet (so children aren't satisfied)
-  trigger all the jobs we can (depending on how many items were complete) - given smelting is like 1 (possible more if more furnaces) at a time, and crafting is up to 64
-    for now, this is ordered arbitrarily, we will add prioritisation here later
-  rince and repeat
-
-also, the `table.remove(jobs, 1)` part in the craft complete handler can be any index, as there is no order in queued jobs
-  so we can run a prioritisation step there too
-
 
 prioritisation - 2 metrics
   doing long jobs first - anything that uses a furnace or non crafter should be done first, and any predicates (direct or non direct) should take priority
@@ -132,10 +115,15 @@ prioritisation - 2 metrics
     one is a time score put on everything
     and the other is a "completeness" score, as a "number i can craft now / total number i'll need to craft"
     higher the better on both, but time is more important
-
-
-
 ]]
+
+function storage.crafting.makeAndRunPlan(itemName, count, cb)
+  local plan = storage.crafting.makeCraftPlan(itemName, count)
+  if not plan.craftable then return false end
+  storage.reserveItems(plan.ingredients)
+  storage.crafting.runPlan(plan, cb)
+  return true
+end
 
 -- Creates a crafting plan for an item recursively.
 -- Useful fields for the UI include
@@ -225,6 +213,7 @@ function storage.crafting.makeCraftPlanAux(itemName, count, plan, parent)
     plan.leaves[parent.itemName] = nil
   end
 
+  -- TODO: smarter prioritisation here, some parents take longer than others, and should be prioritised
   for ingredientName, ingredientCount in pairs(recipe.ingredients) do
     storage.crafting.makeCraftPlanAux(ingredientName, ingredientCount * craftCount, plan, node)
   end
@@ -232,22 +221,62 @@ end
 
 function storage.crafting.reservePlan(plan)
   if not plan.craftable then return end
-  for itemName, count in pairs(plan.ingredients) do
-    storage.reserveItems(itemName, count)
-  end
+  storage.reserveItems(plan.ingredients)
 end
 
 function storage.crafting.unreservePlan(plan)
   if not plan.craftable then return end
-  for itemName, count in pairs(plan.ingredients) do
-    storage.unreserveItems(itemName, count)
-  end
+  storage.unreserveItems(plan.ingredients)
 end
 
 function storage.crafting.runPlan(plan, cb)
   if not plan.craftable then return false, "Uncraftable plan" end
 
+  plan.intermediates = table.copy(plan.ingredients) -- maybe just set to ingredients if we dont care about ingreds after its made
+  
+  for _, itemName in ipairs(plan.leaves) do
+    local node = plan.nodes[itemName]
+    storage.crafting.runPlanAux(plan, node, cb)
+  end
+end
 
+local function nodeCraftable(plan, node)
+  for itemName, count in pairs(storage.crafting.recipes[node.itemName]) do
+    if plan.intermediates[itemName] < count * node.count then return false end
+  end
+  return true
+end
+
+function storage.crafting.runPlanAux(plan, node, cb)
+  local recipe = storage.crafting.recipes[node.itemName]
+  -- decrease intermediates by ingredients
+  for itemName, count in pairs(recipe.ingredients) do
+    plan.intermediates[itemName] = plan.intermediates[itemName] - count * node.count
+  end
+
+  -- create task
+  storage.crafting.craftShallow(node.itemName, node.count, function()
+    -- add items crafted to intermediates
+    plan.intermediates[node.itemName] = (plan.intermediates[node.itemName] or 0) + recipe.count * node.count
+    -- set count to 0 to mark complete
+    node.count = 0
+    -- if node is root, unreserve crafteditems, run original cb, return
+    if node.isRoot then
+      storage.unreserveItems(plan.craftedItems)
+      cb()
+      return
+    end
+    
+    -- check nodes parents, filter out any with count of 0
+    local incompleteParents = table.filter(node.parents, function(parent) return parent.count > 0 end)
+
+    -- iterate the list - if we have enough items for it, recurse
+    for _, parent in ipairs(incompleteParents) do
+      if nodeCraftable(plan, parent) then
+        storage.crafting.runPlanAux(plan, parent, cb)
+      end
+    end
+  end, true)
 end
 
 -- Calculates the max of this item that a crafter can craft
@@ -354,14 +383,16 @@ hook.add("modem_message", "crafting_reply", function(_, port, _, data)
   if job then
     table.removeByValue(job.task.jobs, job)
     if table.isEmpty(job.task.jobs) then
-      if job.task.cb then job.task.cb() end
       table.removeByValue(storage.crafting.tasks, job.task)
+      if job.task.cb then job.task.cb() end
     end
   end
 
   if table.isEmpty(storage.crafting.jobQueue) then
     crafter.activeJob = nil
   else
+    -- TODO: Doesn't need to run head of this list, can be any element
+    -- Implement prioritisation here to run jobs that block more time first
     local nextJob = table.remove(storage.crafting.jobQueue, 1)
     storage.crafting.runCrafter(nextJob, crafter)
   end

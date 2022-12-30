@@ -1,5 +1,5 @@
-dofile("cc_storage/ui/base.lua")
-dofile("cc_storage/ui/draw.lua")
+require "cc_storage.ui.base"
+require "cc_storage.ui.draw"
 
 ui.text = {}
 

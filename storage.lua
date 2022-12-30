@@ -1,11 +1,9 @@
-dofile("cc_storage/utils/hooks.lua")
-hook.clear()
-
-dofile("cc_storage/utils/timer.lua")
-dofile("cc_storage/storage/items.lua")
-dofile("cc_storage/storage/crafting.lua")
-dofile("cc_storage/ui/buttonlist.lua")
-dofile("cc_storage/ui/text.lua")
+require "cc_storage.utils.hooks"
+require "cc_storage.utils.timer"
+require "cc_storage.storage.items"
+require "cc_storage.storage.crafting"
+require "cc_storage.ui.buttonlist"
+require "cc_storage.ui.text"
 
 storage.updateChests()
 storage.updateItemMapping()

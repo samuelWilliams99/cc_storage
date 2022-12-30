@@ -1,5 +1,5 @@
-dofile("cc_storage/utils/hooks.lua")
-dofile("cc_storage/utils/timer.lua")
+require "cc_storage.utils.hooks"
+require "cc_storage.utils.timer"
 
 ui = ui or {}
 ui.elements = ui.elements or {}

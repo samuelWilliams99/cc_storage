@@ -1,6 +1,6 @@
-dofile("cc_storage/ui/base.lua")
-dofile("cc_storage/ui/draw.lua")
-dofile("cc_storage/ui/text.lua")
+require "cc_storage.ui.base"
+require "cc_storage.ui.draw"
+require "cc_storage.ui.text"
 
 ui.buttonList = {}
 

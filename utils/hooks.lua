@@ -1,5 +1,3 @@
-if hook then return end
-
 hook = {}
 hook.handlers = {}
 hook.routines = {}
@@ -10,11 +8,6 @@ function hook.add(eventName, handlerName, handler)
 end
 
 hook.run = os.queueEvent
-
-function hook.clear()
-  hook.handlers = {}
-  hook.routines = {}
-end
 
 function hook.runLoop()
   os.queueEvent("initialize")

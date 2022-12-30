@@ -1,4 +1,4 @@
-dofile("cc_storage/utils/hooks.lua")
+require "cc_storage.utils.hooks"
 
 timer = timer or {}
 timer.ccTimerIDLookup = timer.ccTimerIDLookup or {}

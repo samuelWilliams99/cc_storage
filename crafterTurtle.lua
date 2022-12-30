@@ -1,5 +1,4 @@
-dofile("cc_storage/utils/hooks.lua")
-hook.clear()
+require "cc_storage.utils.hooks"
 
 local craftingPortIn = 1357
 local craftingPortOut = craftingPortIn + 1

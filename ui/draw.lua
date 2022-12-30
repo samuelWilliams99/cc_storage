@@ -1,5 +1,5 @@
-dofile("cc_storage/ui/base.lua")
-dofile("cc_storage/utils/timer.lua")
+require "cc_storage.ui.base"
+require "cc_storage.utils.timer"
 
 function ui.Vector(x, y)
   return {x = x, y = y}

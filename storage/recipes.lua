@@ -1,4 +1,4 @@
-dofile("cc_storage/utils/helpers.lua")
+require "cc_storage.utils.helpers"
 
 storage.crafting.recipes = storage.crafting.recipes or {}
 
