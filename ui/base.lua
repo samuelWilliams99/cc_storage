@@ -1,5 +1,5 @@
-require "cc_storage.utils.hooks"
-require "cc_storage.utils.timer"
+require "utils.hooks"
+require "utils.timer"
 
 ui = ui or {}
 ui.elements = ui.elements or {}

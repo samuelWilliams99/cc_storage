@@ -1,5 +1,5 @@
-require "cc_storage.ui.base"
-require "cc_storage.ui.draw"
+require "ui.base"
+require "ui.draw"
 
 ui.text = {}
 

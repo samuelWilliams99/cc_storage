@@ -1,4 +1,4 @@
-require "cc_storage.utils.hooks"
+require "utils.hooks"
 
 local craftingPortIn = 1357
 local craftingPortOut = craftingPortIn + 1

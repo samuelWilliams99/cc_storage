@@ -1,6 +1,6 @@
 storage.crafting = storage.crafting or {}
-require "cc_storage.storage.recipes"
-require "cc_storage.utils.helpers"
+require "storage.recipes"
+require "utils.helpers"
 
 storage.crafting.crafters = {}
 -- the jobQueue list is a queue of jobs to be run

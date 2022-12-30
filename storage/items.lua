@@ -1,8 +1,8 @@
-require "cc_storage.utils.helpers"
-require "cc_storage.utils.timer"
+require "utils.helpers"
+require "utils.timer"
 
 storage = {}
-require "cc_storage.storage.crafting"
+require "storage.crafting"
 
 -- Must not use peripherals that are wrapped sides, as pushItems doesn't work with them. Must instead be through the wired modem.
 local function avoidSides(name)
@@ -100,10 +100,40 @@ function storage.reserveItemsUnsafe(items, shouldUnreserve)
   return true
 end
 
+function storage.withLock(f)
+  return function(...)
+    while storage.lock do
+      sleep(0.1)
+    end
+    storage.lock = true
+    local res = table.pack(f(...))
+    storage.lock = false
+    return table.unpack(res, 1, res.n)
+  end
+end
+
 storage.reserveItems = storage.withLock(storage.reserveItemsUnsafe)
 
 function storage.unreserveItems(items)
   return storage.reserveItems(items, true)
+end
+
+local function writeLine(text, y)
+  term.setCursorPos(1, y)
+  term.clearLine()
+  term.write(text)
+end
+
+-- Where frac is 0-1
+local function writeProgressBar(frac, y)
+  local w = term.getSize()
+  local charCount = math.ceil(frac * (w - 2))
+  writeLine("[" .. string.rep("=", charCount) .. string.rep(" ", w - 2 - charCount) .. "]", y)
+end
+
+local function writeUpdate(text, stepNum, stepMax, progPrefix, prog, progMax, y)
+  writeLine(text .. " (step " .. stepNum .. "/" .. stepMax .. ") (" .. progPrefix .. " " .. prog .. "/" .. progMax .. ")", y)
+  writeProgressBar(prog/progMax, y + 1)
 end
 
 function storage.updateItemMapping()
@@ -113,25 +143,47 @@ function storage.updateItemMapping()
   local items = storage.items
   local itemCount = 0
 
-  for chestKey, chest in pairs(storage.chests) do
+  local _, termY = term.getCursorPos()
+
+  local totalOccupiedSlots = 0
+  local slotCounter = 1
+  local chestCount = table.count(storage.chests)
+  local chestCounter = 1
+  local chestsData = {}
+  for chestKey, chest in ipairs(storage.chests) do
     local chestItems = chest.list()
-    for slot = 1, chest.size() do
+    totalOccupiedSlots = totalOccupiedSlots + table.count(chestItems)
+    chestsData[chestKey] = {
+      list = chestItems,
+      size = chest.size(),
+      chest = chest
+    }
+    writeUpdate("Finding chests and sizes", 1, 2, "chest", chestCounter, chestCount, termY)
+    chestCounter = chestCounter + 1
+  end
+
+  for _, chestData in ipairs(chestsData) do
+    local chestItems = chestData.list
+    local chest = chestData.chest
+    for slot = 1, chestData.size do
+      writeUpdate("Indexing items", 2, 2, "slot", slotCounter, totalOccupiedSlots, termY)
       local item = chestItems[slot]
       if item then
         local detail = chest.getItemDetail(slot)
         itemCount = itemCount + item.count
 
         storage.saveItem(item, detail, chest, slot)
+        slotCounter = slotCounter + 1
       else
         table.insert(storage.emptySlots, {chest = chest, slot = slot})
       end
     end
-    print("Indexed chest " .. chestKey .. "/" .. #storage.chests)
   end
 
   local uniqueItemCount = table.count(items)
 
-  print("Built item matrix.")
+  writeUpdate("Complete", 2, 2, "slot", totalOccupiedSlots, totalOccupiedSlots, termY)
+  term.setCursorPos(1, termY + 2)
   print("Found " .. itemCount .. " items, " .. uniqueItemCount .. " of which unique.")
   print("Found " .. #storage.emptySlots .. " empty slots.")
 end
@@ -144,18 +196,6 @@ end
 
 function storage.dropItem(key, count, useReserved)
   return storage.dropItemTo(key, count, storage.dropper, useReserved)
-end
-
-function storage.withLock(f)
-  return function(...)
-    while storage.lock do
-      sleep(0.1)
-    end
-    storage.lock = true
-    local res = table.pack(f(...))
-    storage.lock = false
-    return table.unpack(res, 1, res.n)
-  end
 end
 
 function storage.dropItemToUnsafe(key, count, chest, useReserved)
@@ -249,7 +289,7 @@ function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
     if item.count ~= startingCount and not useReserved then
       itemChanged(key, startingCount - item.count, storedItem)
     end
-    -- print("Out of empty spaces, can't fit additional " .. item.count .. " of " .. item.name .. " in chests.")
+
     return
   end
   

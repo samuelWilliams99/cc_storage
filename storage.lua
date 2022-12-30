@@ -1,9 +1,9 @@
-require "cc_storage.utils.hooks"
-require "cc_storage.utils.timer"
-require "cc_storage.storage.items"
-require "cc_storage.storage.crafting"
-require "cc_storage.ui.buttonlist"
-require "cc_storage.ui.text"
+require "utils.hooks"
+require "utils.timer"
+require "storage.items"
+require "storage.crafting"
+require "ui.buttonlist"
+require "ui.text"
 
 storage.updateChests()
 storage.updateItemMapping()
@@ -11,9 +11,11 @@ storage.crafting.loadRecipes()
 storage.crafting.setupCrafters()
 local hasCrafters = not table.isEmpty(storage.crafting.crafters)
 
+-- storage.crafting.makeAndRunPlan("minecraft:wooden_sword", 1, function() print("done") end)
+
 print("Rendering...")
 
-sleep(1)
+sleep(100)
 
 term.clear()
 

@@ -1,6 +1,6 @@
-require "cc_storage.ui.base"
-require "cc_storage.ui.draw"
-require "cc_storage.ui.text"
+require "ui.base"
+require "ui.draw"
+require "ui.text"
 
 ui.buttonList = {}
 

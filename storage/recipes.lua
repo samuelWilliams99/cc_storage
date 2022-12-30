@@ -1,4 +1,4 @@
-require "cc_storage.utils.helpers"
+require "utils.helpers"
 
 storage.crafting.recipes = storage.crafting.recipes or {}
 
@@ -25,10 +25,15 @@ end
 function storage.crafting.loadRecipes()
   print("Loading recipes...")
   local recipeData = readFile(storage.crafting.recipeFilePath)
+
   if not recipeData then
-    print("Found no recipes files")
-    return
+    recipeData = {}
+    writeFile(storage.crafting.recipeFilePath, recipeData)
+    print("No recipe file found, created blank file.")
+  else
+    print("Precaching " .. table.count(recipeData) .. " recipes.")
   end
+
   for _, rawRecipe in pairs(recipeData) do
     storage.crafting.preCacheRecipe(rawRecipe)
   end

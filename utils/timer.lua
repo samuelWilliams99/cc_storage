@@ -1,4 +1,4 @@
-require "cc_storage.utils.hooks"
+require "utils.hooks"
 
 timer = timer or {}
 timer.ccTimerIDLookup = timer.ccTimerIDLookup or {}

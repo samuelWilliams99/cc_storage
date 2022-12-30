@@ -1,5 +1,5 @@
-require "cc_storage.ui.base"
-require "cc_storage.utils.timer"
+require "ui.base"
+require "utils.timer"
 
 function ui.Vector(x, y)
   return {x = x, y = y}
