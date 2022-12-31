@@ -4,6 +4,7 @@ if shell.getRunningProgram() == "cc_storage/startup.lua" then
     return
   else
     fs.copy("cc_storage/startup.lua", "startup.lua")
+    settings.set("motd.enable", false)
     os.reboot()
   end
 end

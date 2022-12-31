@@ -232,7 +232,7 @@ end
 function storage.crafting.runPlan(plan, cb)
   if not plan.craftable then return false, "Uncraftable plan" end
 
-  plan.intermediates = table.copy(plan.ingredients) -- maybe just set to ingredients if we dont care about ingreds after its made
+  plan.intermediates = table.shallowCopy(plan.ingredients) -- maybe just set to ingredients if we dont care about ingreds after its made
   
   for _, itemName in ipairs(plan.leaves) do
     local node = plan.nodes[itemName]
@@ -241,8 +241,8 @@ function storage.crafting.runPlan(plan, cb)
 end
 
 local function nodeCraftable(plan, node)
-  for itemName, count in pairs(storage.crafting.recipes[node.itemName]) do
-    if plan.intermediates[itemName] < count * node.count then return false end
+  for itemName, count in pairs(storage.crafting.recipes[node.itemName].ingredients) do
+    if (plan.intermediates[itemName] or 0) < count * node.count then return false end
   end
   return true
 end
@@ -263,7 +263,7 @@ function storage.crafting.runPlanAux(plan, node, cb)
     -- if node is root, unreserve crafteditems, run original cb, return
     if node.isRoot then
       storage.unreserveItems(plan.craftedItems)
-      cb()
+      if cb then cb() end
       return
     end
     
@@ -290,7 +290,7 @@ function storage.crafting.getMaxPerCrafter(recipe)
       minStack = maxStackForIngredient
     end
   end
-  return minStack
+  return math.min(minStack, recipe.maxCrafts)
 end
 
 -- Crafts an item, parallelising if needed, taking a callback for when finished, as well as a flag for using reserved items (likely always true?)

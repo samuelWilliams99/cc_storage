@@ -103,7 +103,7 @@ end
 function storage.withLock(f)
   return function(...)
     while storage.lock do
-      sleep(0.1)
+      sleep(0.05)
     end
     storage.lock = true
     local res = table.pack(f(...))
