@@ -12,11 +12,9 @@ storage.crafting.setupCrafters()
 
 require "ui.pages.storage"
 
-hook.add("initialize", "testing", function()
-  -- bug errors when crafting a second sword, but not third?
-
-  -- storage.crafting.makeAndRunPlan("minecraft:wooden_sword", 1)
-end)
+-- hook.add("initialize", "testing", function()
+--   storage.crafting.makeAndRunPlan("minecraft:wooden_sword552887824c43124013fd24f6edcde0fb", 10)
+-- end)
 
 hook.add("terminate", "clear_screen", function()
   term.clear()

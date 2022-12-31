@@ -1,6 +1,13 @@
 require "utils.helpers"
 
 local args = {...}
+
+if args[1] == "clear" then
+    writeFile("logs.txt", {})
+    print("Cleared logs file")
+    return
+end
+
 local n = tonumber(args[1])
 
 local logs = readFile("logs.txt")

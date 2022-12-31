@@ -200,13 +200,15 @@ function storage.crafting.makeCraftPlanAux(itemName, count, plan, parent)
   if not node then
     node = {
       parents = {},
-      count = craftCount,
+      count = 0,
       isRoot = isRoot,
       itemName = itemName
     }
     plan.nodes[itemName] = node
     plan.leaves[itemName] = true
   end
+
+  node.count = node.count + craftCount
 
   if not isRoot and not hadCraftedItems then
     table.insert(node.parents, parent)
@@ -262,7 +264,7 @@ function storage.crafting.runPlanAux(plan, node, cb)
     node.count = 0
     -- if node is root, unreserve crafteditems, run original cb, return
     if node.isRoot then
-      handleFailure(storage.unreserveItems(plan.intermediates))
+      handleFailure(storage.unreserveItems(plan.craftedItems))
       if cb then cb() end
       return
     end

@@ -85,7 +85,7 @@ end
 function storage.reserveItemsUnsafe(items, shouldUnreserve)
   for key, count in pairs(items) do
     local item = storage.items[key]
-    if not item then return false, "No such item" end
+    if not item then return false, "No such item key: " .. key end
     if shouldUnreserve then
       if item.reservedCount < count then return false, "Not enough items" end
       count = -count
