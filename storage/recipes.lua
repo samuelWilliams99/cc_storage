@@ -39,9 +39,9 @@ function storage.crafting.loadRecipes()
     storage.crafting.preCacheRecipe(rawRecipe)
   end
 
-  storage.crafting.addRecipe("minecraft:stick", "Stick", {[1] = "minecraft:oak_planks", [4] = "minecraft:oak_planks"}, 4)
-  storage.crafting.addRecipe("minecraft:oak_planks", "Oak Planks", {[1] = "minecraft:oak_log"}, 4)
-  storage.crafting.addRecipe("minecraft:wooden_sword", "Wooden Sword", {[2] = "minecraft:oak_planks", [5] = "minecraft:oak_planks", [8] = "minecraft:stick"}, 1, 1)
+  storage.crafting.addRecipe("minecraft:stick", "Stick", {[1] = "minecraft:oak_planks", [4] = "minecraft:oak_planks"}, 4, nil, true)
+  storage.crafting.addRecipe("minecraft:oak_planks", "Oak Planks", {[1] = "minecraft:oak_log"}, 4, nil, true)
+  storage.crafting.addRecipe("minecraft:wooden_sword552887824c43124013fd24f6edcde0fb", "Wooden Sword", {[2] = "minecraft:oak_planks", [5] = "minecraft:oak_planks", [8] = "minecraft:stick"}, nil, 1, true)
 end
 
 function storage.crafting.preCacheRecipe(rawRecipe)

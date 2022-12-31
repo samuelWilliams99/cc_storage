@@ -57,7 +57,7 @@ local function itemChanged(key, count, item)
 end
 
 function storage.getItemKey(item, detail)
-  return item.name .. (detail.nbt or "") .. (detail.damage or "")
+  return item.name .. (detail.nbt or "")
 end
 
 function storage.saveItem(item, detail, chest, slot, useReserved)

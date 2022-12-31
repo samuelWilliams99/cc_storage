@@ -71,3 +71,7 @@ function writeFile(path, t)
   handle:write(textutils.serialize(t, {compact = true}))
   handle:close()
 end
+
+function handleFailure(success, msg, ...)
+  if success then return msg, ... else error(msg, 2) end
+end

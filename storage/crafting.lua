@@ -262,7 +262,7 @@ function storage.crafting.runPlanAux(plan, node, cb)
     node.count = 0
     -- if node is root, unreserve crafteditems, run original cb, return
     if node.isRoot then
-      storage.unreserveItems(plan.craftedItems)
+      handleFailure(storage.unreserveItems(plan.intermediates))
       if cb then cb() end
       return
     end
