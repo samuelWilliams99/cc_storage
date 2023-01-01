@@ -7,8 +7,8 @@ end
 
 function pages.setPage(name, ...)
   if pages.activePage then
-    pages.pages[pages.activeName].active = false
-    pages.pages[pages.activeName].cleanup()
+    pages.pages[pages.activePage].active = false
+    pages.pages[pages.activePage].cleanup()
   end
   if not pages.pages[name] then error("Page " .. name .. " does not exist") end
   pages.pages[name].active = true
