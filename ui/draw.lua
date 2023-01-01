@@ -84,6 +84,12 @@ function ui.classes.Base:invalidateLayout()
   end)
 end
 
+function ui.classes.Base:onRemove()
+  if not self.parent then
+    paintutils.drawFilledBox(self.pos.x, self.pos.y, self.pos.x + self.size.x - 1, self.pos.y + self.size.y - 1, colors.black)
+  end
+end
+
 function ui.drawAll()
   term.clear()
   for _, element in pairs(ui.elements) do

@@ -59,6 +59,7 @@ function Base:setPosAndSize(x, y, w, h)
 end
 
 function Base:remove()
+  if self.onRemove then self:onRemove() end
   self.removed = true
   if self.parent then
     table.removeByValue(self.parent.children, self)

@@ -97,6 +97,7 @@ function storagePage.setup()
 
   -- TODO: optimise this a lot
   local function updateDisplay()
+    if not storagePage.active then return end
     local itemKeys = table.keys(storage.items)
 
     if hasCrafters then
@@ -263,10 +264,11 @@ function storagePage.setup()
 end
 
 function storagePage.cleanup()
+  hook.run("key", 257, false)
   hook.remove("cc_storage_change", "update_view")
   hook.remove("mouse_scroll", "menu_shift")
   hook.remove("mouse_click", "clear_search")
-  timer.remove("inventory_delay")  
+  timer.remove("inventory_delay")
   for _, elem in ipairs(storagePage.elems) do
     elem:remove()
   end
