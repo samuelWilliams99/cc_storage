@@ -18,8 +18,6 @@ sleep(1)
 
 hook.add("initialize", "testing", function()
   pages.setPage("itemList")
-  sleep(5)
-  pages.setPage("craftCount")
 end)
 
 hook.add("terminate", "clear_screen", function()

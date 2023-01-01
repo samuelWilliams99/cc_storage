@@ -184,17 +184,14 @@ function storagePage.setup()
   function buttonList:handleClick(btn, data)
     if not data.name then return end
 
-    local action
-    if (storage.items[data.name] and btn ~= 3) or not hasCrafters then
-      action = storage.dropItem
-    else
-      action = storage.crafting.makeAndRunPlan
-    end
+    local canCraft = storage.crafting.recipes[data.name] and hasCrafters
 
-    if btn == 2 then -- right
-      action(data.name, 64)
-    else -- left or middle
-      action(data.name, 1)
+    if canCraft and (btn == 3 or not storage.items[data.name]) then
+      pages.setPage("craftCount", data.name)
+    elseif btn == 2 then
+      storage.dropItem(data.name, 64)
+    elseif btn == 1 then
+      storage.dropItem(data.name, 1)
     end
   end
 

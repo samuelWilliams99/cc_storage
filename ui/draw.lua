@@ -86,7 +86,7 @@ end
 
 function ui.classes.Base:onRemove()
   if not self.parent then
-    paintutils.drawFilledBox(self.pos.x, self.pos.y, self.pos.x + self.size.x - 1, self.pos.y + self.size.y - 1, colors.black)
+    paintutils.drawFilledBox(self.pos.x + 1, self.pos.y + 1, self.pos.x + self.size.x, self.pos.y + self.size.y, colors.black)
   end
   timer.remove("invalidateLayout" .. self.id)
 end

@@ -12,6 +12,8 @@ function pages.setPage(name, ...)
   end
   if not pages.pages[name] then error("Page " .. name .. " does not exist") end
   pages.pages[name].active = true
+  term.clear()
+  term.setCursorPos(1, 1)
   pages.pages[name].setup(...)
   pages.activePage = name
 end
