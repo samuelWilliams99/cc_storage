@@ -69,7 +69,7 @@ function Base:remove()
   for _, child in ipairs(self.children) do
     child:remove()
   end
-  if self.parent then
+  if self.parent and not self.parent.removed then
     self.parent:invalidateLayout()
   end
 end
