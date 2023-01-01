@@ -4,7 +4,13 @@ local storagePage = {}
 
 pages.addPage("itemList", storagePage)
 
+local function addElem(elem)
+  table.insert(storagePage.elems, elem)
+  return elem
+end
+
 function storagePage.setup()
+  storagePage.elems = {}
   local hasCrafters = not table.isEmpty(storage.crafting.crafters)
 
   term.clear()
@@ -29,23 +35,23 @@ function storagePage.setup()
   local order = true
   local searchString = ""
 
-  local buttonList = ui.buttonList.create()
+  local buttonList = addElem(ui.buttonList.create())
   buttonList:setSize(w - 4, h - 6)
   buttonList:setPos(2, 4)
 
   local btnGap = 4
 
-  local leftBtn = ui.text.create()
+  local leftBtn = addElem(ui.text.create())
   leftBtn:setSize(3, 1)
   leftBtn:setPos(math.floor(w / 2) - 3 - btnGap, h - 1)
   leftBtn:setText("")
 
-  local rightBtn = ui.text.create()
+  local rightBtn = addElem(ui.text.create())
   rightBtn:setSize(3, 1)
   rightBtn:setPos(math.floor(w / 2) + btnGap + 1, h - 1)
   rightBtn:setText("")
 
-  local sortSwitch = ui.text.create()
+  local sortSwitch = addElem(ui.text.create())
   sortSwitch:setPos(0, 0)
 
   -- Get correct size
@@ -62,7 +68,7 @@ function storagePage.setup()
   end
   updateSortSwitch()
 
-  local orderSwitch = ui.text.create()
+  local orderSwitch = addElem(ui.text.create())
   orderSwitch:setPos(w - 9, 0)
   orderSwitch:setSize(9, 1)
   local function updateOrderSwitch()
@@ -70,7 +76,7 @@ function storagePage.setup()
   end
   updateOrderSwitch()
 
-  local pageCounter = ui.text.create()
+  local pageCounter = addElem(ui.text.create())
   local function updatePageCounter()
     local pageCountStr = tostring(pageCount)
     local pageStr = tostring(page)
@@ -260,4 +266,9 @@ function storagePage.cleanup()
   hook.remove("cc_storage_change", "update_view")
   hook.remove("mouse_scroll", "menu_shift")
   hook.remove("mouse_click", "clear_search")
+  timer.remove("inventory_delay")  
+  for _, elem in ipairs(storagePage.elems) do
+    elem:remove()
+  end
+  storagePage.elems = {}
 end

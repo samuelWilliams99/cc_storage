@@ -4,7 +4,8 @@ require "storage.items"
 require "storage.crafting"
 require "ui.buttonlist"
 require "ui.text"
-require "ui.pages.storage"
+require "ui.pages.craftCount"
+require "ui.pages.itemList"
 require "ui.pages.pages"
 
 storage.updateChests()
@@ -17,6 +18,8 @@ sleep(1)
 
 hook.add("initialize", "testing", function()
   pages.setPage("itemList")
+  sleep(5)
+  pages.setPage("craftCount")
 end)
 
 hook.add("terminate", "clear_screen", function()
