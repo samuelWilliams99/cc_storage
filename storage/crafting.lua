@@ -18,7 +18,7 @@ storage.crafting.tasks = {}
 
 local craftingPortOut = 1357
 local craftingPortIn = craftingPortOut + 1
-local modem = peripheral.wrap("back")
+local modem = peripheral.find("modem", function(_, p) return p.isWireless() end)
 modem.open(craftingPortIn)
 
 -- We specifically use os.pullEvent here as this code all runs _before_ the hook system gets enabled
