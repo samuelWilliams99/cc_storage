@@ -19,6 +19,17 @@ function hook.remove(eventName, handlerName)
   hook.add(eventName, handlerName, nil) -- Set the handler to nil
 end
 
+local function throwError(event, handlerName, data, co)
+  local shouldPrevent = false
+  local traceback = debug.traceback(co)
+  if hook.preError then
+    shouldPrevent = not not hook.preError(event, handlerName, data, traceback)
+  end
+  if not shouldPrevent then
+    error("Hook " .. event .. ", " .. handlerName .. " errored with: " .. tostring(data) .. "\n" .. traceback, 0)
+  end
+end
+
 function hook.runInHandlerContext(f, ...)
   local args = table.pack(...)
   local co = coroutine.create(function() f(table.unpack(args, 1, args.n)) end)
@@ -37,17 +48,6 @@ function hook.setPreError(f)
 end
 
 hook.run = os.queueEvent
-
-local function throwError(event, handlerName, data, co)
-  local shouldPrevent = false
-  local traceback = debug.traceback(co)
-  if hook.preError then
-    shouldPrevent = not not hook.preError(event, handlerName, data, traceback)
-  end
-  if not shouldPrevent then
-    error("Hook " .. event .. ", " .. handlerName .. " errored with: " .. tostring(data) .. "\n" .. traceback, 0)
-  end
-end
 
 function hook.runLoop()
   os.queueEvent("initialize")
