@@ -4,17 +4,20 @@ require "storage.items"
 require "storage.crafting"
 require "ui.buttonlist"
 require "ui.text"
+require "ui.pages.storage"
+require "ui.pages.pages"
 
 storage.updateChests()
 storage.updateItemMapping()
 storage.crafting.loadRecipes()
 storage.crafting.setupCrafters()
 
-require "ui.pages.storage"
+print("Rendering...")
+sleep(1)
 
--- hook.add("initialize", "testing", function()
---   storage.crafting.makeAndRunPlan("minecraft:wooden_sword552887824c43124013fd24f6edcde0fb", 10)
--- end)
+hook.add("initialize", "testing", function()
+  pages.setPage("itemList")
+end)
 
 hook.add("terminate", "clear_screen", function()
   term.clear()

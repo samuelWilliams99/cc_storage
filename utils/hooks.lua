@@ -15,6 +15,22 @@ function hook.add(eventName, handlerName, handler)
   hook.handlers[eventName][handlerName] = handler
 end
 
+function hook.remove(eventName, handlerName)
+  hook.add(eventName, handlerName, nil) -- Set the handler to nil
+end
+
+function hook.runInHandlerContext(f, ...)
+  local args = table.pack(...)
+  local co = coroutine.create(function() f(table.unpack(args, 1, args.n)) end)
+  local success, data = coroutine.resume(co)
+
+  if not success then throwError("ONE-OFF-HANDLER", "", data, co) end
+
+  if coroutine.status(co) ~= "dead" then
+    table.insert(hook.routines, {routine = co, filter = data, isTerminate = false, event = "ONE-OFF-HANDLER", handlerName = ""})
+  end
+end
+
 -- Add a pre-throw error callback. returning true with this function will prevent the error
 function hook.setPreError(f)
   hook.preError = f
