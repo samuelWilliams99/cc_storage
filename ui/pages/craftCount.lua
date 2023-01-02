@@ -28,6 +28,11 @@ function craftCountPage.setup(itemName)
   craftCountPage.elems = {}
   local count = 1
 
+  local countText = addElem(ui.text.create())
+  countText:setPos(5, 5)
+  countText:setSize(20, 1)
+  countText:setText(tostring(count))
+
   local function countChangeButton(num, x)
     local btn = addElem(ui.text.create())
     local str = tostring(num)
@@ -38,6 +43,7 @@ function craftCountPage.setup(itemName)
     function btn:onClick()
       if count == 1 and num == 64 then count = 0 end -- If running +64 on 1, it should go to 64 for convenience
       count = math.max(count + num, 1)
+      countText:setText(tostring(count))
     end
   end
 
@@ -46,18 +52,18 @@ function craftCountPage.setup(itemName)
   countChangeButton(1, 0.6)
   countChangeButton(64, 0.75)
 
-  hook.add("key", "key", function(num, ...)
-    if isNumber(num) then
-      count = count * 10 + num
-    elseif num == backspace then
-      count = math.floor(count / 10)
-    end
-  end)
+  -- hook.add("key", "key", function(num, ...)
+  --   if isNumber(num) then
+  --     count = count * 10 + num
+  --   elseif num == backspace then
+  --     count = math.floor(count / 10)
+  --   end
+  -- end)
 end
 
 function craftCountPage.cleanup()
   hook.remove("key", "key")
-  for _, elem in ipairs(storagePage.elems) do
+  for _, elem in ipairs(craftCountPage.elems) do
     elem:remove()
   end
 end
