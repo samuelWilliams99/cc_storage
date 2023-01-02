@@ -144,6 +144,7 @@ function storage.updateItemMapping()
   print("Building item matrix...")
   storage.items = {}
   storage.emptySlots = {}
+  storage.totalSlotCount = 0
   local items = storage.items
   local itemCount = 0
 
@@ -157,9 +158,11 @@ function storage.updateItemMapping()
   for chestKey, chest in ipairs(storage.chests) do
     local chestItems = chest.list()
     totalOccupiedSlots = totalOccupiedSlots + table.count(chestItems)
+    local size = chest.size()
+    storage.totalSlotCount = storage.totalSlotCount + size
     chestsData[chestKey] = {
       list = chestItems,
-      size = chest.size(),
+      size = size,
       chest = chest
     }
     writeUpdate("Finding chests and sizes", 1, 2, "chest", chestCounter, chestCount, termY)
@@ -193,9 +196,11 @@ function storage.updateItemMapping()
 end
 
 function storage.addEmptyChest(chest)
-  for slot = 1, chest.size() do
+  local size = chest.size()
+  for slot = 1, size do
     table.insert(storage.emptySlots, {chest = chest, slot = slot})
   end
+  storage.totalSlotCount = storage.totalSlotCount + size
 end
 
 function storage.dropItem(key, count, useReserved)

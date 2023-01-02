@@ -76,6 +76,17 @@ function storagePage.setup()
   end
   updateOrderSwitch()
 
+  local slotCounter = addElem(ui.text.create())
+  slotCounter:setBgColor(colors.black)
+  local function updateSlotCounter()
+    local slotsUsed = storage.totalSlotCount - #storage.emptySlots
+    local str = slotsUsed .. "/" .. storage.totalSlotCount .. " slots used"
+    slotCounter:setPos(w - #str, h - 1)
+    slotCounter:setSize(#str, 1)
+    slotCounter:setText(str)
+  end
+  updateSlotCounter()
+
   local pageCounter = addElem(ui.text.create())
   local function updatePageCounter()
     local pageCountStr = tostring(pageCount)
@@ -96,7 +107,14 @@ function storagePage.setup()
   updatePageCounter()
 
   local function getCountText(count, maxStack)
-    return tostring(count)
+    if maxStack == 1 or count <= maxStack then return tostring(count) end
+    local stacks = math.floor(count / maxStack)
+    local str = tostring(count) .. " (" .. stacks .. " * " .. maxStack
+    local remainder = count % maxStack
+    if remainder > 0 then
+      str = str .. " + " .. remainder
+    end
+    return str .. ")"
   end
 
   -- TODO: optimise this a lot
@@ -183,6 +201,7 @@ function storagePage.setup()
     buttonList:setOptions(options)
 
     updatePageCounter()
+    updateSlotCounter()
   end
 
   function buttonList:handleClick(btn, data)
@@ -246,6 +265,16 @@ function storagePage.setup()
       hook.run("key", 257, false)
     end
   end)
+
+  local function idleClear()
+    timer.create("itemListIdleClear", 20, 1, function()
+      hook.run("key", 257, false)
+    end)
+  end
+
+  hook.add("key", "idle_clear_search", idleClear)
+  hook.add("mouse_click", "idle_clear_search", idleClear)
+  hook.add("mouse_scroll", "idle_clear_search", idleClear)
 
   -- what to do about this...
   hook.runInHandlerContext(function()
