@@ -95,6 +95,10 @@ function storagePage.setup()
 
   updatePageCounter()
 
+  local function getCountText(count, maxStack)
+    return tostring(count)
+  end
+
   -- TODO: optimise this a lot
   local function updateDisplay()
     if not storagePage.active then return end
@@ -165,7 +169,7 @@ function storagePage.setup()
         displayNamePadded = displayNamePadded .. string.rep(" ", maxNameLength - #displayNamePadded)
       end
 
-      local countText = item.isRecipe and "CRAFT" or tostring(item.count)
+      local countText = item.isRecipe and "CRAFT" or getCountText(item.count, item.detail.maxCount)
       if not item.isRecipe and storage.crafting.recipes[name] and hasCrafters then -- If we have some but its also craftable
         countText = countText .. " *" -- Add a star :)
       end

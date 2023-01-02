@@ -43,6 +43,9 @@ function ui.buttonList.create(parent)
     for i, btn in ipairs(self.buttons) do
       btn.data = self.options[i]
       btn:setText(btn.data.displayText)
+      if btn.data.bgColor then
+        btn:setBgColor(btn.data.bgColor)
+      end
     end
     self:invalidateLayout()
   end

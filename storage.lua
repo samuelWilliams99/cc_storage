@@ -13,6 +13,13 @@ storage.updateItemMapping()
 storage.crafting.loadRecipes()
 storage.crafting.setupCrafters()
 
+-- TODO: stack count - 17 (16 * 1 + 1)
+-- search clearing
+-- slot counter
+
+-- void limit - needs a menu
+--   same menu as the craft up-down for things like iron
+
 print("Rendering...")
 sleep(1)
 

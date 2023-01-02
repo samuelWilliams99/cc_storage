@@ -128,7 +128,11 @@ end
 local function writeProgressBar(frac, y)
   local w = term.getSize()
   local charCount = math.ceil(frac * (w - 2))
-  writeLine("[" .. string.rep("=", charCount) .. string.rep(" ", w - 2 - charCount) .. "]", y)
+  if charCount == w - 2 then
+    writeLine("[" .. string.rep("=", w - 2) .. "]", y)
+  else
+    writeLine("[" .. string.rep("=", charCount - 1) .. ">" .. string.rep(" ", w - 2 - charCount) .. "]", y)
+  end
 end
 
 local function writeUpdate(text, stepNum, stepMax, progPrefix, prog, progMax, y)
