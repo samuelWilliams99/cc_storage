@@ -44,6 +44,7 @@ function craftCountPage.setup(itemName)
       if count == 1 and num == 64 then count = 0 end -- If running +64 on 1, it should go to 64 for convenience
       count = math.max(count + num, 1)
       countText:setText(tostring(count))
+      countText:invalidateLayout(true)
     end
   end
 

@@ -76,7 +76,12 @@ function ui.classes.Base:doDraw()
   end
 end
 
-function ui.classes.Base:invalidateLayout()
+function ui.classes.Base:invalidateLayout(instantly)
+  if instantly and not self.removed then
+    timer.remove("invalidateLayout" .. self.id)
+    self:doDraw()
+    return
+  end
   local this = self
   timer.create("invalidateLayout" .. self.id, 0.05, 1, function()
     if this.removed then return end
