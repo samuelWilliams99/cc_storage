@@ -9,6 +9,7 @@ function ui.text.create(parent)
   elem.text = "text"
   elem.bgColor = colors.gray
   elem.textColor = colors.white
+  elem.drawPos = ui.Vector(0, 0)
   function elem:setText(text)
     self.text = text
     self:invalidateLayout()
@@ -24,9 +25,13 @@ function ui.text.create(parent)
     self:invalidateLayout()
   end
 
+  function elem:setTextDrawPos(x, y)
+    elem.drawPos = ui.Vector(x, y)
+  end
+
   function elem:draw()
     ui.drawFilledBox(0, 0, self.size.x - 1, self.size.y - 1, self.bgColor)
-    ui.drawText(0, 0, self.text, self.textColor, self.bgColor)
+    ui.drawText(elem.drawPos.x, elem.drawPos.y, self.text, self.textColor, self.bgColor)
   end
 
   elem:invalidateLayout()

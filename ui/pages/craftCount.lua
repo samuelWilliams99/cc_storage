@@ -33,12 +33,16 @@ function craftCountPage.setup(itemName)
   countText:setSize(20, 1)
   countText:setText(tostring(count))
 
+  -- bigger buttons +1 in all directions
+  -- reset button - back to 1
   local function countChangeButton(num, x)
     local btn = addElem(ui.text.create())
     local str = tostring(num)
     if num > 0 then str = "+" .. str end
+    str = " " .. str .. " "
     btn:setText(str)
-    btn:setSize(#str, 1)
+    btn:setSize(#str, 3)
+    btn:setTextDrawPos(0, 1)
     btn:setPos(math.floor(x * w - #str / 2), 10) -- 10?
     function btn:onClick()
       if count == 1 and num == 64 then count = 0 end -- If running +64 on 1, it should go to 64 for convenience
