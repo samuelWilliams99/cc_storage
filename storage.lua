@@ -20,7 +20,7 @@ print("Rendering...")
 sleep(1)
 
 hook.add("initialize", "testing", function()
-  pages.setPage("itemList")
+  pages.setPage("craftCount", "minecraft:oak_planks")
 end)
 
 hook.add("terminate", "clear_screen", function()

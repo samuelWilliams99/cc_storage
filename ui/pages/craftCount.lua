@@ -4,7 +4,7 @@ local craftCountPage = {}
 
 pages.addPage("craftCount", craftCountPage)
 
-local w = term.getSize()
+local w, h = term.getSize()
 
 local function addElem(elem)
   table.insert(craftCountPage.elems, elem)
@@ -26,48 +26,188 @@ end
 
 function craftCountPage.setup(itemName)
   craftCountPage.elems = {}
+
+  local recipe = storage.crafting.recipes[itemName]
+  if not recipe then error("Tried to craft a non-existent recipe?") end
+
+  -- Main title
+  local titleText = "Crafting " .. recipe.displayName
+  term.setCursorPos(math.floor(w / 2 - #titleText / 2), 2)
+  term.write(titleText)
+
+  -- Horizontal line
+  term.setTextColor(colors.gray)
+  term.setCursorPos(3, 4)
+  term.write(string.rep("_", w - 4))
+
+  -- Vertical line
+  local lineX = 2 + math.floor((w - 4) * 0.4)
+  for y = 5, h - 1 do
+    term.setCursorPos(lineX, y)
+    term.write("|")
+  end
+  term.setTextColor(colors.white)
+
+  -- Count title
+  local midLeftX = 2 + math.floor((w - 4) * 0.2)
+  local countTitleText = "Amount to craft"
+  term.setCursorPos(math.ceil(midLeftX - #countTitleText / 2), 6)
+  term.write(countTitleText)
+
   local count = 1
-
   local countText = addElem(ui.text.create())
-  countText:setPos(5, 5)
-  countText:setSize(20, 1)
-  countText:setText(tostring(count))
+  countText:setPos(4, 8)
+  countText:setSize(lineX - 7, 3)
+  countText:setTextDrawPos(0, 1)
 
-  -- bigger buttons +1 in all directions
-  -- reset button - back to 1
-  local function countChangeButton(num, x)
-    local btn = addElem(ui.text.create())
-    local str = tostring(num)
-    if num > 0 then str = "+" .. str end
-    str = " " .. str .. " "
-    btn:setText(str)
-    btn:setSize(#str, 3)
-    btn:setTextDrawPos(0, 1)
-    btn:setPos(math.floor(x * w - #str / 2), 10) -- 10?
-    function btn:onClick()
-      if count == 1 and num == 64 then count = 0 end -- If running +64 on 1, it should go to 64 for convenience
-      count = math.max(count + num, 1)
-      countText:setText(tostring(count))
-      countText:invalidateLayout(true)
+  local cancelButton = addElem(ui.text.create())
+  cancelButton:setPos(4, h - 6)
+  cancelButton:setSize(13, 3)
+  cancelButton:setTextDrawPos(3, 1)
+  cancelButton:setText("Cancel")
+  function cancelButton:onClick()
+    pages.setPage("itemList")
+  end
+
+  local makePlanButton = addElem(ui.text.create())
+  makePlanButton:setPos(lineX - 16, h - 6)
+  makePlanButton:setSize(13, 3)
+  makePlanButton:setTextDrawPos(2, 1)
+  makePlanButton:setText("Make plan")
+  function makePlanButton:onClick()
+    if count == 0 then return end
+    if craftCountPage.plan and craftCountPage.plan.craftable then
+      storage.crafting.unreservePlan(craftCountPage.plan)
+    end
+    craftCountPage.plan = storage.crafting.makeCraftPlan(itemName, count)
+    craftCountPage.displayPlan()
+  end
+
+  local showUnderscore = true
+  local function updateCount(n)
+    local changed = count ~= n
+
+    count = n
+    local str = ""
+    if count > 0 then str = tostring(count) end 
+    if showUnderscore then str = str .. "_" end
+    countText:setText("  " .. str)
+    countText:invalidateLayout(true)
+
+    if not changed then return end
+
+    if count == 0 then
+      makePlanButton:setTextColor(colors.black)
+      makePlanButton:setBgColor(colors.black)
+    else
+      makePlanButton:setTextColor(colors.white)
+      makePlanButton:setBgColor(colors.gray)
     end
   end
 
-  countChangeButton(-64, 0.25)
-  countChangeButton(-1, 0.4)
-  countChangeButton(1, 0.6)
-  countChangeButton(64, 0.75)
+  updateCount(1)
 
-  -- hook.add("key", "key", function(num, ...)
-  --   if isNumber(num) then
-  --     count = count * 10 + num
-  --   elseif num == backspace then
-  --     count = math.floor(count / 10)
-  --   end
-  -- end)
+  timer.create("craftCountUnderscore", 0.5, 0, function()
+    showUnderscore = not showUnderscore
+    updateCount(count)
+  end)
+
+  local function countChangeButton(num, x, y)
+    local btn = addElem(ui.text.create())
+    local str = num and tostring(num) or "    RESET    "
+    if num and num > 0 then str = "+" .. str end
+    str = "  " .. str .. "  "
+    btn:setText(str)
+    btn:setSize(#str, 3)
+    btn:setTextDrawPos(0, 1)
+    btn:setPos(x, y)
+    function btn:onClick()
+      if num then
+        if count == 1 and num == 64 then updateCount(0) end -- If running +64 on 1, it should go to 64 for convenience
+        updateCount(math.max(count + num, 1))
+      else
+        updateCount(1)
+      end
+    end
+  end
+
+  countChangeButton(-1, midLeftX - 8, 12)
+  countChangeButton(-64, midLeftX - 9, 16)
+  countChangeButton(1, midLeftX + 1, 12)
+  countChangeButton(64, midLeftX + 1, 16)
+  countChangeButton(nil, midLeftX - 9, 20)
+
+  hook.add("char", "craftCountChar", function(char)
+    local num = tonumber(char)
+    if not num then return end
+    updateCount(count * 10 + num)
+  end)
+
+  hook.add("key", "craftCountKey", function(key)
+    if key == keys.backspace then
+      updateCount(math.floor(count / 10))
+    elseif key == keys.enter and count == 0 then
+      updateCount(1)
+    end
+  end)
+
+  local midRightX = 2 + math.floor((w - 4) * 0.7)
+  local ingredientsTitleText = "Ingredients"
+  term.setCursorPos(math.ceil(midRightX - #ingredientsTitleText / 2), 6)
+  term.write(ingredientsTitleText)
+
+  local noCraftText = "Make a plan on the left to show ingredients"
+  term.setCursorPos(math.ceil(midRightX - #noCraftText / 2), 19)
+  term.setTextColor(colors.gray)
+  term.write(noCraftText)
+  term.setTextColor(colors.white)
+end
+
+function craftCountPage.displayPlan()
+  local plan = craftCountPage.plan
+  if plan.craftable then
+    storage.crafting.reservePlan(plan)
+  end
+
+  if not craftCountPage.ingredientsList then
+    local lineX = 2 + math.floor((w - 4) * 0.4)
+
+    --make the list without options
+
+    local craftBtn = addElem(ui.text.create())
+    craftCountPage.craftBtn = craftBtn
+    craftBtn:setPos(lineX + 2, h - 6)
+    local btnWidth = w - 4 - lineX - 2
+    craftBtn:setSize(btnWidth, 3)
+    craftBtn:setTextDrawPos(math.floor(btnWidth / 2 - 3), 1)
+    craftBtn:setText("CRAFT")
+    function craftBtn:onClick()
+      if not plan.craftable then return end
+      storage.crafting.runPlan(plan)
+      craftCountPage.plan = nil
+      pages.setPage("itemList")
+    end
+  end
+
+  -- set the list options
+
+  local craftBtn = craftCountPage.craftBtn
+  if plan.craftable then
+    craftBtn:setTextColor(colors.white)
+    craftBtn:setBgColor(colors.gray)
+  else
+    craftBtn:setTextColor(colors.black)
+    craftBtn:setBgColor(colors.black)
+  end
 end
 
 function craftCountPage.cleanup()
-  hook.remove("key", "key")
+  if craftCountPage.plan and craftCountPage.plan.craftable then
+    storage.crafting.unreservePlan(craftCountPage.plan)
+  end
+  hook.remove("char", "craftCountChar")
+  hook.remove("key", "craftCountKey")
+  timer.remove("craftCountUnderscore")
   for _, elem in ipairs(craftCountPage.elems) do
     elem:remove()
   end
