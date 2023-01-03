@@ -7,6 +7,7 @@ pages.addPage("lock", lockPage)
 local w, h = term.getSize()
 
 local playerDetector = peripheral.find("playerDetector")
+if not playerDetector then error("No player detector found, please connect one to the computer to use") end
 
 local players = {
   "Sam_oh_blam_oh",
