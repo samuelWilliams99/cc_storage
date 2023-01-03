@@ -81,7 +81,7 @@ function hook.runLoop()
 
     -- Run handlers
     for handlerName, handler in pairs(handlerTable or {}) do
-      local co = coroutine.create(function() handler(table.unpack(eventData, 2, eventData.n)) end)
+      local co = coroutine.create(function() return handler(table.unpack(eventData, 2, eventData.n)) end)
       local success, data = coroutine.resume(co)
 
       if not success then throwError(event, handlerName, data, co) end
