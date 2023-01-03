@@ -11,7 +11,7 @@ end
 
 function storagePage.setup()
   storagePage.elems = {}
-  local hasCrafters = true -- TODO: not table.isEmpty(storage.crafting.crafters)
+  local hasCrafters = not table.isEmpty(storage.crafting.crafters)
 
   term.clear()
 

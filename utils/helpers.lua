@@ -57,6 +57,13 @@ function table.shallowCopy(t)
   return out
 end
 
+function table.contains(t, val)
+  for _, v in pairs(t) do
+    if v == val then return true end
+  end
+  return false
+end
+
 function readFile(path)
   local handle = io.open(path, "r")
   if not handle then return end
