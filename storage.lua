@@ -25,6 +25,7 @@ hook.add("initialize", "testing", function()
 end)
 
 hook.add("terminate", "clear_screen", function()
+  if pages.pages.lock.active then return end
   term.clear()
   term.setCursorPos(1,1)
 end)
