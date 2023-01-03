@@ -6,6 +6,7 @@ require "ui.buttonlist"
 require "ui.text"
 require "ui.pages.craftCount"
 require "ui.pages.itemList"
+require "ui.pages.lock"
 require "ui.pages.pages"
 
 storage.updateChests()
