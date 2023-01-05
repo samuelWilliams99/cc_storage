@@ -154,8 +154,7 @@ function craftCountPage.setup(itemName)
 end
 
 function craftCountPage.displayPlan()
-  local plan = craftCountPage.plan
-  if plan.craftable then
+  if craftCountPage.plan.craftable then
     storage.crafting.reservePlan(plan)
   end
 
@@ -176,8 +175,8 @@ function craftCountPage.displayPlan()
     craftBtn:setTextDrawPos(math.floor(btnWidth / 2 - 3), 1)
     craftBtn:setText("CRAFT")
     function craftBtn:onClick()
-      if not plan.craftable then return end
-      storage.crafting.runPlan(plan)
+      if not craftCountPage.plan.craftable then return end
+      storage.crafting.runPlan(craftCountPage.plan)
       craftCountPage.plan = nil
       pages.setPage("itemList")
     end
@@ -187,10 +186,10 @@ function craftCountPage.displayPlan()
 
   local toNum = {[true] = 1, [false] = 0}
 
-  local ingredientKeys = table.keys(plan.ingredients)
+  local ingredientKeys = table.keys(craftCountPage.plan.ingredients)
   table.sort(ingredientKeys, function(a, b)
-    local aMissing = toNum[plan.missingIngredients[a]]
-    local bMissing = toNum[plan.missingIngredients[b]]
+    local aMissing = toNum[craftCountPage.plan.missingIngredients[a]]
+    local bMissing = toNum[craftCountPage.plan.missingIngredients[b]]
     if aMissing == bMissing then
       return a < b
     else
@@ -206,10 +205,10 @@ function craftCountPage.displayPlan()
   }
 
   for _, itemName in ipairs(ingredientKeys) do
-    local missing = plan.missingIngredients[itemName]
+    local missing = craftCountPage.plan.missingIngredients[itemName]
     local name = itemName
     local available = 0
-    local required = plan.ingredients[itemName]
+    local required = craftCountPage.plan.ingredients[itemName]
     if storage.items[itemName] then
       name = storage.items[itemName].detail.displayName
       available = storage.items[itemName].count
@@ -224,7 +223,7 @@ function craftCountPage.displayPlan()
   ingredientsList:setOptions(options)
 
   local craftBtn = craftCountPage.craftBtn
-  if plan.craftable then
+  if craftCountPage.plan.craftable then
     craftBtn:setTextColor(colors.white)
     craftBtn:setBgColor(colors.gray)
   else
