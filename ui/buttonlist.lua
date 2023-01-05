@@ -28,7 +28,6 @@ function ui.buttonList.create(parent)
       local button = ui.text.create(self)
       button:setSize(self.size.x, 1)
       button:setPos(0, #self.buttons)
-      button:setBgColor(i % 2 == 1 and colors.black or colors.gray)
       function button:onClick(btn)
         self.parent:handleClick(btn, self.data)
       end
@@ -45,6 +44,8 @@ function ui.buttonList.create(parent)
       btn:setText(btn.data.displayText)
       if btn.data.bgColor then
         btn:setBgColor(btn.data.bgColor)
+      else
+        button:setBgColor(i % 2 == 1 and colors.black or colors.gray)
       end
     end
     self:invalidateLayout()
