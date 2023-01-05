@@ -12,6 +12,8 @@ local function addElem(elem)
 end
 
 function recipesPage.setup()
+  recipesPage.elems = {}
+
   local backButton = addElem(ui.text.create())
   backButton:setPos(2, h - 4)
   backButton:setSize(11, 3)
