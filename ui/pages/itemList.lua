@@ -136,12 +136,13 @@ function storagePage.setup()
       return {detail = {displayName = recipe.displayName}, count = 0, isRecipe = true}
     end
 
-    if searchString ~= "" then
-      itemKeys = table.filter(itemKeys, function(name)
-        local itemData = getItemData(name)
-        return itemData.detail.displayName:lower():find(searchString)
-      end)
-    end
+    itemKeys = table.filter(itemKeys, function(name)
+      if storage.items[name] and storage.items[name].count == 0 then return false end
+      if searchString == "" then return true end
+      local itemData = getItemData(name)
+      return itemData.detail.displayName:lower():find(searchString)
+    end)
+
     local key = sorters[sorterIndex].key
     local comp = order and (function(a, b) return a < b end) or (function(a, b) return a > b end)
 
