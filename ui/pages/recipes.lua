@@ -33,10 +33,23 @@ function recipesPage.setup()
   term.setCursorPos(3, 4)
   term.write(string.rep("_", w - 4))
 
+  -- Vertical line
   local lineX = 2 + math.floor((w - 4) * 0.4)
+  for y = 5, h - 1 do
+    term.setCursorPos(lineX, y)
+    term.write("|")
+  end
+  term.setTextColor(colors.white)
+
+  -- Count title
+  local midLeftX = 2 + math.floor((w - 4) * 0.2)
+  local countTitleText = "Recipe list (click to remove)"
+  term.setCursorPos(math.ceil(midLeftX - #countTitleText / 2), 6)
+  term.write(countTitleText)
+
   local recipesList = addElem(ui.buttonList.create())
-  recipesList:setPos(2, 5)
-  recipesList:setSize(lineX - 2, h - 7)
+  recipesList:setPos(2, 7)
+  recipesList:setSize(lineX - 4, h - 13)
   
   local function updateRecipeList()
     local options = {}
