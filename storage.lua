@@ -7,6 +7,7 @@ require "ui.text"
 require "ui.pages.craftCount"
 require "ui.pages.itemList"
 require "ui.pages.lock"
+require "ui.pages.recipes"
 require "ui.pages.pages"
 
 storage.updateChests()

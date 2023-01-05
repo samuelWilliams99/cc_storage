@@ -106,6 +106,14 @@ function storagePage.setup()
 
   updatePageCounter()
 
+  local recipeButton = addElem(ui.text.create())
+  recipeButton:setPos(0, h - 1)
+  recipeButton:setSize(7, 1)
+  recipeButton:setText("Recipes")
+  function recipeButton:onClick()
+    pages.setPage("recipes")
+  end
+
   local function getCountText(count, maxStack)
     if maxStack == 1 or count <= maxStack then return tostring(count) end
     local stacks = math.floor(count / maxStack)
