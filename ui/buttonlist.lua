@@ -39,11 +39,11 @@ function ui.buttonList.create(parent)
       table.remove(self.buttons, i)
     end
 
-    for i, btn in ipairs(self.buttons) do
-      btn.data = self.options[i]
-      btn:setText(btn.data.displayText)
-      if btn.data.bgColor then
-        btn:setBgColor(btn.data.bgColor)
+    for i, button in ipairs(self.buttons) do
+      button.data = self.options[i]
+      button:setText(button.data.displayText)
+      if button.data.bgColor then
+        button:setBgColor(button.data.bgColor)
       else
         button:setBgColor(i % 2 == 1 and colors.black or colors.gray)
       end
