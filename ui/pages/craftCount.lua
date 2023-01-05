@@ -214,7 +214,11 @@ function craftCountPage.displayPlan()
       available = storage.items[itemName].count
     end
     local str = name .. string.rep(" ", xOffset - #name) .. "| " .. available .. " / " .. (missing or 0)
-    table.insert(options, {displayText = str})
+    local entry = {displayText = str}
+    if missing then
+      entry.bgColor = colors.red
+    end
+    table.insert(options, entry)
   end
   ingredientsList:setOptions(options)
 
