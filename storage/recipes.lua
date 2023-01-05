@@ -17,10 +17,19 @@ function storage.crafting.addRecipe(itemName, displayName, recipePlacement, coun
   storage.crafting.preCacheRecipe(rawRecipe)
 end
 
-function storage.crafting.saveRecipe(rawRecipe)
+function storage.crafting.updateRecipe(itemName, rawRecipe)
   local recipeData = readFile(storage.crafting.recipeFilePath) or {}
-  recipeData[rawRecipe.itemName] = rawRecipe
+  recipeData[itemName] = rawRecipe
   writeFile(storage.crafting.recipeFilePath, recipeData)
+end
+
+function storage.crafting.removeRecipe(itemName)
+  storage.crafting.recipes[itemName] = nil
+  storage.crafting.updateRecipe(itemName, nil)
+end
+
+function storage.crafting.saveRecipe(rawRecipe)
+  storage.crafting.updateRecipe(rawRecipe.itemName, rawRecipe)
 end
 
 function storage.crafting.loadRecipes()
