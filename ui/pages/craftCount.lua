@@ -166,11 +166,6 @@ function craftCountPage.displayPlan()
     local ingredientsList = addElem(ui.buttonList.create())
     ingredientsList:setPos(lineX + 2, 8)
     ingredientsList:setSize(w - lineX - 6, h - 16)
-    local options = {}
-    for i = 1, ingredientsList.size.y do
-      options[i] = {displayText = tostring(i)}
-    end
-    ingredientsList:setOptions(options)
 
     local craftBtn = addElem(ui.text.create())
     craftCountPage.craftBtn = craftBtn
@@ -188,6 +183,39 @@ function craftCountPage.displayPlan()
   end
 
   -- set the list options
+
+  local toNum = {[true] = 1, [false] = 0}
+
+  local ingredientKeys = table.keys(plan.ingredients)
+  table.sort(ingredientKeys, function(a, b)
+    local aMissing = toNum[plan.missingIngredients[a]]
+    local bMissing = toNum[plan.missingIngredients[b]]
+    if aMissing == bMissing then
+      return a < b
+    else
+      return aMissing < bMissing
+    end
+  end)
+
+  local ingredientSplitX = 2 + math.floor((w - 4) * 0.8)
+  local xOffset = ingredientSplitX - ingredientsList.pos.x
+  local options = {
+    { displayText = "Item name" .. string.rep(" ", xOffset - 9) .. "| Available/missing"
+    }
+  }
+
+  for _, itemName in ipairs(ingredientKeys) do
+    local missing = plan.missingIngredients[itemName]
+    local name = itemName
+    local available = 0
+    if storage.items[itemName] then
+      name = storage.items[itemName].detail.displayName
+      available = storage.items[itemName].count
+    end
+    local str = name .. string.rep(" ", xOffset - #name) .. "| " .. available .. "/" .. (missing or 0)
+    table.insert(options, {displayText = str})
+  end
+  ingredientsList:setOptions(options)
 
   local craftBtn = craftCountPage.craftBtn
   if plan.craftable then
