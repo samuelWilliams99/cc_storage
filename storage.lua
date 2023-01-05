@@ -21,7 +21,7 @@ print("Rendering...")
 sleep(1)
 
 hook.add("initialize", "testing", function()
-  pages.setPage("craftCount", "minecraft:stick")
+  pages.setPage("craftCount", "minecraft:wooden_sword552887824c43124013fd24f6edcde0fb")
 end)
 
 hook.add("terminate", "clear_screen", function()

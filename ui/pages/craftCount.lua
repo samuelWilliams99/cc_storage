@@ -201,7 +201,7 @@ function craftCountPage.displayPlan()
   local ingredientSplitX = 2 + math.floor((w - 4) * 0.7)
   local xOffset = ingredientSplitX - ingredientsList.pos.x
   local options = {
-    { displayText = "Item name" .. string.rep(" ", xOffset - 9) .. "| Available / missing"
+    { displayText = "Item name" .. string.rep(" ", xOffset - 9) .. "| Available / Required"
     }
   }
 
@@ -209,11 +209,12 @@ function craftCountPage.displayPlan()
     local missing = plan.missingIngredients[itemName]
     local name = itemName
     local available = 0
+    local required = plan.ingredients[itemName]
     if storage.items[itemName] then
       name = storage.items[itemName].detail.displayName
       available = storage.items[itemName].count
     end
-    local str = name .. string.rep(" ", xOffset - #name) .. "| " .. available .. " / " .. (missing or 0)
+    local str = name .. string.rep(" ", xOffset - #name) .. "| " .. available .. " / " .. required
     local entry = {displayText = str}
     if missing then
       entry.bgColor = colors.red
