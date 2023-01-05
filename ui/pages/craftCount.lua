@@ -155,7 +155,7 @@ end
 
 function craftCountPage.displayPlan()
   if craftCountPage.plan.craftable then
-    storage.crafting.reservePlan(plan)
+    storage.crafting.reservePlan(craftCountPage.plan)
   end
 
   if not craftCountPage.ingredientsList then
