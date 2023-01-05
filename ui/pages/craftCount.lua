@@ -164,6 +164,7 @@ function craftCountPage.displayPlan()
 
     --make the list without options
     local ingredientsList = addElem(ui.buttonList.create())
+    craftCountPage.ingredientsList = ingredientsList
     ingredientsList:setPos(lineX + 2, 8)
     ingredientsList:setSize(w - lineX - 6, h - 16)
 
@@ -182,7 +183,7 @@ function craftCountPage.displayPlan()
     end
   end
 
-  -- set the list options
+  local ingredientsList = craftCountPage.ingredientsList
 
   local toNum = {[true] = 1, [false] = 0}
 
