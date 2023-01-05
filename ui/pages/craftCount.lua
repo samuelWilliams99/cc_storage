@@ -198,10 +198,10 @@ function craftCountPage.displayPlan()
     end
   end)
 
-  local ingredientSplitX = 2 + math.floor((w - 4) * 0.8)
+  local ingredientSplitX = 2 + math.floor((w - 4) * 0.7)
   local xOffset = ingredientSplitX - ingredientsList.pos.x
   local options = {
-    { displayText = "Item name" .. string.rep(" ", xOffset - 9) .. "| Available/missing"
+    { displayText = "Item name" .. string.rep(" ", xOffset - 9) .. "| Available / missing"
     }
   }
 
@@ -213,7 +213,7 @@ function craftCountPage.displayPlan()
       name = storage.items[itemName].detail.displayName
       available = storage.items[itemName].count
     end
-    local str = name .. string.rep(" ", xOffset - #name) .. "| " .. available .. "/" .. (missing or 0)
+    local str = name .. string.rep(" ", xOffset - #name) .. "| " .. available .. " / " .. (missing or 0)
     table.insert(options, {displayText = str})
   end
   ingredientsList:setOptions(options)
