@@ -22,7 +22,7 @@ print("Rendering...")
 sleep(1)
 
 hook.add("initialize", "testing", function()
-  pages.setPage("lock")
+  pages.setPage("itemList")
 end)
 
 hook.add("terminate", "clear_screen", function()
