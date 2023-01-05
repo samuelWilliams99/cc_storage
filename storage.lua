@@ -21,7 +21,7 @@ print("Rendering...")
 sleep(1)
 
 hook.add("initialize", "testing", function()
-  pages.setPage("lock")
+  pages.setPage("craftCount", "minecraft:stick")
 end)
 
 hook.add("terminate", "clear_screen", function()

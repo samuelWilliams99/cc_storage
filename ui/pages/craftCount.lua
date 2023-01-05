@@ -11,16 +11,6 @@ local function addElem(elem)
   return elem
 end
 
--- probably better to have a typing and button mode
--- click on the typing thing, you can type any number (including empty, for typing small numbers)
--- click outside it anywhere (buttons included - before the button handler), or press enter, it should parse the value and put the right thing
--- e.g., if it empty or 0, make it 1
-
--- once you have a value, you can press a "make plan" button
--- when the plan is made, it shows in a list view the ingredients, maybe paginated? (we'll have to abstract the pagination logic)
-
--- then theres a craft button which will actually run the plan and a cancel button that unreserves
-
 -- later we'll need an active plans page.
 -- for now though we can do a "x crafting plans running" in the corner or some shit
 
@@ -173,6 +163,14 @@ function craftCountPage.displayPlan()
     local lineX = 2 + math.floor((w - 4) * 0.4)
 
     --make the list without options
+    local ingredientsList = addElem(ui.buttonList.create())
+    ingredientsList:setPos(lineX + 2, 8)
+    ingredientsList:setSize(w - lineX - 6, h - 16)
+    local options = {}
+    for i = 1, ingredientsList.size.y do
+      options[i] = {displayText = tostring(i)}
+    end
+    ingredientsList:setOptions(options)
 
     local craftBtn = addElem(ui.text.create())
     craftCountPage.craftBtn = craftBtn
