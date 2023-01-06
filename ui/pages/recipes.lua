@@ -115,6 +115,8 @@ function recipesPage.setup()
   function addRecipeButton:onClick()
     if not recipesPage.addRecipeStep then
       recipesPage.addRecipeStep = 1
+      updateCancelbutton()
+      updateAddRecipeButton()
       instructionsPanel:writeText("Creating a new recipe! Please place the recipe into the dropper, then hit Continue.")
       instructionsPanel:newLine()
     elseif recipesPage.addRecipeStep == 1 then
