@@ -23,6 +23,11 @@ function ui.logger.create(parent)
     self:invalidateLayout()
   end
 
+  function elem:clear()
+    self.texts = {}
+    self:invalidateLayout()
+  end
+
   function elem:draw()
     local y = 0
     for _, textData in ipairs(elem.texts) do

@@ -84,29 +84,45 @@ function recipesPage.setup()
     cancelButton:invalidateLayout(true)
   end
 
-  function cancelButton:onClick()
-    recipesPage.addRecipeStep = nil
-    updateCancelbutton()
-    -- do some other stuff
-  end
+  local instructionsPanel = addElem(ui.logger.create())
+  instructionsPanel:setPos(lineX + 2, 5)
+  instructionsPanel:setSize(w - lineX - 5, h - 10)
 
   updateCancelbutton()
 
   local addRecipeButton = addElem(ui.text.create())
   addRecipeButton:setPos(lineX + 2 + 12 + 2, h - 4)
   addRecipeButton:setSize(w - lineX - 4 - 12 - 4 - 12 - 2, 3)
-  addRecipeButton:setTextDrawPos(math.floor(addRecipeButton.size.x / 2) - 5, 1)
-  addRecipeButton:setText("Add recipe")
-  function addRecipeButton:onClick()
-    
+  local function updateAddRecipeButton()
+    if recipesPage.addRecipeStep == nil then
+      addRecipeButton:setTextDrawPos(math.floor(addRecipeButton.size.x / 2) - 5, 1)
+      addRecipeButton:setText("Add recipe")
+    else
+      addRecipeButton:setTextDrawPos(math.floor(addRecipeButton.size.x / 2) - 4, 1)
+      addRecipeButton:setText("Continue")
+    end
   end
 
-  local instructionsPanel = addElem(ui.logger.create())
-  instructionsPanel:setPos(lineX + 2, 5)
-  instructionsPanel:setSize(w - lineX - 4, h - 10)
-  for _ = 1, 30 do
-    instructionsPanel:writeText("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", colors.red)
+  function cancelButton:onClick()
+    recipesPage.addRecipeStep = nil
+    updateCancelbutton()
+    updateAddRecipeButton()
+    instructionsPanel:clear()
   end
+
+  updateAddRecipeButton()
+
+  function addRecipeButton:onClick()
+    if not recipesPage.addRecipeStep then
+      recipesPage.addRecipeStep = 1
+      instructionsPanel.writeText("Creating a new recipe! Please place the recipe into the dropper, then hit Continue.")
+      instructionsPanel.newLine()
+    elseif recipesPage.addRecipeStep == 1 then
+
+    end
+  end
+
+
 
   -- Make the add recipe menu
   -- have a button saying "add recipe", it gives steps on the right
