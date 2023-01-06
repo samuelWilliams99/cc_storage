@@ -118,9 +118,10 @@ function editLockPage.setup()
     local unauthOptions = {}
 
     for ply, isAuth in pairs(allPlys) do
-      local list = isAuth and authOptions or unauthOptions
+      local arr = isAuth and authOptions or unauthOptions
+      local list = isAuth and authList or unauthList
       local spaces = math.floor((list.size.x - #ply) / 2)
-      table.insert(list, {displayText = string.rep(" ", spaces) .. ply, name = ply})
+      table.insert(arr, {displayText = string.rep(" ", spaces) .. ply, name = ply})
     end
 
     table.sort(authOptions, function(a, b) return a.name < b.name end)
