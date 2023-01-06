@@ -66,6 +66,38 @@ function recipesPage.setup()
     updateRecipeList()
   end
 
+  local cancelButton = addElem(ui.text.create())
+  cancelButton:setPos(lineX + 2, h - 4)
+  cancelButton:setSize(12, 3)
+  cancelButton:setTextDrawPos(3, 1)
+  cancelButton:setText("Cancel")
+  function cancelButton:onClick()
+    recipesPage.addRecipeStep = nil
+    -- do some other stuff
+  end
+
+  local function updateCancelbutton()
+    if not recipesPage.addRecipeStep then
+      cancelButton:setTextColor(colors.white)
+      cancelButton:setBgColor(colors.gray)
+    else
+      cancelButton:setTextColor(colors.black)
+      cancelButton:setBgColor(colors.black)
+    end
+    cancelButton:invalidateLayout(true)
+  end
+
+  updateCancelbutton()
+
+  local addRecipeButton = addElem(ui.text.create())
+  addRecipeButton:setPos(lineX + 2 + 12 + 2, 7)
+  addRecipeButton:setSize(h - lineX - 4 - 12 - 4, 3)
+  addRecipeButton:setTextDrawPos(math.floor(addRecipeButton.size.x / 2) - 5, 1)
+  addRecipeButton:setText("Add recipe")
+  function addRecipeButton:onClick()
+    
+  end
+
   -- Make the add recipe menu
   -- have a button saying "add recipe", it gives steps on the right
   -- Put the recipe in the dropper then hit continue -- check if empty
