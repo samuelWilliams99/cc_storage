@@ -102,10 +102,10 @@ function recipesPage.setup()
   end
 
   local instructionsPanel = addElem(ui.logger.create())
-  instructionsPanel:setPos(lineX + 2, 7)
-  instructionsPanel:setSize(w - lineX - 4, h - 14)
+  instructionsPanel:setPos(lineX + 2, 5)
+  instructionsPanel:setSize(w - lineX - 4, h - 10)
   for _ = 1, 30 do
-    instructionsPanel:writeText("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", colors.red)
+    instructionsPanel:writeText("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", colors.red)
   end
 
   -- Make the add recipe menu
