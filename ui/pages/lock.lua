@@ -118,11 +118,13 @@ function editLockPage.setup()
     local unauthOptions = {}
 
     for ply, isAuth in pairs(allPlys) do
-      table.insert(isAuth and authOptions or unauthOptions, {displayText = ply})
+      local list = isAuth and authOptions or unauthOptions
+      local spaces = math.floor((list.size.x - #ply) / 2)
+      table.insert(list, {displayText = string.rep(" ", spaces) .. ply, name = ply})
     end
 
-    table.sort(authOptions, function(a, b) return a.displayText < b.displayText end)
-    table.sort(unauthOptions, function(a, b) return a.displayText < b.displayText end)
+    table.sort(authOptions, function(a, b) return a.name < b.name end)
+    table.sort(unauthOptions, function(a, b) return a.name < b.name end)
 
     authList:setOptions(authOptions)
     unauthList:setOptions(unauthOptions)
@@ -133,7 +135,7 @@ function editLockPage.setup()
   local enableButton = addElem(ui.text.create())
   enableButton:setPos(midX - 15, h - 4)
   enableButton:setSize(30, 3)
-  enableButton:setTextDrawPos(12, 1)
+  enableButton:setTextDrawPos(11, 1)
 
   local function updateEnableButton()
     local enabled = storage.lockPageEnabled
@@ -150,7 +152,7 @@ function editLockPage.setup()
   updateEnableButton()
 
   function authList:handleClick(_, data)
-    table.removeByValue(authorisedPlayers, data.displayText)
+    table.removeByValue(authorisedPlayers, data.name)
     if #authorisedPlayers == 0 then storage.lockPageEnabled = false end
     updateLists()
     updateEnableButton()
@@ -158,7 +160,7 @@ function editLockPage.setup()
   end
 
   function unauthList:handleClick(_, data)
-    table.insert(authorisedPlayers, data.displayText)
+    table.insert(authorisedPlayers, data.name)
     updateLists()
     updateEnableButton()
     savePlayers()
