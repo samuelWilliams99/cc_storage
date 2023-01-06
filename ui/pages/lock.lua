@@ -89,17 +89,19 @@ function editLockPage.setup()
   term.setCursorPos(math.ceil(midLeftX - #leftTitleText / 2), 6)
   term.write(leftTitleText)
 
-  local midX = math.floor(w * 0.5)
-
-  local authList = addElem(ui.buttonList.create())
-  authList:setPos(2, 7)
-  authList:setSize(midX - 4, h - 13)
-
   -- right title
   local midRightX = 2 + math.floor((w - 4) * 0.75)
   local rightTitleText = "Unauthorised players"
   term.setCursorPos(math.ceil(midRightX - #rightTitleText / 2), 6)
   term.write(rightTitleText)
+
+  term.setTextColor(colors.white)
+
+  local midX = math.floor(w * 0.5)
+
+  local authList = addElem(ui.buttonList.create())
+  authList:setPos(2, 7)
+  authList:setSize(midX - 4, h - 13)
 
   local unauthList = addElem(ui.buttonList.create())
   unauthList:setPos(midX + 2, 7)
