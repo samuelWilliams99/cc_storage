@@ -45,5 +45,6 @@ hook.setPreError(function(event, handlerName, err, stack)
   writeFile("logs.txt", logs)
 end)
 
+storage.startLockTimer()
 storage.startInputTimer()
 hook.runLoop()

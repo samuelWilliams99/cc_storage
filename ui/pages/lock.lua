@@ -20,25 +20,27 @@ local function savePlayers()
   writeFile("users.txt", authorisedPlayers)
 end
 
-hook.add("playerClick", "lockUnlockAttempt", function(playerName)
-  if table.contains(authorisedPlayers, playerName) and storage.lockPageEnabled then
-    pages.setPage(lockPage.active and "itemList" or "lock")
-  end
-end)
-
-timer.create("autolock", 5, 0, function()
-  if lockPage.active or not storage.lockPageEnabled then return end
-  local plys = playerDetector.getPlayersInRange(5)
-  local foundPlayer = false
-  for _, ply in pairs(plys) do
-    if table.contains(authorisedPlayers, ply) then
-      foundPlayer = true
+function storage.startLockTimer()
+  hook.add("playerClick", "lockUnlockAttempt", function(playerName)
+    if table.contains(authorisedPlayers, playerName) and storage.lockPageEnabled then
+      pages.setPage(lockPage.active and "itemList" or "lock")
     end
-  end
-  if not foundPlayer then
-    pages.setPage("lock")
-  end
-end)
+  end)
+
+  timer.create("autolock", 5, 0, function()
+    if lockPage.active or not storage.lockPageEnabled then return end
+    local plys = playerDetector.getPlayersInRange(5)
+    local foundPlayer = false
+    for _, ply in pairs(plys) do
+      if table.contains(authorisedPlayers, ply) then
+        foundPlayer = true
+      end
+    end
+    if not foundPlayer then
+      pages.setPage("lock")
+    end
+  end)
+end
 
 function lockPage.setup()
   hook.add("terminate", "preventTerminate", function()
