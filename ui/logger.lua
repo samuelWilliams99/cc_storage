@@ -30,7 +30,7 @@ function ui.logger.create(parent)
       for _, line in ipairs(lines) do
         ui.drawText(0, y, line, textData.color)
         y = y + 1
-        if y > self.size.y then break end
+        if y == self.size.y then break end
       end
     end
   end
