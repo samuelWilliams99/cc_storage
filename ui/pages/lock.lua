@@ -106,7 +106,6 @@ function editLockPage.setup()
   unauthList:setSize(midX - 4, h - 13)
 
   local function updateLists()
-    local onlinePlys = 
     local allPlys = {}
     for _, ply in ipairs(playerDetector.getOnlinePlayers() or {}) do
       allPlys[ply] = false
