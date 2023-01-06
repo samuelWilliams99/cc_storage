@@ -41,11 +41,11 @@ function recipesPage.setup()
   end
   term.setTextColor(colors.white)
 
-  -- Count title
+  -- Recipe list title
   local midLeftX = 2 + math.floor((w - 4) * 0.2)
-  local countTitleText = "Recipe list (click to remove)"
-  term.setCursorPos(math.ceil(midLeftX - #countTitleText / 2), 6)
-  term.write(countTitleText)
+  local recipesTitleText = "Recipe list (click to remove)"
+  term.setCursorPos(math.ceil(midLeftX - #recipesTitleText / 2), 6)
+  term.write(recipesTitleText)
 
   local recipesList = addElem(ui.buttonList.create())
   recipesList:setPos(2, 7)
@@ -65,6 +65,14 @@ function recipesPage.setup()
     storage.crafting.removeRecipe(data.name)
     updateRecipeList()
   end
+
+  -- Make the add recipe menu
+  -- have a button saying "add recipe", it gives steps on the right
+  -- Put the recipe in the dropper then hit continue -- check if empty
+  -- put the crafted item (and amount) in the dropper and hit continue -- check if empty
+  -- should this recipe use oredict? -- default to no, or well, dont even implement yet lol
+  -- also, need to save ingredient displaynames
+  -- added
 end
 
 function recipesPage.cleanup()

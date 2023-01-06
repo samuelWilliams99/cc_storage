@@ -114,6 +114,14 @@ function storagePage.setup()
     pages.setPage("recipes")
   end
 
+  local lockButton = addElem(ui.text.create())
+  lockButton:setPos(9, h - 1)
+  lockButton:setSize(13, 1)
+  lockButton:setText("Lock settings")
+  function lockButton:onClick()
+    pages.setPage("editLock")
+  end
+
   local function getCountText(count, maxStack)
     if maxStack == 1 or count <= maxStack then return tostring(count) end
     local stacks = math.floor(count / maxStack)

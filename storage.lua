@@ -22,7 +22,11 @@ print("Rendering...")
 sleep(1)
 
 hook.add("initialize", "testing", function()
-  pages.setPage("itemList")
+  if storage.lockPageEnabled then
+    pages.setPage("lock")
+  else
+    pages.setPage("itemList")
+  end
 end)
 
 hook.add("terminate", "clear_screen", function()
