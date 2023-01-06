@@ -130,18 +130,6 @@ function editLockPage.setup()
 
   updateLists()
 
-  function authList:handleClick(_, data)
-    table.removeByValue(authorisedPlayers, data.displayText)
-    updateLists()
-    savePlayers()
-  end
-
-  function unauthList:handleClick(_, data)
-    table.insert(authorisedPlayers, data.displayText)
-    updateLists()
-    savePlayers()
-  end
-
   local enableButton = addElem(ui.text.create())
   enableButton:setPos(midX - 15, h - 4)
   enableButton:setSize(30, 3)
@@ -149,12 +137,35 @@ function editLockPage.setup()
 
   local function updateEnableButton()
     local enabled = storage.lockPageEnabled
-    enableButton:setBgColor(enabled and colors.green or colors.red)
+    local col = enabled and colors.green or colors.red
+    
+    if #authorisedPlayers == 0 then
+      col = colors.gray
+    end
+    enableButton:setBgColor(col)
     enableButton:setText(enabled and "Enabled" or "Disabled")
     enableButton:invalidateLayout(true)
   end
 
+  updateEnableButton()
+
+  function authList:handleClick(_, data)
+    table.removeByValue(authorisedPlayers, data.displayText)
+    if #authorisedPlayers == 0 then storage.lockPageEnabled = false end
+    updateLists()
+    updateEnableButton()
+    savePlayers()
+  end
+
+  function unauthList:handleClick(_, data)
+    table.insert(authorisedPlayers, data.displayText)
+    updateLists()
+    updateEnableButton()
+    savePlayers()
+  end
+
   function enableButton:onClick()
+    if #authorisedPlayers == 0 then return end
     storage.lockPageEnabled = not storage.lockPageEnabled
     updateEnableButton()
   end
