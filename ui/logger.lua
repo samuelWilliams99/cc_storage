@@ -14,8 +14,7 @@ function ui.logger.create(parent)
   end
 
   function elem:newLine()
-    table.insert(self.texts, "")
-    self:invalidateLayout()
+    elem:writeText("")
   end
 
   function elem:removeLastLine()
