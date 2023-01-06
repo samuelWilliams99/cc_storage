@@ -91,7 +91,7 @@ function recipesPage.setup()
 
   local addRecipeButton = addElem(ui.text.create())
   addRecipeButton:setPos(lineX + 2 + 12 + 2, 7)
-  addRecipeButton:setSize(h - lineX - 4 - 12 - 4, 3)
+  addRecipeButton:setSize(w - lineX - 4 - 12 - 4, 3)
   addRecipeButton:setTextDrawPos(math.floor(addRecipeButton.size.x / 2) - 5, 1)
   addRecipeButton:setText("Add recipe")
   function addRecipeButton:onClick()
