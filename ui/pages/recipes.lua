@@ -1,4 +1,5 @@
 require "ui.pages.pages"
+require "ui.logger"
 
 local recipesPage = {}
 
@@ -71,13 +72,9 @@ function recipesPage.setup()
   cancelButton:setSize(12, 3)
   cancelButton:setTextDrawPos(3, 1)
   cancelButton:setText("Cancel")
-  function cancelButton:onClick()
-    recipesPage.addRecipeStep = nil
-    -- do some other stuff
-  end
 
   local function updateCancelbutton()
-    if not recipesPage.addRecipeStep then
+    if recipesPage.addRecipeStep then
       cancelButton:setTextColor(colors.white)
       cancelButton:setBgColor(colors.gray)
     else
@@ -85,6 +82,12 @@ function recipesPage.setup()
       cancelButton:setBgColor(colors.black)
     end
     cancelButton:invalidateLayout(true)
+  end
+
+  function cancelButton:onClick()
+    recipesPage.addRecipeStep = nil
+    updateCancelbutton()
+    -- do some other stuff
   end
 
   updateCancelbutton()
@@ -96,6 +99,13 @@ function recipesPage.setup()
   addRecipeButton:setText("Add recipe")
   function addRecipeButton:onClick()
     
+  end
+
+  local instructionsPanel = addElem(ui.logger.create())
+  instructionsPanel:setPos(lineX + 2, 7)
+  instructionsPanel:setSize(w - lineX - 4, h - 14)
+  for _ = 1, 30 do
+    instructionsPanel:writeText("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", colors.red)
   end
 
   -- Make the add recipe menu
