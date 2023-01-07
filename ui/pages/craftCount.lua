@@ -212,6 +212,9 @@ function craftCountPage.displayPlan()
     if storage.items[itemName] then
       name = storage.items[itemName].detail.displayName
       available = storage.items[itemName].count
+      if craftCountPage.plan.craftable then
+        available = available + required
+      end
     end
     local str = name .. string.rep(" ", xOffset - #name) .. "| " .. available .. " / " .. required
     local entry = {displayText = str}
