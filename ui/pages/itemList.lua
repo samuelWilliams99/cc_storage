@@ -83,11 +83,11 @@ function storagePage.setup()
       craftingCounter:setTextColor(colors.black)
     else
       craftingCounter:setTextColor(colors.white)
-      local text = #storage.crafting.plans .. " Crafting job active"
-      craftingCounter:setPos(w - 11 - #text, 0)
-      craftingCounter:setSize(#text, 1)
-      craftingCounter:setText(text)
     end
+    local text = #storage.crafting.plans .. " Crafting job active"
+    craftingCounter:setPos(w - 11 - #text, 0)
+    craftingCounter:setSize(#text, 1)
+    craftingCounter:setText(text)
   end
   updateCraftingCounter()
 
