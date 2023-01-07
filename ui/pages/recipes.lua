@@ -152,11 +152,11 @@ function recipesPage.setup()
       addRecipeButton:setText("Continue")
     end
     if recipesPage.addRecipeStep then
-      cancelButton:setTextColor(colors.white)
-      cancelButton:setBgColor(colors.gray)
+      addRecipeButton:setTextColor(colors.white)
+      addRecipeButton:setBgColor(colors.gray)
     else
-      cancelButton:setTextColor(colors.black)
-      cancelButton:setBgColor(colors.black)
+      addRecipeButton:setTextColor(colors.black)
+      addRecipeButton:setBgColor(colors.black)
     end
   end
 
