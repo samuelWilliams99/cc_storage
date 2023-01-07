@@ -21,6 +21,7 @@ local function getPlacementFromDropper()
     return false, "No recipe in dropper"
   end
   local placement = {}
+  local names = {}
   for i, item in pairs(items) do
     if item.count ~= 1 then
       return false, "Must be 0 or 1 item in each slot"
@@ -34,9 +35,30 @@ local function getPlacementFromDropper()
     end
     local itemKey = storage.getItemKey(item, itemDetail)
     placement[i] = itemKey
+    names[itemKey] = itemDetail.displayName
   end
 
-  return true, placement
+  return true, placement, names
+end
+
+local function getCraftedItemFromDropper()
+  local items = dropper.list()
+  if #items ~= 1 then
+    return false, "Must be exactly one item type in dropper"
+  end
+  local i, item = next(items)
+  local itemDetail = dropper.getItemDetail(i)
+  if itemDetail.damage and itemDetail.damage ~= 0 then
+    return false, "Cannot craft damaged items in recipe"
+  end
+  if itemDetail.enchantments then
+    return false, "Cannot craft enchanted items in recipe"
+  end
+  local itemKey = storage.getItemKey(item, itemDetail)
+  if storage.crafting.recipes[itemKey] then
+    return false, "Recipe for this item already exists. To replace, remove this recipe on the left"
+  end
+  return true, itemKey, itemDetail.displayName, item.count, itemDetail.maxCount
 end
 
 function recipesPage.setup()
@@ -141,6 +163,7 @@ function recipesPage.setup()
   function cancelButton:onClick()
     recipesPage.addRecipeStep = 1
     recipesPage.placement = nil
+    recipesPage.names = nil
     recipesPage.removeLastLines = nil
     updateCancelbutton()
     updateAddRecipeButton()
@@ -151,11 +174,13 @@ function recipesPage.setup()
 
   function addRecipeButton:onClick()
     if not recipesPage.addRecipeStep then return end
-    for i = 1, recipesPage.removeLastLines or 0 do
+    for _ = 1, recipesPage.removeLastLines or 0 do
       instructionsPanel:removeLastLine()
     end
+    recipesPage.removeLastLines = nil
 
     if recipesPage.addRecipeStep == 1 then
+      instructionsPanel:clear()
       recipesPage.addRecipeStep = 2
       updateCancelbutton()
       updateAddRecipeButton()
@@ -164,9 +189,10 @@ function recipesPage.setup()
       instructionsPanel:writeText("Scanning recipe...")
       recipesPage.addRecipeStep = nil
       updateAddRecipeButton()
-      local success, data = getPlacementFromDropper()
+      local success, placement, names = getPlacementFromDropper()
       if success then
-        recipesPage.placement = data
+        recipesPage.placement = placement
+        recipesPage.names = names
         recipesPage.addRecipeStep = 3
         updateAddRecipeButton()
         instructionsPanel:removeLastLine()
@@ -174,31 +200,44 @@ function recipesPage.setup()
         instructionsPanel:newLine()
         instructionsPanel:writeText("Place the crafted items (with correct count) in the dropper then hit Continue.")
       else
+        local errorMessage = placement
         recipesPage.addRecipeStep = 2
         updateAddRecipeButton()
         instructionsPanel:removeLastLine()
         instructionsPanel:writeText("Scanning recipe... Failed!")
-        instructionsPanel:writeText(data)
+        instructionsPanel:writeText(errorMessage, colors.red)
         instructionsPanel:writeText("Please fix the recipe and hit Continue.")
         recipesPage.removeLastLines = 3
       end
     elseif recipesPage.addRecipeStep == 3 then
-      -- same again, check empty, and not more than 1 slot
-      -- also check we dont have a recipe for that already
-      -- if all good, add it and move on
+      instructionsPanel:writeText("Scanning crafted items...")
+      recipesPage.addRecipeStep = nil
+      updateAddRecipeButton()
+      local success, itemName, displayName, count, maxCount = getCraftedItemFromDropper()
+      if success then
+        storage.crafting.addRecipe(itemName, displayName, recipesPage.placement, count, maxCount, recipesPage.names)
+        recipesPage.addRecipeStep = 1
+        recipesPage.placement = nil
+        recipesPage.names = nil
+        updateAddRecipeButton()
+        instructionsPanel:removeLastLine()
+        instructionsPanel:writeText("Scanning crafted items... Successful!")
+        instructionsPanel:newLine()
+        instructionsPanel:writeText("Added recipe for " .. displayName .. " to database.", colors.green)
+      else
+        local errorMessage = itemName
+        recipesPage.addRecipeStep = 3
+        updateAddRecipeButton()
+        instructionsPanel:removeLastLine()
+        instructionsPanel:writeText("Scanning crafted items... Failed!")
+        instructionsPanel:writeText(errorMessage, colors.red)
+        instructionsPanel:writeText("Please fix the crafted items and hit Continue.")
+        recipesPage.removeLastLines = 3
+      end
     end
     -- later, add thing for oredict
+    -- as well as option for computer to take items from recipe
   end
-
-
-
-  -- Make the add recipe menu
-  -- have a button saying "add recipe", it gives steps on the right
-  -- Put the recipe in the dropper then hit continue -- check if empty
-  -- put the crafted item (and amount) in the dropper and hit continue -- check if empty
-  -- should this recipe use oredict? -- default to no, or well, dont even implement yet lol
-  -- also, need to save ingredient displaynames
-  -- added
 end
 
 function recipesPage.cleanup()

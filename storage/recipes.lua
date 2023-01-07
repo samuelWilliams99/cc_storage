@@ -4,7 +4,8 @@ storage.crafting.recipes = storage.crafting.recipes or {}
 
 storage.crafting.recipeFilePath = "recipes.txt"
 
-function storage.crafting.addRecipe(itemName, displayName, recipePlacement, count, maxStack, override)
+function storage.crafting.addRecipe(itemName, displayName, recipePlacement, count, maxStack, names, override)
+  -- TODO: use names (itemName: displayName), could put crafted item displayName in there
   if not override and storage.crafting.recipes[itemName] then return end
   local rawRecipe = {
     itemName = itemName,
@@ -47,10 +48,6 @@ function storage.crafting.loadRecipes()
   for _, rawRecipe in pairs(recipeData) do
     storage.crafting.preCacheRecipe(rawRecipe)
   end
-
-  storage.crafting.addRecipe("minecraft:stick", "Stick", {[1] = "minecraft:oak_planks", [4] = "minecraft:oak_planks"}, 4, nil, true)
-  storage.crafting.addRecipe("minecraft:oak_planks", "Oak Planks", {[1] = "minecraft:oak_log"}, 4, nil, true)
-  storage.crafting.addRecipe("minecraft:wooden_sword552887824c43124013fd24f6edcde0fb", "Wooden Sword", {[2] = "minecraft:oak_planks", [5] = "minecraft:oak_planks", [8] = "minecraft:stick"}, nil, 1, true)
 end
 
 function storage.crafting.preCacheRecipe(rawRecipe)
