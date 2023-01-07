@@ -8,13 +8,14 @@ storage.crafting.jobQueue = {}
 -- a task is created by .craft or .craftShallow, and contains many jobs.
 storage.crafting.tasks = {}
 
--- TODO: recipe management
--- requires "screen" support, whereby we have several screens that can be rendered and switched between
--- will also need this for the crafting UI, which atm is terrible
+-- TODO: crafting UI
 
 -- TODO (later): the scan should happen BEFORE the chest lookup, and turtles should empty the chest into their own inv before replying to the scan
 -- then, on successful check, turtles should empty their inv back into the chest, and the comp should input all the items
 -- this is recovery for the situations where turtles are mid craft when the computer goes down
+
+-- TODO: Recipes can be invalid, should throw a reasonable error in this case
+-- or, force verification when adding a recipe?
 
 local craftingPortOut = 1357
 local craftingPortIn = craftingPortOut + 1

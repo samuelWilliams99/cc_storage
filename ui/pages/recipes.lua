@@ -43,7 +43,7 @@ end
 
 local function getCraftedItemFromDropper()
   local items = dropper.list()
-  if #items ~= 1 then
+  if table.count(items) ~= 1 then
     return false, "Must be exactly one item type in dropper"
   end
   local i, item = next(items)
@@ -56,7 +56,7 @@ local function getCraftedItemFromDropper()
   end
   local itemKey = storage.getItemKey(item, itemDetail)
   if storage.crafting.recipes[itemKey] then
-    return false, "Recipe for this item already exists. To replace, remove this recipe on the left"
+    return false, "Recipe for this item already exists.\nTo replace, remove this recipe on the left"
   end
   return true, itemKey, itemDetail.displayName, item.count, itemDetail.maxCount
 end
@@ -185,6 +185,7 @@ function recipesPage.setup()
       updateCancelbutton()
       updateAddRecipeButton()
       instructionsPanel:writeText("Creating a new recipe! Please place the recipe into the dropper, then hit Continue.")
+      instructionsPanel:newLine()
     elseif recipesPage.addRecipeStep == 2 then
       instructionsPanel:writeText("Scanning recipe...")
       recipesPage.addRecipeStep = nil
@@ -196,18 +197,20 @@ function recipesPage.setup()
         recipesPage.addRecipeStep = 3
         updateAddRecipeButton()
         instructionsPanel:removeLastLine()
-        instructionsPanel:writeText("Scanning recipe... Successful!")
+        instructionsPanel:writeText("Scanning recipe... Successful!", colors.green)
         instructionsPanel:newLine()
         instructionsPanel:writeText("Place the crafted items (with correct count) in the dropper then hit Continue.")
+        instructionsPanel:newLine()
       else
         local errorMessage = placement
         recipesPage.addRecipeStep = 2
         updateAddRecipeButton()
         instructionsPanel:removeLastLine()
-        instructionsPanel:writeText("Scanning recipe... Failed!")
+        instructionsPanel:writeText("Scanning recipe... Failed!", colors.red)
         instructionsPanel:writeText(errorMessage, colors.red)
+        instructionsPanel:newLine()
         instructionsPanel:writeText("Please fix the recipe and hit Continue.")
-        recipesPage.removeLastLines = 3
+        recipesPage.removeLastLines = 4
       end
     elseif recipesPage.addRecipeStep == 3 then
       instructionsPanel:writeText("Scanning crafted items...")
@@ -220,8 +223,10 @@ function recipesPage.setup()
         recipesPage.placement = nil
         recipesPage.names = nil
         updateAddRecipeButton()
+        updateRecipeList()
+        updateCancelbutton()
         instructionsPanel:removeLastLine()
-        instructionsPanel:writeText("Scanning crafted items... Successful!")
+        instructionsPanel:writeText("Scanning crafted items... Successful!", colors.green)
         instructionsPanel:newLine()
         instructionsPanel:writeText("Added recipe for " .. displayName .. " to database.", colors.green)
       else
@@ -229,10 +234,11 @@ function recipesPage.setup()
         recipesPage.addRecipeStep = 3
         updateAddRecipeButton()
         instructionsPanel:removeLastLine()
-        instructionsPanel:writeText("Scanning crafted items... Failed!")
+        instructionsPanel:writeText("Scanning crafted items... Failed!", colors.red)
         instructionsPanel:writeText(errorMessage, colors.red)
+        instructionsPanel:newLine()
         instructionsPanel:writeText("Please fix the crafted items and hit Continue.")
-        recipesPage.removeLastLines = 3
+        recipesPage.removeLastLines = 4
       end
     end
     -- later, add thing for oredict
