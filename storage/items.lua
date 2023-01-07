@@ -169,6 +169,9 @@ function storage.updateItemMapping()
     chestCounter = chestCounter + 1
   end
 
+  -- TODO: we can probably skip items we know can't have metadata, like cobblestone
+  -- also turns out list gives you nbt, which is all we need to make a key
+  -- so it should be doable with just item?
   for _, chestData in ipairs(chestsData) do
     local chestItems = chestData.list
     local chest = chestData.chest

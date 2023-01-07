@@ -5,8 +5,10 @@ require "utils.helpers"
 storage.crafting.crafters = {}
 -- the jobQueue list is a queue of jobs to be run
 storage.crafting.jobQueue = {}
--- a task is created by .craft or .craftShallow, and contains many jobs.
+-- a task is created by .craftShallow, and contains many jobs.
 storage.crafting.tasks = {}
+-- a plan is a series of tasks for deep crafting
+storage.crafting.plans = {}
 
 -- TODO: crafting UI
 
@@ -234,6 +236,7 @@ end
 
 function storage.crafting.runPlan(plan, cb)
   if not plan.craftable then return false, "Uncraftable plan" end
+  table.insert(storage.crafting.plans, plan)
 
   plan.intermediates = table.shallowCopy(plan.ingredients) -- maybe just set to ingredients if we dont care about ingreds after its made
   
@@ -265,6 +268,7 @@ function storage.crafting.runPlanAux(plan, node, cb)
     node.count = 0
     -- if node is root, unreserve crafteditems, run original cb, return
     if node.isRoot then
+      table.removeByValue(storage.crafting.plans, plan)
       handleFailure(storage.unreserveItems(plan.craftedItems))
       if cb then cb() end
       return

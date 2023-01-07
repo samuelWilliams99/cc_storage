@@ -76,6 +76,21 @@ function storagePage.setup()
   end
   updateOrderSwitch()
 
+  local craftingCounter = addElem(ui.text.create())
+  craftingCounter:setBgColor(colors.black)
+  local function updateCraftingCounter()
+    if table.isEmpty(storage.crafting.plans) then
+      craftingCounter:setTextColor(colors.black)
+    else
+      craftingCounter:setTextColor(colors.white)
+      local text = #storage.crafting.plans .. " Crafting job active"
+      craftingCounter:setPos(w - 11 - #text, 0)
+      craftingCounter:setSize(#text, 1)
+      craftingCounter:setText(text)
+    end
+  end
+  updateCraftingCounter()
+
   local slotCounter = addElem(ui.text.create())
   slotCounter:setBgColor(colors.black)
   local function updateSlotCounter()
@@ -219,6 +234,7 @@ function storagePage.setup()
 
     updatePageCounter()
     updateSlotCounter()
+    updateCraftingCounter()
   end
 
   function buttonList:handleClick(btn, data)
@@ -229,7 +245,7 @@ function storagePage.setup()
     if canCraft and (btn == 3 or not storage.items[data.name]) then
       pages.setPage("craftCount", data.name)
     elseif btn == 2 then
-      storage.dropItem(data.name, 64)
+      storage.dropItem(data.name, 64) -- TODO: this should be maxStack, not 64
     elseif btn == 1 then
       storage.dropItem(data.name, 1)
     end
