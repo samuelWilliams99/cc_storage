@@ -288,16 +288,16 @@ end
 
 -- Calculates the max of this item that a crafter can craft
 function storage.crafting.getMaxPerCrafter(recipe)
-  local minStack = 64
+  local minCount = 64
   for itemName, count in pairs(recipe.ingredients) do
     local item = storage.items[itemName]
     if not item then return end
-    local maxStackForIngredient = math.floor(item.detail.maxCount / count)
-    if maxStackForIngredient < minStack then
-      minStack = maxStackForIngredient
+    local maxCountForIngredient = math.floor(item.detail.maxCount / count)
+    if maxCountForIngredient < minCount then
+      minCount = maxCountForIngredient
     end
   end
-  return math.min(minStack, recipe.maxCrafts)
+  return math.min(minCount, recipe.maxCrafts)
 end
 
 -- Crafts an item, parallelising if needed, taking a callback for when finished, as well as a flag for using reserved items (likely always true?)

@@ -137,11 +137,11 @@ function storagePage.setup()
     pages.setPage("editLock")
   end
 
-  local function getCountText(count, maxStack)
-    if maxStack == 1 or count <= maxStack then return tostring(count) end
-    local stacks = math.floor(count / maxStack)
-    local str = tostring(count) .. " (" .. stacks .. " * " .. maxStack
-    local remainder = count % maxStack
+  local function getCountText(count, maxCount)
+    if maxCount == 1 or count <= maxCount then return tostring(count) end
+    local stacks = math.floor(count / maxCount)
+    local str = tostring(count) .. " (" .. stacks .. " * " .. maxCount
+    local remainder = count % maxCount
     if remainder > 0 then
       str = str .. " + " .. remainder
     end

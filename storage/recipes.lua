@@ -4,7 +4,7 @@ storage.crafting.recipes = storage.crafting.recipes or {}
 
 storage.crafting.recipeFilePath = "recipes.txt"
 
-function storage.crafting.addRecipe(itemName, displayName, recipePlacement, count, maxStack, names, override)
+function storage.crafting.addRecipe(itemName, displayName, recipePlacement, count, maxCount, names, override)
   -- TODO: use names (itemName: displayName), could put crafted item displayName in there
   if not override and storage.crafting.recipes[itemName] then return end
   local rawRecipe = {
@@ -12,7 +12,7 @@ function storage.crafting.addRecipe(itemName, displayName, recipePlacement, coun
     displayName = displayName,
     recipePlacement = recipePlacement,
     count = count,
-    maxStack = maxStack
+    maxCount = maxCount
   }
   storage.crafting.saveRecipe(rawRecipe)
   storage.crafting.preCacheRecipe(rawRecipe)
@@ -20,6 +20,14 @@ end
 
 function storage.crafting.updateRecipe(itemName, rawRecipe)
   local recipeData = readFile(storage.crafting.recipeFilePath) or {}
+  -- TODO: remove this after migration
+  -- also the code in precache
+  for _, r in pairs(recipeData) do
+    if r.maxStack then
+      r.maxCount = r.maxStack
+      r.maxStack = nil
+    end
+  end
   recipeData[itemName] = rawRecipe
   writeFile(storage.crafting.recipeFilePath, recipeData)
 end
@@ -52,7 +60,7 @@ end
 
 function storage.crafting.preCacheRecipe(rawRecipe)
   local count = rawRecipe.count or 1
-  local maxStack = rawRecipe.maxStack or 64
+  local maxCount = rawRecipe.maxCount or rawRecipe.maxStack or 64 -- Support maxStack for legacy
   local ingredients = {}
   for i = 1, 9 do
     if rawRecipe.recipePlacement[i] then
@@ -67,7 +75,7 @@ function storage.crafting.preCacheRecipe(rawRecipe)
     count = count,
     displayName = rawRecipe.displayName,
     -- max crafts to fit all output
-    -- turtle has 16 slots, so can fit 16 * maxStack in its inventory
-    maxCrafts = math.floor((16 * maxStack) / count)
+    -- turtle has 16 slots, so can fit 16 * maxCount in its inventory
+    maxCrafts = math.floor((16 * maxCount) / count)
   }
 end
