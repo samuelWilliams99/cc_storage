@@ -226,7 +226,8 @@ function storagePage.setup()
 
       table.insert(options, {
         displayText = displayNamePadded .. " | " .. countText,
-        name = name
+        name = name,
+        maxCount = item.detail.maxCount -- Will be nil for non craftables
       })
     end
 
@@ -245,7 +246,7 @@ function storagePage.setup()
     if canCraft and (btn == 3 or not storage.items[data.name]) then
       pages.setPage("craftCount", data.name)
     elseif btn == 2 then
-      storage.dropItem(data.name, 64) -- TODO: this should be maxStack, not 64
+      storage.dropItem(data.name, data.maxCount)
     elseif btn == 1 then
       storage.dropItem(data.name, 1)
     end
