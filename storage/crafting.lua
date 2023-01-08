@@ -143,7 +143,8 @@ function storage.crafting.makeCraftPlan(itemName, count)
     ingredientDisplayNames = {},
     missingIngredients = {},
     craftedItems = {},
-    craftable = true
+    craftable = true,
+    count = count
   }
   storage.crafting.makeCraftPlanAux(itemName, count, plan)
   plan.leaves = table.keys(plan.leaves)

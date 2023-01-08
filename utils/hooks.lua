@@ -79,24 +79,31 @@ function hook.runLoop()
 
     local shouldTerminate = isTerminate
 
+    -- acts as a copy
+    -- Avoids errors if a handler is removed by another on the same event
+    local handlerNames = table.keys(handlerTable or {})
+
     -- Run handlers
-    for handlerName, handler in pairs(handlerTable or {}) do
-      local co = coroutine.create(function() return handler(table.unpack(eventData, 2, eventData.n)) end)
-      local success, data = coroutine.resume(co)
+    for _, handlerName in pairs(handlerNames) do
+      local handler = handlerTable[handlerName]
+      if handler then -- I wish we had continue or even goto
+        local co = coroutine.create(function() return handler(table.unpack(eventData, 2, eventData.n)) end)
+        local success, data = coroutine.resume(co)
 
-      if not success then throwError(event, handlerName, data, co) end
+        if not success then throwError(event, handlerName, data, co) end
 
-      local finished = coroutine.status(co) == "dead"
+        local finished = coroutine.status(co) == "dead"
 
-      if not finished then
-        table.insert(hook.routines, {routine = co, filter = data, isTerminate = isTerminate, event = event, handlerName = handlerName})
-        if isTerminate then
+        if not finished then
+          table.insert(hook.routines, {routine = co, filter = data, isTerminate = isTerminate, event = event, handlerName = handlerName})
+          if isTerminate then
+            shouldTerminate = false
+          end
+        end
+
+        if isTerminate and data then
           shouldTerminate = false
         end
-      end
-
-      if isTerminate and data then
-        shouldTerminate = false
       end
     end
 

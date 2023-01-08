@@ -301,7 +301,7 @@ function storagePage.setup()
   end)
 
   local function idleClear()
-    timer.create("itemListIdleClear", 20, 1, function()
+    timer.create("idle_clear_search", 20, 1, function()
       hook.run("key", 257, false)
     end)
   end
@@ -329,10 +329,16 @@ end
 
 function storagePage.cleanup()
   hook.run("key", 257, false)
+
   hook.remove("cc_storage_change", "update_view")
   hook.remove("mouse_scroll", "menu_shift")
   hook.remove("mouse_click", "clear_search")
   timer.remove("inventory_delay")
+
+  timer.remove("idle_clear_search")
+  hook.remove("key", "idle_clear_search")
+  hook.remove("mouse_click", "idle_clear_search")
+  hook.remove("mouse_scroll", "idle_clear_search")
   for _, elem in ipairs(storagePage.elems) do
     elem:remove()
   end

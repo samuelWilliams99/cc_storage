@@ -76,14 +76,14 @@ function craftCountPage.setup(itemName)
   local showUnderscore = true
   local function updateCount(n)
     local changed = count ~= n
-
+    
     count = n
     local str = ""
     if count > 0 then str = tostring(count) end 
     if showUnderscore then str = str .. "_" end
     countText:setText("  " .. str)
     countText:invalidateLayout(true)
-
+    
     if not changed then return end
 
     if count == 0 then
@@ -133,12 +133,21 @@ function craftCountPage.setup(itemName)
     updateCount(count * 10 + num)
   end)
 
-  hook.add("key", "craftCountKey", function(key)
-    if key == keys.backspace then
-      updateCount(math.floor(count / 10))
-    elseif key == keys.enter and count == 0 then
-      updateCount(1)
-    end
+  timer.simple(0.05, function()
+    hook.add("key", "craftCountKey", function(key)
+      if key == keys.backspace then
+        updateCount(math.floor(count / 10))
+      elseif key == keys.enter then
+        if count == 0 then
+          updateCount(1)
+        end
+        if craftCountPage.plan and craftCountPage.plan.count == count then
+          craftCountPage.craftBtn:onClick()
+        else
+          makePlanButton:onClick()
+        end
+      end
+    end)
   end)
 
   local midRightX = 2 + math.floor((w - 4) * 0.7)
@@ -157,6 +166,8 @@ function craftCountPage.displayPlan()
   if craftCountPage.plan.craftable then
     storage.crafting.reservePlan(craftCountPage.plan)
   end
+
+  craftCountPage.madeChange = false
 
   if not craftCountPage.ingredientsList then
     local lineX = 2 + math.floor((w - 4) * 0.4)
