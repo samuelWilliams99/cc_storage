@@ -94,26 +94,44 @@ function recipesPage.setup()
 
   -- Recipe list title
   local midLeftX = 2 + math.floor((w - 4) * 0.2)
-  local recipesTitleText = "Recipe list (click to remove)"
+  local recipesTitleText = "Recipe list"
   term.setCursorPos(math.ceil(midLeftX - #recipesTitleText / 2), 6)
   term.write(recipesTitleText)
 
+  local removeText = "Click twice to remove"
+  term.setCursorPos(math.ceil(midLeftX - #removeText / 2), 7)
+  term.setTextColor(colors.gray)
+  term.write(removeText)
+  term.setTextColor(colors.white)
+
   local recipesList = addElem(ui.buttonList.create())
-  recipesList:setPos(2, 7)
-  recipesList:setSize(lineX - 4, h - 13)
+  recipesList:setPos(2, 8)
+  recipesList:setSize(lineX - 4, h - 14)
+
+  local selectedToRemove = nil
   
   local function updateRecipeList()
     local options = {}
     for name, recipe in pairs(storage.crafting.recipes) do
       if #options == recipesList.size.y then break end
-      table.insert(options, {displayText = recipe.displayName, name = name})
+      table.insert(options, {displayText = recipe.displayName, name = name, bgColor = selectedToRemove == name and colors.red or nil})
     end
     recipesList:setOptions(options)
   end
   updateRecipeList()
 
   function recipesList:handleClick(_, data)
-    storage.crafting.removeRecipe(data.name)
+    if selectedToRemove == data.name then
+      storage.crafting.removeRecipe(data.name)
+      selectedToRemove = nil
+      timer.remove("recipeListRemoveTimeout")
+    else
+      selectedToRemove = data.name
+      timer.create("recipeListRemoveTimeout", 1, 1, function()
+        selectedToRemove = nil
+        updateRecipeList()
+      end)
+    end
     updateRecipeList()
   end
 
