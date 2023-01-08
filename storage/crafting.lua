@@ -221,7 +221,8 @@ function storage.crafting.makeCraftPlanAux(itemName, count, plan, parent)
 
   -- TODO: smarter prioritisation here, some parents take longer than others, and should be prioritised
   for ingredientName, ingredientCount in pairs(recipe.ingredients) do
-    if recipe.ingredientDisplayNames[ingredientName] then
+    -- Can drop the ingredientDisplayNames check once migrated
+    if recipe.ingredientDisplayNames and recipe.ingredientDisplayNames[ingredientName] then
       plan.ingredientDisplayNames[ingredientName] = recipe.ingredientDisplayNames[ingredientName]
     end
     storage.crafting.makeCraftPlanAux(ingredientName, ingredientCount * craftCount, plan, node)
