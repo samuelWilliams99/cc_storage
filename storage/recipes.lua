@@ -49,7 +49,6 @@ end
 
 function storage.crafting.updateRecipe(itemName, rawRecipe)
   local recipeData = readFile(storage.crafting.recipeFilePath) or {}
-  migrateRecipes(recipeData)
   recipeData[itemName] = rawRecipe
   writeFile(storage.crafting.recipeFilePath, recipeData)
 end
@@ -66,6 +65,9 @@ end
 function storage.crafting.loadRecipes()
   print("Loading recipes...")
   local recipeData = readFile(storage.crafting.recipeFilePath)
+  print("Migrating recipe data...")
+  migrateRecipes(recipeData)
+  writeFile(storage.crafting.recipeFilePath, recipeData)
 
   if not recipeData then
     recipeData = {}
