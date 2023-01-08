@@ -33,7 +33,7 @@ local function getPlacementFromDropper()
     if itemDetail.enchantments then
       return false, "Cannot use enchanted items in recipe"
     end
-    local itemKey = storage.getItemKey(item, itemDetail)
+    local itemKey = storage.getItemKey(item)
     placement[i] = itemKey
     names[itemKey] = itemDetail.displayName
   end
@@ -54,7 +54,7 @@ local function getCraftedItemFromDropper()
   if itemDetail.enchantments then
     return false, "Cannot craft enchanted items in recipe"
   end
-  local itemKey = storage.getItemKey(item, itemDetail)
+  local itemKey = storage.getItemKey(item)
   if storage.crafting.recipes[itemKey] then
     return false, "Recipe for this item already exists.\nTo replace, remove this recipe on the left"
   end

@@ -56,22 +56,27 @@ local function itemChanged(key, count, item)
   hook.run("cc_storage_change")
 end
 
-function storage.getItemKey(item, detail)
-  return item.name .. (detail.nbt or "")
+function storage.getItemKey(item)
+  return item.name .. (item.nbt or "")
 end
 
-function storage.saveItem(item, detail, chest, slot, useReserved)
+function storage.saveItem(item, chest, slot, useReserved)
   local items = storage.items
-  local key = storage.getItemKey(item, detail)
+  local key = storage.getItemKey(item)
+  local didLookup = false
 
-  items[key] = items[key] or {count = 0, locations = {}, reservedCount = 0}
+  -- Pulled out into a var as "getItemDetail" takes time, and can lead to an item being detail-less while inputting
+  local newItem = items[key] or {count = 0, locations = {}, reservedCount = 0, key = key}
   if useReserved then
-    items[key].reservedCount = items[key].reservedCount + item.count
+    newItem.reservedCount = newItem.reservedCount + item.count
   else
-    items[key].count = items[key].count + item.count
+    newItem.count = newItem.count + item.count
   end
-  items[key].detail = detail
-  local locations = items[key].locations
+  if not newItem.detail then
+    newItem.detail = chest.getItemDetail(slot)
+    didLookup = true
+  end
+  local locations = newItem.locations
   local locationKey = #locations + 1
   for k, location in ipairs(locations) do
     if item.count < location.count then
@@ -79,7 +84,9 @@ function storage.saveItem(item, detail, chest, slot, useReserved)
       break
     end
   end
-  table.insert(items[key].locations, locationKey, {chest = chest, slot = slot, count = item.count})
+  table.insert(newItem.locations, locationKey, {chest = chest, slot = slot, count = item.count})
+  items[key] = newItem
+  return didLookup
 end
 
 function storage.reserveItemsUnsafe(items, shouldUnreserve)
@@ -150,14 +157,15 @@ function storage.updateItemMapping()
 
   local _, termY = term.getCursorPos()
 
-  local totalOccupiedSlots = 0
-  local slotCounter = 1
+  local uniqueItemKeys = {}
   local chestCount = table.count(storage.chests)
   local chestCounter = 1
   local chestsData = {}
   for chestKey, chest in ipairs(storage.chests) do
     local chestItems = chest.list()
-    totalOccupiedSlots = totalOccupiedSlots + table.count(chestItems)
+    for _, item in pairs(chestItems) do
+      uniqueItemKeys[storage.getItemKey(item)] = true
+    end
     local size = chest.size()
     storage.totalSlotCount = storage.totalSlotCount + size
     chestsData[chestKey] = {
@@ -169,21 +177,25 @@ function storage.updateItemMapping()
     chestCounter = chestCounter + 1
   end
 
-  -- TODO: we can probably skip items we know can't have metadata, like cobblestone
-  -- also turns out list gives you nbt, which is all we need to make a key
-  -- so it should be doable with just item?
+  local uniqueItemKeyCount = table.count(uniqueItemKeys)
+
+  local itemCounter = 1
+  local prevItemCounter = 1
   for _, chestData in ipairs(chestsData) do
     local chestItems = chestData.list
     local chest = chestData.chest
     for slot = 1, chestData.size do
-      writeUpdate("Indexing items", 2, 2, "slot", slotCounter, totalOccupiedSlots, termY)
+      if itemCounter ~= prevItemCounter then
+        prevItemCounter = itemCounter
+        writeUpdate("Indexing unique items", 2, 2, "item", itemCounter, uniqueItemKeyCount, termY)
+      end
       local item = chestItems[slot]
       if item then
-        local detail = chest.getItemDetail(slot)
         itemCount = itemCount + item.count
 
-        storage.saveItem(item, detail, chest, slot)
-        slotCounter = slotCounter + 1
+        if storage.saveItem(item, chest, slot) then
+          itemCounter = itemCounter + 1
+        end
       else
         table.insert(storage.emptySlots, {chest = chest, slot = slot})
       end
@@ -192,7 +204,7 @@ function storage.updateItemMapping()
 
   local uniqueItemCount = table.count(items)
 
-  writeUpdate("Complete", 2, 2, "slot", totalOccupiedSlots, totalOccupiedSlots, termY)
+  writeUpdate("Complete", 2, 2, "item", uniqueItemKeyCount, uniqueItemKeyCount, termY)
   term.setCursorPos(1, termY + 2)
   print("Found " .. itemCount .. " items, " .. uniqueItemCount .. " of which unique.")
   print("Found " .. #storage.emptySlots .. " empty slots.")
@@ -271,20 +283,21 @@ function storage.startInputTimer()
   timer.create("input", 0.5, 0, function() storage.inputChest(storage.input) end)
 end
 
-function storage.inputChest(chest, useReserved)
+function storage.inputChestUnsafe(chest, useReserved)
   local inputItems = chest.list()
   if table.isEmpty(inputItems) then
     return
   end
 
   for k, item in pairs(inputItems) do
-    storage.inputItemFrom(k, item, chest, useReserved)
+    storage.inputItemFromUnsafe(k, item, chest, useReserved)
   end
 end
 
+storage.inputChest = storage.withLock(storage.inputChestUnsafe)
+
 function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
-  local detail = chest.getItemDetail(slot)
-  local key = storage.getItemKey(item, detail)
+  local key = storage.getItemKey(item)
   local storedItem = storage.items[key]
   local startingCount = item.count
   if storedItem then
@@ -308,7 +321,7 @@ function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
   local newSlot = table.remove(storage.emptySlots, 1)
   chest.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot)
   
-  storage.saveItem(item, detail, newSlot.chest, newSlot.slot, useReserved)
+  storage.saveItem(item, newSlot.chest, newSlot.slot, useReserved)
   
   if not useReserved then
     itemChanged(key, startingCount, storedItem)

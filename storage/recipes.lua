@@ -7,7 +7,6 @@ storage.crafting.recipeFilePath = "recipes.txt"
 shell.run("cc_storage/debug/setupMonPrint")
 
 function storage.crafting.addRecipe(itemName, displayName, recipePlacement, count, maxCount, names, override)
-  -- TODO: use names (itemName: displayName), could put crafted item displayName in there
   if not override and storage.crafting.recipes[itemName] then return end
   local rawRecipe = {
     itemName = itemName,
