@@ -23,6 +23,7 @@ end
 local function migrateRecipes(recipeData)
   -- TODO: remove this after migration
   -- also the code in precache
+  local missing = {}
   for _, r in pairs(recipeData) do
     if r.maxStack then
       r.maxCount = r.maxStack
@@ -36,10 +37,13 @@ local function migrateRecipes(recipeData)
         elseif recipeData[itemName] then
           r.ingredientDisplayNames[itemName] = recipeData[itemName].displayName
         else
-          printMon(itemName)
+          missing[itemName] = true
         end
       end
     end
+  end
+  for itemName in pairs(missing) do
+    printMon(itemName)
   end
 end
 
