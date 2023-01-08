@@ -187,11 +187,20 @@ function craftCountPage.displayPlan()
   local toNum = {[true] = 1, [false] = 0}
 
   local ingredientKeys = table.keys(craftCountPage.plan.ingredients)
+  local ingredientNames = {}
+
+  for _, ingredientKey in ipairs(ingredientKeys) do
+    ingredientNames[ingredientKey] =
+      craftCountPage.plan.ingredientDisplayNames[ingredientKey] or
+      (storage.items[ingredientKey] and storage.items[ingredientKey].detail.displayName) or
+      ingredientKey
+  end
+
   table.sort(ingredientKeys, function(a, b)
     local aMissing = toNum[craftCountPage.plan.missingIngredients[a]]
     local bMissing = toNum[craftCountPage.plan.missingIngredients[b]]
     if aMissing == bMissing then
-      return a < b
+      return ingredientNames[a] < ingredientNames[b]
     else
       return aMissing < bMissing
     end
@@ -206,16 +215,15 @@ function craftCountPage.displayPlan()
 
   for _, itemName in ipairs(ingredientKeys) do
     local missing = craftCountPage.plan.missingIngredients[itemName]
-    local name = itemName
     local available = 0
     local required = craftCountPage.plan.ingredients[itemName]
     if storage.items[itemName] then
-      name = storage.items[itemName].detail.displayName
       available = storage.items[itemName].count
       if craftCountPage.plan.craftable then
         available = available + required
       end
     end
+    local name = ingredientNames[itemName]
     local str = name .. string.rep(" ", xOffset - #name) .. "| " .. available .. " / " .. required
     local entry = {displayText = str}
     if missing then

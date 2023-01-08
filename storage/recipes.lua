@@ -4,6 +4,8 @@ storage.crafting.recipes = storage.crafting.recipes or {}
 
 storage.crafting.recipeFilePath = "recipes.txt"
 
+shell.run("cc_storage/debug/setupMonPrint")
+
 function storage.crafting.addRecipe(itemName, displayName, recipePlacement, count, maxCount, names, override)
   -- TODO: use names (itemName: displayName), could put crafted item displayName in there
   if not override and storage.crafting.recipes[itemName] then return end
@@ -11,6 +13,7 @@ function storage.crafting.addRecipe(itemName, displayName, recipePlacement, coun
     itemName = itemName,
     displayName = displayName,
     recipePlacement = recipePlacement,
+    ingredientDisplayNames = names,
     count = count,
     maxCount = maxCount
   }
@@ -18,8 +21,7 @@ function storage.crafting.addRecipe(itemName, displayName, recipePlacement, coun
   storage.crafting.preCacheRecipe(rawRecipe)
 end
 
-function storage.crafting.updateRecipe(itemName, rawRecipe)
-  local recipeData = readFile(storage.crafting.recipeFilePath) or {}
+local function migrateRecipes(recipeData)
   -- TODO: remove this after migration
   -- also the code in precache
   for _, r in pairs(recipeData) do
@@ -27,7 +29,24 @@ function storage.crafting.updateRecipe(itemName, rawRecipe)
       r.maxCount = r.maxStack
       r.maxStack = nil
     end
+    r.ingredientDisplayNames = r.ingredientDisplayNames or {}  
+    for _, itemName in pairs(r.recipePlacement) do
+      if not r.ingredientDisplayNames[itemName] then
+        if storage.items[itemName] then
+          r.ingredientDisplayNames[itemName] = storage.items[itemName].detail.displayName
+        elseif recipeData[itemName] then
+          r.ingredientDisplayNames[itemName] = recipeData[itemName].displayName
+        else
+          printMon(itemName)
+        end
+      end
+    end
   end
+end
+
+function storage.crafting.updateRecipe(itemName, rawRecipe)
+  local recipeData = readFile(storage.crafting.recipeFilePath) or {}
+  migrateRecipes(recipeData)
   recipeData[itemName] = rawRecipe
   writeFile(storage.crafting.recipeFilePath, recipeData)
 end
@@ -71,6 +90,7 @@ function storage.crafting.preCacheRecipe(rawRecipe)
   storage.crafting.recipes[rawRecipe.itemName] = {
     placement = rawRecipe.recipePlacement,
     ingredients = ingredients,
+    ingredientDisplayNames = rawRecipe.ingredientDisplayNames,
     itemName = rawRecipe.itemName,
     count = count,
     displayName = rawRecipe.displayName,
