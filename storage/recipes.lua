@@ -4,8 +4,6 @@ storage.crafting.recipes = storage.crafting.recipes or {}
 
 storage.crafting.recipeFilePath = "recipes.txt"
 
-shell.run("cc_storage/debug/setupMonPrint")
-
 function storage.crafting.addRecipe(itemName, displayName, recipePlacement, count, maxCount, names, override)
   if not override and storage.crafting.recipes[itemName] then return end
   local rawRecipe = {
@@ -18,33 +16,6 @@ function storage.crafting.addRecipe(itemName, displayName, recipePlacement, coun
   }
   storage.crafting.saveRecipe(rawRecipe)
   storage.crafting.preCacheRecipe(rawRecipe)
-end
-
-local function migrateRecipes(recipeData)
-  -- TODO: remove this after migration
-  -- also the code in precache
-  local missing = {}
-  for _, r in pairs(recipeData) do
-    if r.maxStack then
-      r.maxCount = r.maxStack
-      r.maxStack = nil
-    end
-    r.ingredientDisplayNames = r.ingredientDisplayNames or {}  
-    for _, itemName in pairs(r.recipePlacement) do
-      if not r.ingredientDisplayNames[itemName] then
-        if storage.items[itemName] then
-          r.ingredientDisplayNames[itemName] = storage.items[itemName].detail.displayName
-        elseif recipeData[itemName] then
-          r.ingredientDisplayNames[itemName] = recipeData[itemName].displayName
-        else
-          missing[itemName] = true
-        end
-      end
-    end
-  end
-  for itemName in pairs(missing) do
-    printMon(itemName)
-  end
 end
 
 function storage.crafting.updateRecipe(itemName, rawRecipe)
@@ -65,9 +36,6 @@ end
 function storage.crafting.loadRecipes()
   print("Loading recipes...")
   local recipeData = readFile(storage.crafting.recipeFilePath)
-  print("Migrating recipe data...")
-  migrateRecipes(recipeData)
-  writeFile(storage.crafting.recipeFilePath, recipeData)
 
   if not recipeData then
     recipeData = {}
@@ -84,7 +52,7 @@ end
 
 function storage.crafting.preCacheRecipe(rawRecipe)
   local count = rawRecipe.count or 1
-  local maxCount = rawRecipe.maxCount or rawRecipe.maxStack or 64 -- Support maxStack for legacy
+  local maxCount = rawRecipe.maxCount or 64
   local ingredients = {}
   for i = 1, 9 do
     if rawRecipe.recipePlacement[i] then
