@@ -1,4 +1,5 @@
 require "utils.hooks"
+require "utils.helpers"
 
 local craftingPortIn = 1357
 local craftingPortOut = craftingPortIn + 1
@@ -65,16 +66,40 @@ hook.add("modem_message", "doCraft", function(_, port, _, data)
     end
   elseif data.type == "scan" then
     modem.transmit(craftingPortOut, craftingPortIn, {type = "scan", computerID = os.getComputerID()})
+    term.clear()
+    term.setCursorPos(1, 1)
     print("Replied to crafter ping!")
   elseif data.type == "check" then
+    if not table.contains(data.ids, os.getComputerID()) then return end
     print("Received a check message, looking for " .. data.name)
-    turtle.select(1)
+    turtle.select(16)
     turtle.suck()
-    local item = turtle.getItemDetail(1)
+    local item = turtle.getItemDetail(16)
     local found = toBool(item and item.name == data.name)
     print(found and "Found item" or "Did not find item")
-    modem.transmit(craftingPortOut, craftingPortIn, {type = "check", found = found, computerID = os.getComputerID()})
     turtle.drop()
+
+    local slotsToDrop = {}
+    for i = 1, 15 do
+      if turtle.getItemCount(i) > 0 then table.insert(slotsToDrop, i) end
+    end
+
+    modem.transmit(craftingPortOut, craftingPortIn, {type = "check", found = found, computerID = os.getComputerID(), shouldEmpty = #slotsToDrop > 0})
+    if found then
+      for _, slot in ipairs(slotsToDrop) do
+        turtle.select(slot)
+        turtle.drop()
+      end
+      if #slotsToDrop > 0 then
+        modem.transmit(craftingPortOut, craftingPortIn, {type = "chest_emptied", computerID = os.getComputerID()})
+      end
+    end
+  elseif data.type == "empty_chest" then
+    if not table.contains(data.ids, os.getComputerID()) then return end
+    print("Emptying chest")
+    turtle.select(1)
+    while turtle.suck() do end
+    modem.transmit(craftingPortOut, craftingPortIn, {type = "empty_chest", computerID = os.getComputerID()})
   end
 end)
 

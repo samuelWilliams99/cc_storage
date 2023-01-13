@@ -10,6 +10,7 @@ require "ui.pages.lock"
 require "ui.pages.recipes"
 require "ui.pages.pages"
 
+storage.crafting.pingCrafters()
 storage.updateChests()
 storage.updateItemMapping()
 storage.crafting.loadRecipes()

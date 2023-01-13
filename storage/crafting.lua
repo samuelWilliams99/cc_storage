@@ -12,10 +12,6 @@ storage.crafting.plans = {}
 
 -- TODO: crafting UI
 
--- TODO (later): the scan should happen BEFORE the chest lookup, and turtles should empty the chest into their own inv before replying to the scan
--- then, on successful check, turtles should empty their inv back into the chest, and the comp should input all the items
--- this is recovery for the situations where turtles are mid craft when the computer goes down
-
 -- TODO: Recipes can be invalid, should throw a reasonable error in this case
 -- or, force verification when adding a recipe?
 
@@ -27,62 +23,91 @@ modem.open(craftingPortIn)
 -- We specifically use os.pullEvent here as this code all runs _before_ the hook system gets enabled
 -- Also, it allows us to treat these replies as syncronous calls, which makes the setup easier
 -- ideally we'd use promises, but they're a little heavy for CC
-local function handleAllReplies(handler, ids)
+local function handleAllReplies(msgType, handler, ids, ignoreTimer)
   local timerID = os.startTimer(1)
   local remaining = table.shallowCopy(ids or {})
   while true do
     local data = {os.pullEvent()}
-    if data[1] == "modem_message" and data[3] == craftingPortIn then
-      handler(data[5])
+    if data[1] == "modem_message" and data[3] == craftingPortIn and data[5].type == msgType then
+      local handlerRet = {handler(data[5])}
+      if handlerRet[1] then
+        table.remove(handlerRet, 1)
+        return table.unpack(handlerRet)
+      end
       if ids then
-        table.removeByValue(remaining, data.computerID)
+        table.removeByValue(remaining, data[5].computerID)
         if table.isEmpty(remaining) then break end
       end
-    elseif data[1] == "timer" and data[2] == timerID then
+    elseif data[1] == "timer" and data[2] == timerID and not ignoreTimer then
       break
     end
   end
   os.cancelTimer(timerID)
 end
 
-local function checkChests(chests, itemName, lastChest)
+local function checkChests(chests, itemName)
   storage.crafting.crafters = {}
+
+  local chest = chests[#chests]
+
   for i = #chests, 1, -1 do
-    local chest = chests[i]
-    lastChest.pushItems(peripheral.getName(chest), 1, 1, 1)
-    lastChest = chest
-    modem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = itemName})
-    handleAllReplies(function(data)
+    chest = chests[i]
+    
+    modem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = itemName, ids = storage.crafting.crafterIDs})
+    local shouldEmpty = handleAllReplies("check", function(data)
       if data.found then
         storage.crafting.crafters[data.computerID] = {computerID = data.computerID, chest = chest}
         table.remove(chests, i)
+        return true, data.shouldEmpty
       end
     end, storage.crafting.crafterIDs)
+
+    if i > 1 then
+      chest.pushItems(peripheral.getName(chests[i - 1]), 1, 1, 1)
+    end
+
+    if shouldEmpty then
+      handleAllReplies("chest_emptied", function() return true end, storage.crafting.crafterIDs, true)
+      storage.inputChest(chest)
+    end
   end
-  storage.inputChest(lastChest)
+  storage.inputChest(chest)
 end
 
-function storage.crafting.setupCrafters()
+function storage.crafting.pingCrafters()
   print("Locating crafters")
-  local chests = storage.crafting.candidates or {}
-
-  os.startTimer(1)
+  
   modem.transmit(craftingPortOut, craftingPortIn, {type = "scan"})
   storage.crafting.crafterIDs = {}
 
-  handleAllReplies(function(data)
+  handleAllReplies("scan", function(data)
     local compID = data.computerID
     table.insert(storage.crafting.crafterIDs, compID)
   end)
+  
+  print("Found " .. #storage.crafting.crafterIDs .. " crafting turtles")
 
-  print("Found " .. #storage.crafting.crafterIDs .. " crafting turtles, locating chests...")
+  modem.transmit(craftingPortOut, craftingPortIn, {type = "empty_chest", ids = storage.crafting.crafterIDs})
+  handleAllReplies("empty_chest", function() end, storage.crafting.crafterIDs, true)
+
+  print("All crafter chests emptied")
+end
+
+function storage.crafting.setupCrafters()
+  print("Locating crafter chests...")
+  local chests = storage.crafting.candidates or {}
 
   if table.isEmpty(storage.items) then error("Please place at least 1 item in one of the chests to initialise the system") end
   local firstItemName, item = next(storage.items)
 
-  storage.dropItemTo(firstItemName, 1, storage.input)
+  if table.isEmpty(chests) then
+    print("No crafting candidates found")
+    return
+  end
 
-  checkChests(chests, item.detail.name, storage.input)
+  storage.dropItemTo(firstItemName, 1, chests[#chests])
+
+  checkChests(chests, item.detail.name)
   print("Found chests for " .. table.count(storage.crafting.crafters) .. " crafting turtles and registered them.")
 
   print(#chests .. " crafting chest candidates turned out to be normal chests.")
