@@ -158,7 +158,7 @@ function storagePage.setup()
       if storage.items[name] and storage.items[name].count == 0 then return false end
       if searchString == "" then return true end
       local itemData = getItemData(name)
-      return itemData.detail.displayName:lower():find(searchString)
+      return itemData.detail.displayName:lower():find(searchString, nil, true)
     end)
 
     local key = sorters[sorterIndex].key
