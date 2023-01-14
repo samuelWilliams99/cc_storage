@@ -4,16 +4,15 @@ require "ui.logger"
 local dropper = peripheral.find("minecraft:dropper")
 if not dropper then error("No dropper found, please connect one to the computer to use") end
 
-local recipesPage = {}
+local recipesPage = {
+  shouldMakeBackButton = true,
+  title = "Recipe Manager",
+  configName = "Recipe Manager"
+}
 
 pages.addPage("recipes", recipesPage)
 
 local w, h = term.getSize()
-
-local function addElem(elem)
-  table.insert(recipesPage.elems, elem)
-  return elem
-end
 
 local function getPlacementFromDropper()
   local items = dropper.list()
@@ -62,29 +61,10 @@ local function getCraftedItemFromDropper()
 end
 
 function recipesPage.setup()
-  recipesPage.elems = {}
   recipesPage.addRecipeStep = 1
 
-  local backButton = addElem(ui.text.create())
-  backButton:setPos(2, h - 4)
-  backButton:setSize(10, 3)
-  backButton:setTextDrawPos(3, 1)
-  backButton:setText("Back")
-  function backButton:onClick()
-    pages.setPage("itemList")
-  end
-
-  -- Main title
-  local titleText = "Recipe Manager"
-  term.setCursorPos(math.floor(w / 2 - #titleText / 2), 2)
-  term.write(titleText)
-
-  -- Horizontal line
-  term.setTextColor(colors.gray)
-  term.setCursorPos(3, 4)
-  term.write(string.rep("_", w - 4))
-
   -- Vertical line
+  term.setTextColor(colors.gray)
   local lineX = 2 + math.floor((w - 4) * 0.4)
   for y = 5, h - 1 do
     term.setCursorPos(lineX, y)
@@ -104,7 +84,7 @@ function recipesPage.setup()
   term.write(removeText)
   term.setTextColor(colors.white)
 
-  local recipesList = addElem(ui.buttonList.create())
+  local recipesList = pages.elem(ui.buttonList.create())
   recipesList:setPos(2, 8)
   recipesList:setSize(lineX - 4, h - 14)
 
@@ -135,7 +115,7 @@ function recipesPage.setup()
     updateRecipeList()
   end
 
-  local cancelButton = addElem(ui.text.create())
+  local cancelButton = pages.elem(ui.text.create())
   cancelButton:setPos(lineX + 2, h - 4)
   cancelButton:setSize(12, 3)
   cancelButton:setTextDrawPos(3, 1)
@@ -152,13 +132,13 @@ function recipesPage.setup()
     cancelButton:invalidateLayout(true)
   end
 
-  local instructionsPanel = addElem(ui.logger.create())
+  local instructionsPanel = pages.elem(ui.logger.create())
   instructionsPanel:setPos(lineX + 2, 5)
   instructionsPanel:setSize(w - lineX - 5, h - 10)
 
   updateCancelbutton()
 
-  local addRecipeButton = addElem(ui.text.create())
+  local addRecipeButton = pages.elem(ui.text.create())
   addRecipeButton:setPos(lineX + 2 + 12 + 2, h - 4)
   addRecipeButton:setSize(w - lineX - 4 - 12 - 4 - 12 - 2, 3)
   local function updateAddRecipeButton()
@@ -261,11 +241,5 @@ function recipesPage.setup()
     end
     -- later, add thing for oredict
     -- as well as option for computer to take items from recipe
-  end
-end
-
-function recipesPage.cleanup()
-  for _, elem in ipairs(recipesPage.elems) do
-    elem:remove()
   end
 end

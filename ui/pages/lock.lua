@@ -5,7 +5,11 @@ local playerDetector = peripheral.find("playerDetector")
 if not playerDetector then error("No player detector found, please connect one to the computer to use") end
 
 local lockPage = {}
-local editLockPage = {}
+local editLockPage = {
+  shouldMakeBackButton = true,
+  title = "Lock Manager",
+  configName = "Lock Manager"
+}
 
 pages.addPage("lock", lockPage)
 pages.addPage("editLock", editLockPage)
@@ -58,33 +62,7 @@ function lockPage.cleanup()
   hook.remove("terminate", "preventTerminate")
 end
 
-local function addElem(elem)
-  table.insert(editLockPage.elems, elem)
-  return elem
-end
-
 function editLockPage.setup()
-  editLockPage.elems = {}
-
-  local backButton = addElem(ui.text.create())
-  backButton:setPos(2, h - 4)
-  backButton:setSize(10, 3)
-  backButton:setTextDrawPos(3, 1)
-  backButton:setText("Back")
-  function backButton:onClick()
-    pages.setPage("itemList")
-  end
-
-  -- Main title
-  local titleText = "Lock Manager"
-  term.setCursorPos(math.floor(w / 2 - #titleText / 2), 2)
-  term.write(titleText)
-
-  -- Horizontal line
-  term.setTextColor(colors.gray)
-  term.setCursorPos(3, 4)
-  term.write(string.rep("_", w - 4))
-
   -- left title
   local midLeftX = 2 + math.floor((w - 4) * 0.25)
   local leftTitleText = "Authorised players"
@@ -101,11 +79,11 @@ function editLockPage.setup()
 
   local midX = math.floor(w * 0.5)
 
-  local authList = addElem(ui.buttonList.create())
+  local authList = pages.elem(ui.buttonList.create())
   authList:setPos(2, 7)
   authList:setSize(midX - 4, h - 13)
 
-  local unauthList = addElem(ui.buttonList.create())
+  local unauthList = pages.elem(ui.buttonList.create())
   unauthList:setPos(midX + 2, 7)
   unauthList:setSize(midX - 4, h - 13)
 
@@ -137,7 +115,7 @@ function editLockPage.setup()
 
   updateLists()
 
-  local enableButton = addElem(ui.text.create())
+  local enableButton = pages.elem(ui.text.create())
   enableButton:setPos(midX - 15, h - 4)
   enableButton:setSize(30, 3)
   enableButton:setTextDrawPos(11, 1)
@@ -175,11 +153,5 @@ function editLockPage.setup()
     if #authorisedPlayers == 0 then return end
     storage.lockPageEnabled = not storage.lockPageEnabled
     updateEnableButton()
-  end
-end
-
-function editLockPage.cleanup()
-  for _, elem in ipairs(editLockPage.elems) do
-    elem:remove()
   end
 end

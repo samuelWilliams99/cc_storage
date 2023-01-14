@@ -1,4 +1,4 @@
-function startsWith(s, s2)
+function string.startsWith(s, s2)
   return s:sub(1, #s2) == s2
 end
 
@@ -36,6 +36,14 @@ function table.keys(t)
   local out = {}
   for k in pairs(t) do
     table.insert(out, k)
+  end
+  return out
+end
+
+function table.values(t)
+  local out = {}
+  for _, v in pairs(t) do
+    table.insert(out, v)
   end
   return out
 end

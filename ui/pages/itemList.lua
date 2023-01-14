@@ -4,13 +4,7 @@ local storagePage = {}
 
 pages.addPage("itemList", storagePage)
 
-local function addElem(elem)
-  table.insert(storagePage.elems, elem)
-  return elem
-end
-
 function storagePage.setup()
-  storagePage.elems = {}
   local hasCrafters = not table.isEmpty(storage.crafting.crafters)
 
   term.clear()
@@ -35,23 +29,23 @@ function storagePage.setup()
   local order = true
   local searchString = ""
 
-  local buttonList = addElem(ui.buttonList.create())
+  local buttonList = pages.elem(ui.buttonList.create())
   buttonList:setSize(w - 4, h - 6)
   buttonList:setPos(2, 4)
 
   local btnGap = 4
 
-  local leftBtn = addElem(ui.text.create())
+  local leftBtn = pages.elem(ui.text.create())
   leftBtn:setSize(3, 1)
   leftBtn:setPos(math.floor(w / 2) - 3 - btnGap, h - 1)
   leftBtn:setText("")
 
-  local rightBtn = addElem(ui.text.create())
+  local rightBtn = pages.elem(ui.text.create())
   rightBtn:setSize(3, 1)
   rightBtn:setPos(math.floor(w / 2) + btnGap + 1, h - 1)
   rightBtn:setText("")
 
-  local sortSwitch = addElem(ui.text.create())
+  local sortSwitch = pages.elem(ui.text.create())
   sortSwitch:setPos(0, 0)
 
   -- Get correct size
@@ -68,7 +62,7 @@ function storagePage.setup()
   end
   updateSortSwitch()
 
-  local orderSwitch = addElem(ui.text.create())
+  local orderSwitch = pages.elem(ui.text.create())
   orderSwitch:setPos(w - 9, 0)
   orderSwitch:setSize(9, 1)
   local function updateOrderSwitch()
@@ -76,7 +70,7 @@ function storagePage.setup()
   end
   updateOrderSwitch()
 
-  local craftingCounter = addElem(ui.text.create())
+  local craftingCounter = pages.elem(ui.text.create())
   craftingCounter:setBgColor(colors.black)
   local function updateCraftingCounter()
     if table.isEmpty(storage.crafting.plans) then
@@ -91,7 +85,7 @@ function storagePage.setup()
   end
   updateCraftingCounter()
 
-  local slotCounter = addElem(ui.text.create())
+  local slotCounter = pages.elem(ui.text.create())
   slotCounter:setBgColor(colors.black)
   local function updateSlotCounter()
     local slotsUsed = storage.totalSlotCount - #storage.emptySlots
@@ -102,7 +96,7 @@ function storagePage.setup()
   end
   updateSlotCounter()
 
-  local pageCounter = addElem(ui.text.create())
+  local pageCounter = pages.elem(ui.text.create())
   local function updatePageCounter()
     local pageCountStr = tostring(pageCount)
     local pageStr = tostring(page)
@@ -121,20 +115,12 @@ function storagePage.setup()
 
   updatePageCounter()
 
-  local recipeButton = addElem(ui.text.create())
-  recipeButton:setPos(0, h - 1)
-  recipeButton:setSize(7, 1)
-  recipeButton:setText("Recipes")
-  function recipeButton:onClick()
-    pages.setPage("recipes")
-  end
-
-  local lockButton = addElem(ui.text.create())
-  lockButton:setPos(9, h - 1)
-  lockButton:setSize(13, 1)
-  lockButton:setText("Lock settings")
-  function lockButton:onClick()
-    pages.setPage("editLock")
+  local configureButton = pages.elem(ui.text.create())
+  configureButton:setPos(0, h - 1)
+  configureButton:setSize(9, 1)
+  configureButton:setText("Configure")
+  function configureButton:onClick()
+    pages.setPage("configure")
   end
 
   local function getCountText(count, maxCount)
@@ -339,8 +325,4 @@ function storagePage.cleanup()
   hook.remove("key", "idle_clear_search")
   hook.remove("mouse_click", "idle_clear_search")
   hook.remove("mouse_scroll", "idle_clear_search")
-  for _, elem in ipairs(storagePage.elems) do
-    elem:remove()
-  end
-  storagePage.elems = {}
 end
