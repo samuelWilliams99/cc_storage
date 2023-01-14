@@ -46,6 +46,7 @@ function Base:setSize(w, h)
   if not self:isInBounds(self.pos.x, self.pos.y, w, h) then error("Tried to move such that the element " .. self.id .. " is out of bounds") end
   self.size.x = w
   self.size.y = h
+  self:onResize()
   self:invalidateLayout()
 end
 
@@ -55,7 +56,11 @@ function Base:setPosAndSize(x, y, w, h)
   self.pos.y = y
   self.size.x = w
   self.size.y = h
+  self:onResize()
   self:invalidateLayout()
+end
+
+function Base:onResize()
 end
 
 function Base:remove()

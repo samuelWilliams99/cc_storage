@@ -82,10 +82,12 @@ function editLockPage.setup()
   local authList = pages.elem(ui.buttonList.create())
   authList:setPos(2, 7)
   authList:setSize(midX - 4, h - 13)
+  authList:setTextCentered(true)
 
   local unauthList = pages.elem(ui.buttonList.create())
   unauthList:setPos(midX + 2, 7)
   unauthList:setSize(midX - 4, h - 13)
+  unauthList:setTextCentered(true)
 
   local function updateLists()
     local allPlys = {}
@@ -100,14 +102,11 @@ function editLockPage.setup()
     local unauthOptions = {}
 
     for ply, isAuth in pairs(allPlys) do
-      local arr = isAuth and authOptions or unauthOptions
-      local list = isAuth and authList or unauthList
-      local spaces = math.floor((list.size.x - #ply) / 2)
-      table.insert(arr, {displayText = string.rep(" ", spaces) .. ply, name = ply})
+      table.insert(isAuth and authOptions or unauthOptions, {displayText = ply})
     end
 
-    table.sort(authOptions, function(a, b) return a.name < b.name end)
-    table.sort(unauthOptions, function(a, b) return a.name < b.name end)
+    table.sort(authOptions, function(a, b) return a.displayText < b.displayText end)
+    table.sort(unauthOptions, function(a, b) return a.displayText < b.displayText end)
 
     authList:setOptions(authOptions)
     unauthList:setOptions(unauthOptions)
@@ -135,7 +134,7 @@ function editLockPage.setup()
   updateEnableButton()
 
   function authList:handleClick(_, data)
-    table.removeByValue(authorisedPlayers, data.name)
+    table.removeByValue(authorisedPlayers, data.displayText)
     if #authorisedPlayers == 0 then storage.lockPageEnabled = false end
     updateLists()
     updateEnableButton()
@@ -143,7 +142,7 @@ function editLockPage.setup()
   end
 
   function unauthList:handleClick(_, data)
-    table.insert(authorisedPlayers, data.name)
+    table.insert(authorisedPlayers, data.displayText)
     updateLists()
     updateEnableButton()
     savePlayers()

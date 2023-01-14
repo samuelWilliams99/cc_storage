@@ -32,6 +32,7 @@ function storagePage.setup()
   local buttonList = pages.elem(ui.buttonList.create())
   buttonList:setSize(w - 4, h - 6)
   buttonList:setPos(2, 4)
+  buttonList:setSplits(0.65)
 
   local btnGap = 4
 
@@ -181,28 +182,21 @@ function storagePage.setup()
     pageCount = math.max(1, math.ceil(#itemKeys / pageSize))
     page = math.min(pageCount, page)
 
-    local maxNameLength = math.floor(w * 0.6)
-    local options = {{displayText = "ITEM NAME" .. string.rep(" ", maxNameLength - 9) .. " | COUNT"}}
+    local options = {{displayText = {"ITEM NAME", "COUNT"}}}
     for i = (page - 1) * pageSize + 1, math.min(#itemKeys, page * pageSize) do
       local name = itemKeys[i]
       local item = getItemData(name)
-      local displayNamePadded = item.detail.displayName
+      local displayName = item.detail.displayName
 
       if item.detail.damage then
-        displayNamePadded = displayNamePadded .. " (" .. (item.detail.maxDamage - item.detail.damage) .. "/" .. item.detail.maxDamage .. ")"
+        displayName = displayName .. " (" .. (item.detail.maxDamage - item.detail.damage) .. "/" .. item.detail.maxDamage .. ")"
       end
       if item.detail.enchantments then
         if #item.detail.enchantments == 1 then
-          displayNamePadded = displayNamePadded .. " (" .. item.detail.enchantments[1].displayName .. ")"
+          displayName = displayName .. " (" .. item.detail.enchantments[1].displayName .. ")"
         else
-          displayNamePadded = displayNamePadded .. " (+ " .. #item.detail.enchantments .. " enchantments)"
+          displayName = displayName .. " (+ " .. #item.detail.enchantments .. " enchantments)"
         end
-      end
-
-      if #displayNamePadded > maxNameLength then
-        displayNamePadded = displayNamePadded:sub(1, maxNameLength - 3) .. "..."
-      else
-        displayNamePadded = displayNamePadded .. string.rep(" ", maxNameLength - #displayNamePadded)
       end
 
       local countText = item.isRecipe and "CRAFT" or getCountText(item.count, item.detail.maxCount)
@@ -211,7 +205,7 @@ function storagePage.setup()
       end
 
       table.insert(options, {
-        displayText = displayNamePadded .. " | " .. countText,
+        displayText = {displayName, countText},
         name = name,
         maxCount = item.detail.maxCount -- Will be nil for non craftables
       })

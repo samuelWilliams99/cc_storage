@@ -158,6 +158,7 @@ function craftCountPage.displayPlan()
     craftCountPage.ingredientsList = ingredientsList
     ingredientsList:setPos(lineX + 2, 8)
     ingredientsList:setSize(w - 4 - lineX, h - 14)
+    ingredientsList:setSplits(0.5)
 
     local craftBtn = pages.elem(ui.text.create())
     craftCountPage.craftBtn = craftBtn
@@ -198,11 +199,8 @@ function craftCountPage.displayPlan()
     end
   end)
 
-  local ingredientSplitX = 2 + math.floor((w - 4) * 0.7)
-  local xOffset = ingredientSplitX - ingredientsList.pos.x
   local options = {
-    { displayText = "Item name" .. string.rep(" ", xOffset - 9) .. "| Available / Required"
-    }
+    {displayText = {"Item name", "Available / Required"}}
   }
 
   for _, itemName in ipairs(ingredientKeys) do
@@ -216,8 +214,7 @@ function craftCountPage.displayPlan()
       end
     end
     local name = ingredientNames[itemName]
-    local str = name .. string.rep(" ", xOffset - #name) .. "| " .. available .. " / " .. required
-    local entry = {displayText = str}
+    local entry = {displayText = {name, available .. " / " .. required}}
     if missing then
       entry.bgColor = colors.red
     end

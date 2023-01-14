@@ -6,6 +6,13 @@ local enderChestPage = {
   configName = "Ender Chest Manager"
 }
 
+-- TODO: consider changing this UI and in general how ender chests work
+-- In theory, every ender chest can be an input at the start - connect it up, its an input
+-- however, we also support that any ender chest can have items sent to it, which pauses its input until its empty
+-- then, in theory, the pocket computer could remember which chest its hooked up to, and request items to that chest
+-- with this method, we dont even need an enderchest page, except maybe to identify a chest (say, put a cobble in it and the computer will find out which one it is)
+-- we provide a request endpoint to get the enderchest list
+
 pages.addPage("enderChest", enderChestPage)
 
 local w, h = term.getSize()

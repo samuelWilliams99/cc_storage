@@ -8,11 +8,13 @@ function ui.buttonList.create(parent)
   local elem = ui.makeElement(parent)
   elem.options = {}
   elem.buttons = {}
+  elem.splits = {1}
+  elem.textCentered = false
 
   --[[ Options:
   {
     {
-      displayText: text
+      displayText: text or {text}
       ...
     }
   }
@@ -20,6 +22,43 @@ function ui.buttonList.create(parent)
   function elem:setOptions(options)
     self.options = options
     self:update()
+  end
+
+  function elem:setSplits(...)
+    self.splits = {...}
+    table.insert(self.splits, 1)
+  end
+
+  function elem:setTextCentered(centered)
+    elem.textCentered = centered
+  end
+
+  function elem:rowToStr(row)
+    local str = ""
+    local w = self.size.x
+    for i, xProp in ipairs(self.splits) do
+      local rowStr = row[i] or ""
+      local x = math.floor(xProp * w)
+      
+      local maxChars = x - #str - (i > 1 and 1 or 0) - (xProp < 1 and 1 or 0)
+
+      if #rowStr > maxChars then
+        rowStr = rowStr:sub(1, maxChars - 3) .. "..."
+      end
+
+      if i > 1 then str = str .. " " end
+      
+      local spacesToAdd = maxChars - #rowStr
+      local preSpaces = self.textCentered and math.floor(spacesToAdd / 2) or 0
+      local postSpaces = spacesToAdd - preSpaces
+
+      str = str .. string.rep(" ", preSpaces) .. rowStr .. string.rep(" ", postSpaces)
+
+      if xProp < 1 then
+        str = str .. " |"
+      end
+    end
+    return str
   end
 
   function elem:update()
@@ -41,7 +80,9 @@ function ui.buttonList.create(parent)
 
     for i, button in ipairs(self.buttons) do
       button.data = self.options[i]
-      button:setText(button.data.displayText)
+      local row = button.data.displayText
+      if type(row) == "string" then row = {row} end
+      button:setText(elem:rowToStr(row))
       if button.data.bgColor then
         button:setBgColor(button.data.bgColor)
       else
