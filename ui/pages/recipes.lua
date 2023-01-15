@@ -1,5 +1,6 @@
 require "ui.pages.pages"
 require "ui.logger"
+require "ui.buttonListPaged"
 
 local dropper = peripheral.find("minecraft:dropper")
 if not dropper then error("No dropper found, please connect one to the computer to use") end
@@ -9,6 +10,8 @@ local recipesPage = {
   title = "Recipe Manager",
   configName = "Recipe Manager"
 }
+
+-- TODO: sort the recipes alphabetically
 
 pages.addPage("recipes", recipesPage)
 
@@ -84,7 +87,7 @@ function recipesPage.setup()
   term.write(removeText)
   term.setTextColor(colors.white)
 
-  local recipesList = pages.elem(ui.buttonList.create())
+  local recipesList = pages.elem(ui.buttonListPaged.create())
   recipesList:setPos(2, 8)
   recipesList:setSize(lineX - 4, h - 14)
 
@@ -93,7 +96,6 @@ function recipesPage.setup()
   local function updateRecipeList()
     local options = {}
     for name, recipe in pairs(storage.crafting.recipes) do
-      if #options == recipesList.size.y then break end
       table.insert(options, {displayText = recipe.displayName, name = name, bgColor = selectedToRemove == name and colors.red or nil})
     end
     recipesList:setOptions(options)

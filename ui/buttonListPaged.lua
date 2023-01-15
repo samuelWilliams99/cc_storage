@@ -8,8 +8,15 @@ ui.buttonListPaged = {}
 function ui.buttonListPaged.create(parent)
   local elem = ui.makeElement(parent)
   elem.buttonList = ui.buttonList.create(elem)
+
+  function elem.buttonList:handleClick(btn, data)
+    elem:handleClick(btn, data, elem.options[data.index], data.index)
+  end
+
   elem.options = {}
   elem.page = 1
+  -- Header row
+  elem.header = nil
   function elem:preProcess(x)
     return x
   end
@@ -18,9 +25,14 @@ function ui.buttonListPaged.create(parent)
     self.buttonList:setSize(self.size.x, self.size.y - 2)
   end
 
+  function elem:setHeader(header)
+    elem.header = header
+  end
+
   -- Either same format as buttonList, or arbitrary format alongside setPreProcess
   function elem:setOptions(options)
     self.options = options
+    self:updatePage()
   end
 
   -- Takes an element in options and converts to buttonList compliant entry
@@ -28,89 +40,115 @@ function ui.buttonListPaged.create(parent)
     self.preProcess = f
   end
 
-  function elem:getElemsPerPage()
-    if #self.options > self.buttonList.size.y then
-      return self.buttonList.size.y - 2
+  function elem:getPageSize()
+    local elemsPerPage = self.buttonList.size.y
+    if self.header then
+      elemsPerPage = elemsPerPage - 1
     end
-    return self.buttonList.size.y
+    if #self.options > elemsPerPage then
+      elemsPerPage = elemsPerPage - 2
+    end
+    return elemsPerPage
+  end
+
+  function elem:getPageCount(pageSize)
+    return math.max(1, math.ceil(#self.options / pageSize))
   end
 
   function elem:setPage(n)
-    local pageCount = math.max(1, math.ceil(#self.options / self:getElemsPerPage()))
+    local pageSize = self:getPageSize()
+    local pageCount = self:getPageCount(pageSize)
     self.page = math.max(1, math.min(pageCount, n))
-    self:updatePage()
+    self:updatePage(pageSize, pageCount)
   end
 
-  function elem:updatePage()
+  function elem:updatePage(pageSize, pageCount)
+    pageSize = pageSize or self:getPageSize()
+    pageCount = pageCount or self:getPageCount(pageSize)
 
-  end
+    if self.page > pageCount then self.page = pageCount end
 
-  -- make a list view, probably need an "on resize" hook of some sort
-  -- make the buttons and stuff at the bottom
-  -- need headers support, maybe setHeader? sets the display text for a first row, for every page (naturally, reduces the row per page by 1)
-  --   should support having and not having this
-  -- provide a setOptions
-  -- provide optional preProcess, which takes one elem from options and does something to it
-  -- provide set page functions
-  -- provide handleClick, passing in button, original data, parsed data and index
-
-  -- if number of options is <= elem.size.y (or just <, if headers set), size up the list to the full elem and hide the page buttons
-
-  -- also sort the recipes alphabetically, or maybe by recent? seems overkill and not worth the migration
-
-
-  --[[
-
-    local pageCounter = pages.elem(ui.text.create())
-    local function updatePageCounter()
-      local pageCountStr = tostring(pageCount)
-      local pageStr = tostring(page)
-      pageStr = string.rep(" ", #pageCountStr - #pageStr) .. pageStr
-      local pageCounterStr = pageStr .. "/" .. pageCountStr
-
-      pageCounter:setSize(#pageCounterStr, 1)
-      pageCounter:setPos(math.floor(w / 2) - #pageStr, h - 1)
-      pageCounter:setText(pageCounterStr)
-
-      leftBtn:setText(page == 1 and "" or "<<<")
-      leftBtn:setBgColor(page == 1 and colors.black or colors.gray)
-      rightBtn:setText(page == pageCount and "" or ">>>")
-      rightBtn:setBgColor(page == pageCount and colors.black or colors.gray)
+    local startIndex = (self.page - 1) * pageSize + 1
+    local options = {}
+    if self.header then
+      options[1] = {displayText = self.header}
     end
+    for i = startIndex, startIndex + pageSize - 1 do
+      local option = self:preProcess(self.options[i])
+      option.index = i
+      table.insert(options, option)
+    end
+    self.buttonList:setOptions(options)
+    self:makeOrRemovePageButtons(pageCount)
 
-    updatePageCounter()
+    self:updatePageCounter(pageCount)
+    self:invalidateLayout(true)
+  end
+
+  function elem:updatePageCounter(pageCount)
+    if not self.pageCounter then return end
+    local pageCountStr = tostring(pageCount)
+    local pageStr = tostring(self.page)
+    pageStr = string.rep(" ", #pageCountStr - #pageStr) .. pageStr
+    local pageCounterStr = pageStr .. "/" .. pageCountStr
+
+    self.pageCounter:setSize(#pageCounterStr, 1)
+    self.pageCounter:setPos(math.floor(self.size.x / 2) - #pageStr, self.size.y - 1)
+    self.pageCounter:setText(pageCounterStr)
+
+    self.leftButton:setText(self.page == 1 and "" or "<<<")
+    self.leftButton:setBgColor(self.page == 1 and colors.black or colors.gray)
+    self.rightButton:setText(self.page == pageCount and "" or ">>>")
+    self.rightButton:setBgColor(self.page == pageCount and colors.black or colors.gray)
+  end
+
+  function elem:makeOrRemovePageButtons(pageCount)
+    if pageCount == 1 then
+      if not self.pageCounter then return end
+      self.pageCounter:remove()
+      self.leftButton:remove()
+      self.rightButton:remove()
+      return
+    end
+    if self.pageCounter then return end
+
+    self.pageCounter = ui.text.create(self)
 
     local btnGap = 4
+    local w, h = self.size.x, self.size.h
 
-    local leftBtn = pages.elem(ui.text.create())
-    leftBtn:setSize(3, 1)
-    leftBtn:setPos(math.floor(w / 2) - 3 - btnGap, h - 1)
-    leftBtn:setText("")
+    self.leftButton = ui.text.create(self)
+    self.leftButton:setSize(3, 1)
+    self.leftButton:setPos(math.floor(w / 2) - 3 - btnGap, h - 1)
+    self.leftButton:setText("")
 
-    local rightBtn = pages.elem(ui.text.create())
-    rightBtn:setSize(3, 1)
-    rightBtn:setPos(math.floor(w / 2) + btnGap + 1, h - 1)
-    rightBtn:setText("")
+    self.rightButton = pages.elem(ui.text.create())
+    self.rightButton:setSize(3, 1)
+    self.rightButton:setPos(math.floor(w / 2) + btnGap + 1, h - 1)
+    self.rightButton:setText("")
 
-    function leftBtn:onClick()
-      if page == 1 then return end
-      page = page - 1
-      updateDisplay()
+    function self.leftButton:onClick()
+      if self.parent.page == 1 then return end
+      self.parent:setPage(self.parent.page - 1)
     end
 
-    function rightBtn:onClick()
-      if page == pageCount then return end
-      page = page + 1
-      updateDisplay()
+    function self.rightButton:onClick()
+      if self.parent.page == pageCount then return end
+      self.parent:setPage(self.parent.page + 1)
     end
+  end
 
+  function elem:handleClick(btn, data, preData, i)
+  end
+
+  --[[
     -- maybe???
     with self:onRemove, but must call old onRemove
     hook.add("mouse_scroll", "menu_shift", function(dir)
       if dir == 1 then
-        rightBtn:onClick()
+        rightButton:onClick()
       else
-        leftBtn:onClick()
+        leftButton:onClick()
       end
     end)
 
