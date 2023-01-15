@@ -13,6 +13,7 @@ function ui.buttonListPaged.create(parent)
     elem:handleClick(btn, data, elem.options[data.index], data.index)
   end
 
+  elem.allowPageHide = true
   elem.options = {}
   elem.page = 1
   -- Header row
@@ -22,11 +23,15 @@ function ui.buttonListPaged.create(parent)
   end
 
   function elem:onResize()
-    self.buttonList:setSize(self.size.x, self.size.y - 2)
+    self.buttonList:setSize(self.size.x, self:getButtonListHeight())
   end
 
   function elem:setHeader(header)
     elem.header = header
+  end
+
+  function elem:setAllowPageHide(allowPageHide)
+    elem.allowPageHide = allowPageHide
   end
 
   -- Either same format as buttonList, or arbitrary format alongside setPreProcess
@@ -41,14 +46,21 @@ function ui.buttonListPaged.create(parent)
   end
 
   function elem:getPageSize()
-    local elemsPerPage = self.buttonList.size.y
+    local elemsPerPage = self.size.y
     if self.header then
       elemsPerPage = elemsPerPage - 1
     end
-    if #self.options > elemsPerPage then
+    if #self.options > elemsPerPage or not self.allowPageHide then
       elemsPerPage = elemsPerPage - 2
     end
     return elemsPerPage
+  end
+
+  function elem:getButtonListHeight()
+    if #self.options > self.size.y or not self.allowPageHide then
+      return self.size.y - 2
+    end
+    return self.size.y
   end
 
   function elem:getPageCount(pageSize)
@@ -73,10 +85,15 @@ function ui.buttonListPaged.create(parent)
     if self.header then
       options[1] = {displayText = self.header}
     end
-    for i = startIndex, startIndex + pageSize - 1 do
+    for i = startIndex, math.min(startIndex + pageSize - 1, #self.options) do
       local option = self:preProcess(self.options[i])
       option.index = i
       table.insert(options, option)
+    end
+    
+    local listHeight = self:getButtonListHeight()
+    if self.buttonList.size.y ~= listHeight then
+      self.buttonList:setSize(self.size.x, listHeight)
     end
     self.buttonList:setOptions(options)
     self:makeOrRemovePageButtons(pageCount)
@@ -115,14 +132,14 @@ function ui.buttonListPaged.create(parent)
     self.pageCounter = ui.text.create(self)
 
     local btnGap = 4
-    local w, h = self.size.x, self.size.h
+    local w, h = self.size.x, self.size.y
 
     self.leftButton = ui.text.create(self)
     self.leftButton:setSize(3, 1)
     self.leftButton:setPos(math.floor(w / 2) - 3 - btnGap, h - 1)
     self.leftButton:setText("")
 
-    self.rightButton = pages.elem(ui.text.create())
+    self.rightButton = ui.text.create(self)
     self.rightButton:setSize(3, 1)
     self.rightButton:setPos(math.floor(w / 2) + btnGap + 1, h - 1)
     self.rightButton:setText("")

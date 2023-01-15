@@ -89,7 +89,7 @@ function ui.buttonList.create(parent)
         button:setBgColor(i % 2 == 1 and colors.black or colors.gray)
       end
     end
-    self:invalidateLayout()
+    self:invalidateLayout(true)
   end
 
   function elem:handleClick(btn, data, i)
