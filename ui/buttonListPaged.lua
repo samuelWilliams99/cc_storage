@@ -45,6 +45,10 @@ function ui.buttonListPaged.create(parent)
     self.preProcess = f
   end
 
+  function elem:setSplits(...)
+    self.buttonList:setSplits(...)
+  end
+
   function elem:getPageSize()
     local elemsPerPage = self.size.y
     if self.header then

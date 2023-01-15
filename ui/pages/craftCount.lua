@@ -154,11 +154,12 @@ function craftCountPage.displayPlan()
     local lineX = 2 + math.floor((w - 4) * 0.4)
 
     --make the list without options
-    local ingredientsList = pages.elem(ui.buttonList.create())
+    local ingredientsList = pages.elem(ui.buttonListPaged.create())
     craftCountPage.ingredientsList = ingredientsList
     ingredientsList:setPos(lineX + 2, 8)
     ingredientsList:setSize(w - 4 - lineX, h - 14)
     ingredientsList:setSplits(0.5)
+    ingredientsList:setHeader({"Item name", "Available / Required"})
 
     local craftBtn = pages.elem(ui.text.create())
     craftCountPage.craftBtn = craftBtn
@@ -199,9 +200,7 @@ function craftCountPage.displayPlan()
     end
   end)
 
-  local options = {
-    {displayText = {"Item name", "Available / Required"}}
-  }
+  local options = {}
 
   for _, itemName in ipairs(ingredientKeys) do
     local missing = craftCountPage.plan.missingIngredients[itemName]
