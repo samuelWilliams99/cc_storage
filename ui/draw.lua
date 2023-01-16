@@ -74,6 +74,10 @@ function ui.classes.Base:doDraw()
   for _, child in pairs(self.children) do
     child:doDraw()
   end
+  self:onDoDraw()
+end
+
+function ui.classes.Base:onDoDraw()
 end
 
 function ui.classes.Base:invalidateLayout(instantly)

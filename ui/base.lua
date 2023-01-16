@@ -12,7 +12,9 @@ local Base = ui.classes.Base
 function Base:draw() end
 
 -- 1 = Left, 2 = Right, 3 = Middle
-function Base:onClick(btn) end
+-- Not defined for non buttons
+-- Note that by adding an onclick, the element becomes capable of taking a click event, and as such will prevent any parents from recieving the event
+-- function Base:onClick(btn) end
 
 function Base:localisePosition(x, y)
   if x < 0 or x > self.size.x then error("Localised outside of element") end
@@ -96,19 +98,21 @@ function ui.makeElement(parent)
   return element
 end
 
-local function getAtPosition(x, y, element)
+local function getAtPosition(x, y, element, deepest)
   if x < element.pos.x + 1 or x > element.pos.x + element.size.x then return end
   if y < element.pos.y + 1 or y > element.pos.y + element.size.y then return end
 
   local relX, relY = x - element.pos.x, y - element.pos.y
 
+  if element.onClick then deepest = element end
+
   for k = #element.children, 1, -1 do
     local child = element.children[k]
-    local atPosition = getAtPosition(relX, relY, child)
+    local atPosition = getAtPosition(relX, relY, child, deepest)
     if atPosition then return atPosition end
   end
 
-  return element
+  return deepest
 end
 
 hook.add("mouse_click", "ui_click", function(btn, x, y)

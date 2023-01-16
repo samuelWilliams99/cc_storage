@@ -117,27 +117,28 @@ function storagePage.setup()
   end
   updateCraftingCounter()
 
-  -- TODO: the next 2 are now indented from the left/right by 2, because they're in the item list.
-  -- Consider implementing a noBackgroundClear option, and moving them out of it
-  -- However, this will cause order issues with onClick, we may need to change that to handle _all_ elements that overlap the mouse
-  -- so drop the break at base.lua:120
-  local slotCounter = ui.text.create(buttonList)
+  local slotCounter = pages.elem(ui.text.create())
   slotCounter:setBgColor(colors.black)
   local function updateSlotCounter()
     local slotsUsed = storage.totalSlotCount - #storage.emptySlots
     local str = slotsUsed .. "/" .. storage.totalSlotCount .. " slots used"
-    slotCounter:setPos(buttonList.size.x - #str, buttonList.size.y - 1)
+    slotCounter:setPos(w - #str, h - 1)
     slotCounter:setSize(#str, 1)
     slotCounter:setText(str)
   end
   updateSlotCounter()
 
-  local configureButton = ui.text.create(buttonList)
-  configureButton:setPos(0, buttonList.size.y - 1)
+  local configureButton = pages.elem(ui.text.create())
+  configureButton:setPos(0, h - 1)
   configureButton:setSize(9, 1)
   configureButton:setText("Configure")
   function configureButton:onClick()
     pages.setPage("configure")
+  end
+
+  function buttonList:onDoDraw()
+    slotCounter:doDraw()
+    configureButton:doDraw()
   end
 
   -- TODO: optimise this a lot
@@ -165,6 +166,16 @@ function storagePage.setup()
     local key = sorters[sorterIndex].key
     local comp = order and (function(a, b) return a < b end) or (function(a, b) return a > b end)
 
+    local function sequenceCompares(...)
+      local arr = {...}
+      for _, vals in ipairs(arr) do
+        local a, b = unpack(vals)
+        if a < b then return true end
+        if a > b then return false end
+      end
+      return false
+    end
+
     -- Sort by the comparator and what not, fall back to display name asc afterwards
     table.sort(itemKeys, function(aName, bName)
       local a = getItemData(aName)
@@ -172,7 +183,12 @@ function storagePage.setup()
       local aKey = key(a)
       local bKey = key(b)
       if aKey == bKey then
-        return a.detail.displayName < b.detail.displayName
+        return sequenceCompares(
+          {aKey, bKey},
+          {a.detail.displayName, b.detail.displayName},
+          {a.detail.damage or math.huge, b.detail.damage or math.huge},
+          {a.detail.nbt or "", b.detail.nbt or ""}
+        )
       else
         return comp(aKey, bKey)
       end
