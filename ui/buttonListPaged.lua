@@ -18,6 +18,8 @@ function ui.buttonListPaged.create(parent)
   elem.page = 1
   -- Header row
   elem.header = nil
+
+  -- Takes an element in options and converts to buttonList compliant entry
   function elem:preProcess(x)
     return x
   end
@@ -38,11 +40,6 @@ function ui.buttonListPaged.create(parent)
   function elem:setOptions(options)
     self.options = options
     self:updatePage()
-  end
-
-  -- Takes an element in options and converts to buttonList compliant entry
-  function elem:setPreProcess(f)
-    self.preProcess = f
   end
 
   function elem:setSplits(...)
@@ -71,11 +68,13 @@ function ui.buttonListPaged.create(parent)
     return math.max(1, math.ceil(#self.options / pageSize))
   end
 
-  function elem:setPage(n)
+  function elem:setPage(n, noUpdate)
     local pageSize = self:getPageSize()
     local pageCount = self:getPageCount(pageSize)
     self.page = math.max(1, math.min(pageCount, n))
-    self:updatePage(pageSize, pageCount)
+    if not noUpdate then
+      self:updatePage(pageSize, pageCount)
+    end
   end
 
   function elem:updatePage(pageSize, pageCount)
@@ -160,6 +159,21 @@ function ui.buttonListPaged.create(parent)
   end
 
   function elem:handleClick(btn, data, preData, i)
+  end
+
+  local oldOnRemove = elem.onRemove
+
+  hook.add("mouse_scroll", "page_scroll_" .. elem.id, function(dir)
+    if dir == 1 then
+      elem.rightButton:onClick()
+    else
+      elem.leftButton:onClick()
+    end
+  end)
+
+  function elem:onRemove()
+    hook.remove("mouse_scroll", "page_scroll_" .. self.id)
+    oldOnRemove(self)
   end
 
   --[[

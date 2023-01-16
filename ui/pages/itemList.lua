@@ -10,8 +10,6 @@ function storagePage.setup()
   term.clear()
 
   local w, h = term.getSize()
-  local page = 1
-  local pageCount = 1
   local sorters = {
     {
       name = "Name",
@@ -29,22 +27,55 @@ function storagePage.setup()
   local order = true
   local searchString = ""
 
-  local buttonList = pages.elem(ui.buttonList.create())
-  buttonList:setSize(w - 4, h - 6)
+  local function getItemData(name)
+    if storage.items[name] then return storage.items[name] end
+    local recipe = storage.crafting.recipes[name]
+    return {detail = {displayName = recipe.displayName}, count = 0, isRecipe = true}
+  end
+
+  local function getCountText(count, maxCount)
+    if maxCount == 1 or count <= maxCount then return tostring(count) end
+    local stacks = math.floor(count / maxCount)
+    local str = tostring(count) .. " (" .. stacks .. " * " .. maxCount
+    local remainder = count % maxCount
+    if remainder > 0 then
+      str = str .. " + " .. remainder
+    end
+    return str .. ")"
+  end
+
+  local buttonList = pages.elem(ui.buttonListPaged.create())
+  buttonList:setSize(w - 4, h - 4)
   buttonList:setPos(2, 4)
   buttonList:setSplits(0.65)
+  buttonList:setHeader({"ITEM NAME", "COUNT"})
+  buttonList:setAllowPageHide(false)
+  function buttonList:preProcess(name)
+    local item = getItemData(name)
+    local displayName = item.detail.displayName
 
-  local btnGap = 4
+    if item.detail.damage then
+      displayName = displayName .. " (" .. (item.detail.maxDamage - item.detail.damage) .. "/" .. item.detail.maxDamage .. ")"
+    end
+    if item.detail.enchantments then
+      if #item.detail.enchantments == 1 then
+        displayName = displayName .. " (" .. item.detail.enchantments[1].displayName .. ")"
+      else
+        displayName = displayName .. " (+ " .. #item.detail.enchantments .. " enchantments)"
+      end
+    end
 
-  local leftBtn = pages.elem(ui.text.create())
-  leftBtn:setSize(3, 1)
-  leftBtn:setPos(math.floor(w / 2) - 3 - btnGap, h - 1)
-  leftBtn:setText("")
+    local countText = item.isRecipe and "CRAFT" or getCountText(item.count, item.detail.maxCount)
+    if not item.isRecipe and storage.crafting.recipes[name] and hasCrafters then -- If we have some but its also craftable
+      countText = countText .. " *" -- Add a star :)
+    end
 
-  local rightBtn = pages.elem(ui.text.create())
-  rightBtn:setSize(3, 1)
-  rightBtn:setPos(math.floor(w / 2) + btnGap + 1, h - 1)
-  rightBtn:setText("")
+    return {
+      displayText = {displayName, countText},
+      name = name,
+      maxCount = item.detail.maxCount -- Will be nil for non craftables
+    }
+  end
 
   local sortSwitch = pages.elem(ui.text.create())
   sortSwitch:setPos(0, 0)
@@ -86,56 +117,32 @@ function storagePage.setup()
   end
   updateCraftingCounter()
 
-  local slotCounter = pages.elem(ui.text.create())
+  -- TODO: the next 2 are now indented from the left/right by 2, because they're in the item list.
+  -- Consider implementing a noBackgroundClear option, and moving them out of it
+  -- However, this will cause order issues with onClick, we may need to change that to handle _all_ elements that overlap the mouse
+  -- so drop the break at base.lua:120
+  local slotCounter = ui.text.create(buttonList)
   slotCounter:setBgColor(colors.black)
   local function updateSlotCounter()
     local slotsUsed = storage.totalSlotCount - #storage.emptySlots
     local str = slotsUsed .. "/" .. storage.totalSlotCount .. " slots used"
-    slotCounter:setPos(w - #str, h - 1)
+    slotCounter:setPos(buttonList.size.x - #str, buttonList.size.y - 1)
     slotCounter:setSize(#str, 1)
     slotCounter:setText(str)
   end
   updateSlotCounter()
 
-  local pageCounter = pages.elem(ui.text.create())
-  local function updatePageCounter()
-    local pageCountStr = tostring(pageCount)
-    local pageStr = tostring(page)
-    pageStr = string.rep(" ", #pageCountStr - #pageStr) .. pageStr
-    local pageCounterStr = pageStr .. "/" .. pageCountStr
-
-    pageCounter:setSize(#pageCounterStr, 1)
-    pageCounter:setPos(math.floor(w / 2) - #pageStr, h - 1)
-    pageCounter:setText(pageCounterStr)
-
-    leftBtn:setText(page == 1 and "" or "<<<")
-    leftBtn:setBgColor(page == 1 and colors.black or colors.gray)
-    rightBtn:setText(page == pageCount and "" or ">>>")
-    rightBtn:setBgColor(page == pageCount and colors.black or colors.gray)
-  end
-
-  updatePageCounter()
-
-  local configureButton = pages.elem(ui.text.create())
-  configureButton:setPos(0, h - 1)
+  local configureButton = ui.text.create(buttonList)
+  configureButton:setPos(0, buttonList.size.y - 1)
   configureButton:setSize(9, 1)
   configureButton:setText("Configure")
   function configureButton:onClick()
     pages.setPage("configure")
   end
 
-  local function getCountText(count, maxCount)
-    if maxCount == 1 or count <= maxCount then return tostring(count) end
-    local stacks = math.floor(count / maxCount)
-    local str = tostring(count) .. " (" .. stacks .. " * " .. maxCount
-    local remainder = count % maxCount
-    if remainder > 0 then
-      str = str .. " + " .. remainder
-    end
-    return str .. ")"
-  end
-
   -- TODO: optimise this a lot
+  -- At very least, keys + recipe adding, as well as filter, can all be one loop, rather than 3
+  -- Consider if its possible to not recreate the ensure list each time, but instead update it as needed
   local function updateDisplay()
     if not storagePage.active then return end
     local itemKeys = table.keys(storage.items)
@@ -146,12 +153,6 @@ function storagePage.setup()
           table.insert(itemKeys, name)
         end
       end
-    end
-
-    local function getItemData(name)
-      if storage.items[name] then return storage.items[name] end
-      local recipe = storage.crafting.recipes[name]
-      return {detail = {displayName = recipe.displayName}, count = 0, isRecipe = true}
     end
 
     itemKeys = table.filter(itemKeys, function(name)
@@ -177,43 +178,8 @@ function storagePage.setup()
       end
     end)
 
-    local pageSize = buttonList.size.y - 1
+    buttonList:setOptions(itemKeys)
 
-    pageCount = math.max(1, math.ceil(#itemKeys / pageSize))
-    page = math.min(pageCount, page)
-
-    local options = {{displayText = {"ITEM NAME", "COUNT"}}}
-    for i = (page - 1) * pageSize + 1, math.min(#itemKeys, page * pageSize) do
-      local name = itemKeys[i]
-      local item = getItemData(name)
-      local displayName = item.detail.displayName
-
-      if item.detail.damage then
-        displayName = displayName .. " (" .. (item.detail.maxDamage - item.detail.damage) .. "/" .. item.detail.maxDamage .. ")"
-      end
-      if item.detail.enchantments then
-        if #item.detail.enchantments == 1 then
-          displayName = displayName .. " (" .. item.detail.enchantments[1].displayName .. ")"
-        else
-          displayName = displayName .. " (+ " .. #item.detail.enchantments .. " enchantments)"
-        end
-      end
-
-      local countText = item.isRecipe and "CRAFT" or getCountText(item.count, item.detail.maxCount)
-      if not item.isRecipe and storage.crafting.recipes[name] and hasCrafters then -- If we have some but its also craftable
-        countText = countText .. " *" -- Add a star :)
-      end
-
-      table.insert(options, {
-        displayText = {displayName, countText},
-        name = name,
-        maxCount = item.detail.maxCount -- Will be nil for non craftables
-      })
-    end
-
-    buttonList:setOptions(options)
-
-    updatePageCounter()
     updateSlotCounter()
     updateCraftingCounter()
   end
@@ -232,22 +198,10 @@ function storagePage.setup()
     end
   end
 
-  function leftBtn:onClick()
-    if page == 1 then return end
-    page = page - 1
-    updateDisplay()
-  end
-
-  function rightBtn:onClick()
-    if page == pageCount then return end
-    page = page + 1
-    updateDisplay()
-  end
-
   function sortSwitch:onClick()
     sorterIndex = (sorterIndex % #sorters) + 1
     order = sorters[sorterIndex].order
-    page = 1
+    buttonList:setPage(1, true)
     updateSortSwitch()
     updateOrderSwitch()
     updateDisplay()
@@ -255,7 +209,7 @@ function storagePage.setup()
 
   function orderSwitch:onClick()
     order = not order
-    page = 1
+    buttonList:setPage(1, true)
     updateOrderSwitch()
     updateDisplay()
   end
@@ -264,14 +218,6 @@ function storagePage.setup()
 
   hook.add("cc_storage_change", "update_view", function()
     timer.create("inventory_delay", 0.1, 1, updateDisplay)
-  end)
-
-  hook.add("mouse_scroll", "menu_shift", function(dir)
-    if dir == 1 then
-      rightBtn:onClick()
-    else
-      leftBtn:onClick()
-    end
   end)
 
   hook.add("mouse_click", "clear_search", function(btn, x, y)
@@ -311,7 +257,6 @@ function storagePage.cleanup()
   hook.run("key", 257, false)
 
   hook.remove("cc_storage_change", "update_view")
-  hook.remove("mouse_scroll", "menu_shift")
   hook.remove("mouse_click", "clear_search")
   timer.remove("inventory_delay")
 
