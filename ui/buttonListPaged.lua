@@ -33,7 +33,7 @@ function ui.buttonListPaged.create(parent)
   end
 
   function elem:setAllowPageHide(allowPageHide)
-    elem.allowPageHide = allowPageHide
+    self.allowPageHide = allowPageHide
   end
 
   -- Either same format as buttonList, or arbitrary format alongside setPreProcess
@@ -123,11 +123,14 @@ function ui.buttonListPaged.create(parent)
   end
 
   function elem:makeOrRemovePageButtons(pageCount)
-    if pageCount == 1 then
+    if pageCount == 1 and self.allowPageHide then
       if not self.pageCounter then return end
       self.pageCounter:remove()
+      self.pageCounter = nil
       self.leftButton:remove()
+      self.leftButton = nil
       self.rightButton:remove()
+      self.rightButton = nil
       return
     end
     if self.pageCounter then return end
