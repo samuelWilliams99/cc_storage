@@ -133,7 +133,10 @@ function ui.buttonListPaged.create(parent)
       self.rightButton = nil
       return
     end
-    if self.pageCounter then return end
+    if self.pageCounter then
+      self.rightButton.pageCount = pageCount
+      return
+    end
 
     self.pageCounter = ui.text.create(self)
 
@@ -149,6 +152,7 @@ function ui.buttonListPaged.create(parent)
     self.rightButton:setSize(3, 1)
     self.rightButton:setPos(math.floor(w / 2) + btnGap + 1, h - 1)
     self.rightButton:setText("")
+    self.rightButton.pageCount = pageCount
 
     function self.leftButton:onClick()
       if self.parent.page == 1 then return end
@@ -156,7 +160,7 @@ function ui.buttonListPaged.create(parent)
     end
 
     function self.rightButton:onClick()
-      if self.parent.page == pageCount then return end
+      if self.parent.page == self.pageCount then return end
       self.parent:setPage(self.parent.page + 1)
     end
   end
