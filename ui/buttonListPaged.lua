@@ -161,8 +161,6 @@ function ui.buttonListPaged.create(parent)
   function elem:handleClick(btn, data, preData, i)
   end
 
-  local oldOnRemove = elem.onRemove
-
   hook.add("mouse_scroll", "page_scroll_" .. elem.id, function(dir)
     if dir == 1 then
       elem.rightButton:onClick()
@@ -170,24 +168,12 @@ function ui.buttonListPaged.create(parent)
       elem.leftButton:onClick()
     end
   end)
-
+  
+  local oldOnRemove = elem.onRemove
   function elem:onRemove()
     hook.remove("mouse_scroll", "page_scroll_" .. self.id)
     oldOnRemove(self)
   end
-
-  --[[
-    -- maybe???
-    with self:onRemove, but must call old onRemove
-    hook.add("mouse_scroll", "menu_shift", function(dir)
-      if dir == 1 then
-        rightButton:onClick()
-      else
-        leftButton:onClick()
-      end
-    end)
-
-  ]]
 
   elem:invalidateLayout()
   return elem
