@@ -3,6 +3,7 @@ require "utils.timer"
 require "storage.items"
 require "storage.crafting"
 require "storage.enderChest"
+require "storage.remoteAccess"
 require "ui.buttonList"
 require "ui.text"
 require "ui.pages.configure"
@@ -10,7 +11,6 @@ require "ui.pages.craftCount"
 require "ui.pages.itemList"
 require "ui.pages.lock"
 require "ui.pages.recipes"
-require "ui.pages.enderChest"
 require "ui.pages.pages"
 
 storage.crafting.pingCrafters()
@@ -18,7 +18,7 @@ storage.updateChests()
 storage.updateItemMapping()
 storage.crafting.loadRecipes()
 storage.crafting.setupCrafters()
-storage.enderChest.setup()
+storage.enderChest.loadChests()
 
 -- void limit - needs a menu
 --   same menu as the craft up-down for things like iron

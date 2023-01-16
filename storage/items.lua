@@ -2,6 +2,8 @@ require "utils.helpers"
 require "utils.timer"
 
 storage = {}
+storage.modem = peripheral.find("modem", function(_, p) return p.isWireless() end)
+
 require "storage.crafting"
 
 -- Must not use peripherals that are wrapped sides, as pushItems doesn't work with them. Must instead be through the wired modem.
@@ -283,8 +285,9 @@ function storage.startInputTimer()
   timer.create("input", 0.5, 0, function() storage.inputChest(storage.input) end)
 end
 
-function storage.inputChestUnsafe(chest, useReserved)
-  local inputItems = chest.list()
+-- We provide a way to give the input items, to save on calls to list
+function storage.inputChestUnsafe(chest, useReserved, inputItems)
+  inputItems = inputItems or chest.list()
   if table.isEmpty(inputItems) then
     return
   end

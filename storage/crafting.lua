@@ -17,8 +17,7 @@ storage.crafting.plans = {}
 
 local craftingPortOut = 1357
 local craftingPortIn = craftingPortOut + 1
-local modem = peripheral.find("modem", function(_, p) return p.isWireless() end)
-modem.open(craftingPortIn)
+storage.modem.open(craftingPortIn)
 
 -- We specifically use os.pullEvent here as this code all runs _before_ the hook system gets enabled
 -- Also, it allows us to treat these replies as syncronous calls, which makes the setup easier
@@ -53,7 +52,7 @@ local function checkChests(chests, itemName)
   for i = #chests, 1, -1 do
     chest = chests[i]
     
-    modem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = itemName, ids = storage.crafting.crafterIDs})
+    storage.modem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = itemName, ids = storage.crafting.crafterIDs})
     local shouldEmpty = handleAllReplies("check", function(data)
       if data.found then
         storage.crafting.crafters[data.computerID] = {computerID = data.computerID, chest = chest}
@@ -77,7 +76,7 @@ end
 function storage.crafting.pingCrafters()
   print("Locating crafters")
   
-  modem.transmit(craftingPortOut, craftingPortIn, {type = "scan"})
+  storage.modem.transmit(craftingPortOut, craftingPortIn, {type = "scan"})
   storage.crafting.crafterIDs = {}
 
   handleAllReplies("scan", function(data)
@@ -87,7 +86,7 @@ function storage.crafting.pingCrafters()
   
   print("Found " .. #storage.crafting.crafterIDs .. " crafting turtles")
 
-  modem.transmit(craftingPortOut, craftingPortIn, {type = "empty_chest", ids = storage.crafting.crafterIDs})
+  storage.modem.transmit(craftingPortOut, craftingPortIn, {type = "empty_chest", ids = storage.crafting.crafterIDs})
   handleAllReplies("empty_chest", function() end, storage.crafting.crafterIDs, true)
 
   print("All crafter chests emptied")
@@ -405,7 +404,7 @@ function storage.crafting.runCrafter(job, crafter)
   for name, amt in pairs(job.recipe.ingredients) do
     storage.dropItemTo(name, amt * job.craftCount, crafter.chest, job.useReserved)
   end
-  modem.transmit(craftingPortOut, craftingPortIn, msg)
+  storage.modem.transmit(craftingPortOut, craftingPortIn, msg)
 end
 
 hook.add("modem_message", "crafting_reply", function(_, port, _, data)

@@ -1,58 +1,70 @@
 require "utils.helpers"
 
 storage.enderChest = {}
-storage.enderChest.configPath = "enderChests.txt"
 
 local function avoidSides(name)
-  if name:find("") then return true end
+  if name:find("_") then return true end
 end
 
---[[
-format
-key = peripheral name
-value = {
-  type = "input" | "terminal"
-  computerId = id of pocket if terminal
-}
-}
-]]
-function storage.enderChest.loadConfig()
-  storage.enderChest.config = readFile(storage.enderChest.configPath) or {}
-end
-
-function storage.enderChest.saveConfig()
-  writeFile(storage.enderChest.configPath, storage.enderChest.config or {})
-end
-
-function storage.enderChest.reloadChests()
-  storage.enderChest.chests = {peripheral.find("enderstorage:ender_chest", avoidSides)}
-  storage.enderChest.inputChests = {}
-  for _, chest in pairs(storage.enderChest.chests) do
-    local chestName = peripheral.getName(chest)
-    local chestConfig = storage.enderChest.config[chestName]
-    if chestConfig and chestConfig.type == "input" then
-      table.insert(storage.enderChest.inputChests, chest)
-    end
+function storage.enderChest.loadChests()
+  storage.enderChest.chests = {}
+  for _, chest in ipairs({peripheral.find("enderstorage:ender_chest", avoidSides)}) do
+    storage.enderChest.chests[peripheral.getName(chest)] = {
+      chest = chest,
+      itemPaused = false,
+      fullPaused = false,
+      inputting = false
+    }
   end
 end
 
-function storage.enderChest.setup()
-  storage.enderChest.loadConfig()
-  storage.enderChest.reloadChests()
+function storage.enderChest.dropItem(chestName, key, count)
+  local chestData = storage.enderChest.chests[chestName]
+  if not chestData then return false, "No such chest" end
+  while chestData.inputting do
+    sleep(0.05)
+  end
+  chestData.itemPaused = true
+  storage.dropItemTo(key, count, chestData.chest)
+  return true
+end
+
+function storage.enderChest.pauseChest(chestName, unpause)
+  local chestData = storage.enderChest.chests[chestName]
+  if not chestData then return false, "No such chest" end
+  chestData.fullPaused = not unpause
+end
+
+function storage.enderChest.unpauseChest(chestName)
+  return storage.enderChest.pauseChest(chestName, true)
+end
+
+local function inputChest(chestData)
+  local items = chestData.chest:list()
+  if chestData.itemPaused then
+    if table.isEmpty(items) then
+      chestData.itemPaused = false
+    else
+      return
+    end
+  end
+  if chestData.fullPaused then return end
+  storage.inputChest(chestData.chest, false, items)
 end
 
 function storage.enderChest.startInputTimer()
-  timer.create("inputEnderChest", 0.5, 0, function()
-    for _, chest in ipairs(storage.enderChest.inputChests) do
-      storage.inputChest(chest)
+  timer.create("inputEnderChests", 0.5, 0, function()
+    for _, chestData in pairs(storage.enderChest.chests) do
+      chestData.inputting = true
+      inputChest(chestData)
+      chestData.inputting = false
     end
   end)
 end
 
 function storage.enderChest.peripheralChange(peripheralName)
   if not peripheralName:startsWith("enderstorage:ender_chest_") then return end
-  storage.enderChest.reloadChests()
-  hook.run("ender_chest_change")
+  storage.enderChest.loadChests()
 end
 
 hook.add("peripheral", "enderChestAttach", storage.enderChest.peripheralChange)
