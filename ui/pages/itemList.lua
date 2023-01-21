@@ -1,15 +1,17 @@
 require "ui.pages.pages"
+require "ui.buttonListPaged"
 
 local storagePage = {}
+local w, h = term.getSize()
 
 pages.addPage("itemList", storagePage)
 
 function storagePage.setup()
-  local hasCrafters = not table.isEmpty(storage.crafting.crafters)
+  local hasCrafters = storage.crafting.hasCrafters()
+  local recipeNames = storage.crafting.getRecipeNames()
+  local craftingPlanCount = storage.crafting.getActivePlanCount()
+  local totalSlotCount = storage.getTotalSlotCount()
 
-  term.clear()
-
-  local w, h = term.getSize()
   local sorters = {
     {
       name = "Name",
@@ -29,8 +31,8 @@ function storagePage.setup()
 
   local function getItemData(name)
     if storage.items[name] then return storage.items[name] end
-    local recipe = storage.crafting.recipes[name]
-    return {detail = {displayName = recipe.displayName}, count = 0, isRecipe = true}
+    local recipeName = recipeNames[name]
+    return {detail = {displayName = recipeName}, count = 0, isRecipe = true}
   end
 
   local function getCountText(count, maxCount)
@@ -44,14 +46,7 @@ function storagePage.setup()
     return str .. ")"
   end
 
-  local buttonList = pages.elem(ui.buttonListPaged.create())
-  buttonList:setSize(w - 4, h - 4)
-  buttonList:setPos(2, 4)
-  buttonList:setSplits(0.65)
-  buttonList:setHeader({"ITEM NAME", "COUNT"})
-  buttonList:setAllowPageHide(false)
-  function buttonList:preProcess(name)
-    local item = getItemData(name)
+  local function getDisplayText(item)
     local displayName = item.detail.displayName
 
     if item.detail.damage then
@@ -65,8 +60,21 @@ function storagePage.setup()
       end
     end
 
+    return displayName
+  end
+
+  local buttonList = pages.elem(ui.buttonListPaged.create())
+  buttonList:setSize(w - 4, h - 4)
+  buttonList:setPos(2, 4)
+  buttonList:setSplits(0.65)
+  buttonList:setHeader({"ITEM NAME", "COUNT"})
+  buttonList:setAllowPageHide(false)
+  function buttonList:preProcess(name)
+    local item = getItemData(name)
+    local displayName = getDisplayText(item)
+
     local countText = item.isRecipe and "CRAFT" or getCountText(item.count, item.detail.maxCount)
-    if not item.isRecipe and storage.crafting.recipes[name] and hasCrafters then -- If we have some but its also craftable
+    if not item.isRecipe and recipeNames[name] and hasCrafters then -- If we have some but its also craftable
       countText = countText .. " *" -- Add a star :)
     end
 
@@ -105,12 +113,12 @@ function storagePage.setup()
   local craftingCounter = pages.elem(ui.text.create())
   craftingCounter:setBgColor(colors.black)
   local function updateCraftingCounter()
-    if table.isEmpty(storage.crafting.plans) then
+    if craftingPlanCount == 0 then
       craftingCounter:setTextColor(colors.black)
     else
       craftingCounter:setTextColor(colors.white)
     end
-    local text = #storage.crafting.plans .. " Crafting job active"
+    local text = craftingPlanCount .. " Crafting job active"
     craftingCounter:setPos(w - 11 - #text, 0)
     craftingCounter:setSize(#text, 1)
     craftingCounter:setText(text)
@@ -120,8 +128,8 @@ function storagePage.setup()
   local slotCounter = pages.elem(ui.text.create())
   slotCounter:setBgColor(colors.black)
   local function updateSlotCounter()
-    local slotsUsed = storage.totalSlotCount - #storage.emptySlots
-    local str = slotsUsed .. "/" .. storage.totalSlotCount .. " slots used"
+    local slotsUsed = totalSlotCount - storage.emptySlotCount
+    local str = slotsUsed .. "/" .. totalSlotCount .. " slots used"
     slotCounter:setPos(w - #str, h - 1)
     slotCounter:setSize(#str, 1)
     slotCounter:setText(str)
@@ -149,7 +157,7 @@ function storagePage.setup()
     local itemKeys = table.keys(storage.items)
 
     if hasCrafters then
-      for name in pairs(storage.crafting.recipes) do
+      for name in pairs(recipeNames) do
         if not storage.items[name] then
           table.insert(itemKeys, name)
         end
@@ -194,20 +202,20 @@ function storagePage.setup()
     buttonList:setOptions(itemKeys)
 
     updateSlotCounter()
-    updateCraftingCounter()
   end
 
   function buttonList:handleClick(btn, data)
     if not data.name then return end
 
-    local canCraft = storage.crafting.recipes[data.name] and hasCrafters
+    local canCraft = recipeNames[data.name] and hasCrafters
+    local dropItem = storage.remote.isRemote and storage.remote.dropItem or storage.dropItem
 
     if canCraft and (btn == 3 or not storage.items[data.name]) then
       pages.setPage("craftCount", data.name)
     elseif btn == 2 then
-      storage.dropItem(data.name, data.maxCount)
+      dropItem(data.name, data.maxCount)
     elseif btn == 1 then
-      storage.dropItem(data.name, 1)
+      dropItem(data.name, 1)
     end
   end
 
@@ -230,7 +238,12 @@ function storagePage.setup()
   updateDisplay()
 
   hook.add("cc_storage_change", "update_view", function()
-    timer.create("inventory_delay", 0.1, 1, updateDisplay)
+    if storage.remote.isRemote then
+      -- No delay needed for remote, as server batches
+      updateDisplay()
+    else
+      timer.create("inventory_delay", 0.1, 1, updateDisplay)
+    end
   end)
 
   hook.add("mouse_click", "clear_search", function(btn, x, y)
@@ -249,7 +262,16 @@ function storagePage.setup()
   hook.add("mouse_click", "idle_clear_search", idleClear)
   hook.add("mouse_scroll", "idle_clear_search", idleClear)
 
-  -- what to do about this...
+  hook.add("cc_recipes_change", "update_menu", function(_recipeNames)
+    recipeNames = _recipeNames
+    updateDisplay()
+  end)
+
+  hook.add("cc_crafting_plan_change", "update_menu", function(_craftingPlanCount)
+    craftingPlanCount = _craftingPlanCount
+    updateCraftingCounter()
+  end)
+
   hook.runInHandlerContext(function()
     while storagePage.active do
       term.setCursorPos(3, 3)
@@ -269,6 +291,8 @@ end
 function storagePage.cleanup()
   hook.run("key", 257, false)
 
+  hook.remove("cc_recipes_change", "update_menu")
+  hook.remove("cc_crafting_plan_change", "update_menu")
   hook.remove("cc_storage_change", "update_view")
   hook.remove("mouse_click", "clear_search")
   timer.remove("inventory_delay")

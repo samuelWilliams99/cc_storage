@@ -2,68 +2,18 @@ require "ui.pages.pages"
 require "ui.logger"
 require "ui.buttonListPaged"
 
-local dropper = peripheral.find("minecraft:dropper")
-if not dropper then error("No dropper found, please connect one to the computer to use") end
-
 local recipesPage = {
   shouldMakeBackButton = true,
   title = "Recipe Manager",
   configName = "Recipe Manager"
 }
 
--- TODO: sort the recipes alphabetically
-
 pages.addPage("recipes", recipesPage)
 
 local w, h = term.getSize()
 
-local function getPlacementFromDropper()
-  local items = dropper.list()
-  if table.isEmpty(items) then
-    return false, "No recipe in dropper"
-  end
-  local placement = {}
-  local names = {}
-  for i, item in pairs(items) do
-    if item.count ~= 1 then
-      return false, "Must be 0 or 1 item in each slot"
-    end
-    local itemDetail = dropper.getItemDetail(i)
-    if itemDetail.damage and itemDetail.damage ~= 0 then
-      return false, "Cannot use damaged items in recipe"
-    end
-    if itemDetail.enchantments then
-      return false, "Cannot use enchanted items in recipe"
-    end
-    local itemKey = storage.getItemKey(item)
-    placement[i] = itemKey
-    names[itemKey] = itemDetail.displayName
-  end
-
-  return true, placement, names
-end
-
-local function getCraftedItemFromDropper()
-  local items = dropper.list()
-  if table.count(items) ~= 1 then
-    return false, "Must be exactly one item type in dropper"
-  end
-  local i, item = next(items)
-  local itemDetail = dropper.getItemDetail(i)
-  if itemDetail.damage and itemDetail.damage ~= 0 then
-    return false, "Cannot craft damaged items in recipe"
-  end
-  if itemDetail.enchantments then
-    return false, "Cannot craft enchanted items in recipe"
-  end
-  local itemKey = storage.getItemKey(item)
-  if storage.crafting.recipes[itemKey] then
-    return false, "Recipe for this item already exists.\nTo replace, remove this recipe on the left"
-  end
-  return true, itemKey, itemDetail.displayName, item.count, itemDetail.maxCount
-end
-
 function recipesPage.setup()
+  local recipeNames = storage.crafting.getRecipeNames()
   recipesPage.addRecipeStep = 1
 
   -- Vertical line
@@ -95,26 +45,27 @@ function recipesPage.setup()
   
   local function updateRecipeList()
     local options = {}
-    for name, recipe in pairs(storage.crafting.recipes) do
-      table.insert(options, {displayText = recipe.displayName, name = name, bgColor = selectedToRemove == name and colors.red or nil})
+    for name, displayName in pairs(recipeNames) do
+      table.insert(options, {displayText = displayName, name = name, bgColor = selectedToRemove == name and colors.red or nil})
     end
+    table.sort(options, function(a, b) return a.displayText < b.displayText end)
     recipesList:setOptions(options)
   end
   updateRecipeList()
 
   function recipesList:handleClick(_, data)
     if selectedToRemove == data.name then
-      storage.crafting.removeRecipe(data.name)
       selectedToRemove = nil
       timer.remove("recipeListRemoveTimeout")
+      storage.crafting.removeRecipe(data.name)
     else
       selectedToRemove = data.name
       timer.create("recipeListRemoveTimeout", 1, 1, function()
         selectedToRemove = nil
         updateRecipeList()
       end)
+      updateRecipeList()
     end
-    updateRecipeList()
   end
 
   local cancelButton = pages.elem(ui.text.create())
@@ -165,6 +116,10 @@ function recipesPage.setup()
     recipesPage.placement = nil
     recipesPage.names = nil
     recipesPage.removeLastLines = nil
+    if storage.remote.isRemote then
+      storage.enderChest.itemPauseChest(storage.remote.clientChestName)
+      storage.enderChest.unpauseChest(storage.remote.clientChestName)
+    end
     updateCancelbutton()
     updateAddRecipeButton()
     instructionsPanel:clear()
@@ -184,13 +139,18 @@ function recipesPage.setup()
       recipesPage.addRecipeStep = 2
       updateCancelbutton()
       updateAddRecipeButton()
-      instructionsPanel:writeText("Creating a new recipe! Please place the recipe into the dropper, then hit Continue.")
+      local chestText = "the dropper"
+      if storage.remote.isRemote then
+        storage.enderChest.pauseChest(storage.remote.clientChestName)
+        chestText = "your ender chest"
+      end
+      instructionsPanel:writeText("Creating a new recipe! Please place the recipe into " .. chestText .. ", then hit Continue.")
       instructionsPanel:newLine()
     elseif recipesPage.addRecipeStep == 2 then
       instructionsPanel:writeText("Scanning recipe...")
       recipesPage.addRecipeStep = nil
       updateAddRecipeButton()
-      local success, placement, names = getPlacementFromDropper()
+      local success, placement, names = storage.crafting.getPlacementFromInventory(not storage.remote.isRemote, storage.remote.clientChestName)
       if success then
         recipesPage.placement = placement
         recipesPage.names = names
@@ -216,14 +176,17 @@ function recipesPage.setup()
       instructionsPanel:writeText("Scanning crafted items...")
       recipesPage.addRecipeStep = nil
       updateAddRecipeButton()
-      local success, itemName, displayName, count, maxCount = getCraftedItemFromDropper()
+      local success, itemName, displayName, count, maxCount = storage.crafting.getCraftedItemFromInventory(not storage.remote.isRemote, storage.remote.clientChestName)
       if success then
         storage.crafting.addRecipe(itemName, displayName, recipesPage.placement, count, maxCount, recipesPage.names)
+        if storage.remote.isRemote then
+          storage.enderChest.itemPauseChest(storage.remote.clientChestName)
+          storage.enderChest.unpauseChest(storage.remote.clientChestName)
+        end
         recipesPage.addRecipeStep = 1
         recipesPage.placement = nil
         recipesPage.names = nil
         updateAddRecipeButton()
-        updateRecipeList()
         updateCancelbutton()
         instructionsPanel:removeLastLine()
         instructionsPanel:writeText("Scanning crafted items... Successful!", colors.green)
@@ -243,5 +206,18 @@ function recipesPage.setup()
     end
     -- later, add thing for oredict
     -- as well as option for computer to take items from recipe
+  end
+
+  hook.add("cc_recipes_change", "update_menu", function(_recipeNames)
+    recipeNames = _recipeNames
+    updateRecipeList()
+  end)
+end
+
+function recipesPage.cleanup()
+  hook.remove("cc_recipes_change", "update_menu")
+  if storage.remote.isRemote then
+    storage.enderChest.itemPauseChest(storage.remote.clientChestName)
+    storage.enderChest.unpauseChest(storage.remote.clientChestName)
   end
 end

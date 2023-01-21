@@ -4,6 +4,9 @@ storage.crafting.recipes = storage.crafting.recipes or {}
 
 storage.crafting.recipeFilePath = "recipes.txt"
 
+local dropper = peripheral.find("minecraft:dropper")
+if not dropper then error("No dropper found, please connect one to the computer to use") end
+
 function storage.crafting.addRecipe(itemName, displayName, recipePlacement, count, maxCount, names, override)
   if not override and storage.crafting.recipes[itemName] then return end
   local rawRecipe = {
@@ -14,14 +17,23 @@ function storage.crafting.addRecipe(itemName, displayName, recipePlacement, coun
     count = count,
     maxCount = maxCount
   }
-  storage.crafting.saveRecipe(rawRecipe)
   storage.crafting.preCacheRecipe(rawRecipe)
+  storage.crafting.saveRecipe(rawRecipe)
+end
+
+function storage.crafting.getRecipeNames()
+  local names = {}
+  for itemName, recipe in pairs(storage.crafting.recipes) do
+    names[itemName] = recipe.displayName
+  end
+  return names
 end
 
 function storage.crafting.updateRecipe(itemName, rawRecipe)
   local recipeData = readFile(storage.crafting.recipeFilePath) or {}
   recipeData[itemName] = rawRecipe
   writeFile(storage.crafting.recipeFilePath, recipeData)
+  hook.run("cc_recipes_change", storage.crafting.getRecipeNames())
 end
 
 function storage.crafting.removeRecipe(itemName)
@@ -48,6 +60,86 @@ function storage.crafting.loadRecipes()
   for _, rawRecipe in pairs(recipeData) do
     storage.crafting.preCacheRecipe(rawRecipe)
   end
+end
+
+function storage.crafting.getRecipe(itemName)
+  return storage.crafting.recipes[itemName]
+end
+
+-- move both to recipes
+local function getChestAndWidth(isDropper, chestName)
+  if isDropper then
+    return dropper, 3
+  else
+    return peripheral.wrap(chestName), 9
+  end
+end
+
+function storage.crafting.getPlacementFromInventory(isDropper, chestName)
+  local chest, chestWidth = getChestAndWidth(isDropper, chestName)
+  local items = chest.list()
+  if table.isEmpty(items) then
+    return false, "No recipe found"
+  end
+  local placement = {}
+  local names = {}
+
+  local recipeXPosition = 0
+
+  while recipeXPosition <= chestWidth - 2 do
+    recipeXPosition = recipeXPosition + 1
+    if items[recipeXPosition] or items[recipeXPosition + chestWidth] or items[recipeXPosition + 2 * chestWidth] then
+      break
+    end
+  end
+
+  for i, item in pairs(items) do
+    -- x, y such that top left is 1,1
+    local x = ((i - 1) % chestWidth) + 1
+    local y = math.floor((i - 1) / chestWidth) + 1
+    if x > recipeXPosition + 2 then
+      return false, "Recipe not within a 3x3 grid"
+    end
+
+    local slot = (y - 1) * chestWidth + x - recipeXPosition + 1
+    
+    if item.count ~= 1 then
+      return false, "Must be 0 or 1 item in each slot"
+    end
+    local itemDetail = chest.getItemDetail(i)
+    if itemDetail.damage and itemDetail.damage ~= 0 then
+      return false, "Cannot use damaged items in recipe"
+    end
+    if itemDetail.enchantments then
+      return false, "Cannot use enchanted items in recipe"
+    end
+    local itemKey = storage.getItemKey(item)
+    placement[slot] = itemKey
+    names[itemKey] = itemDetail.displayName
+  end
+
+  return true, placement, names
+end
+
+function storage.crafting.getCraftedItemFromInventory(isDropper, chestName)
+  local chest = getChestAndWidth(isDropper, chestName)
+  local items = chest.list()
+  if table.count(items) ~= 1 then
+    return false, "Cannot craft multiple item stacks/types"
+  end
+  local i, item = next(items)
+  local itemDetail = chest.getItemDetail(i)
+  if itemDetail.damage and itemDetail.damage ~= 0 then
+    return false, "Cannot craft damaged items in recipe"
+  end
+  if itemDetail.enchantments then
+    return false, "Cannot craft enchanted items in recipe"
+  end
+  local itemKey = storage.getItemKey(item)
+  if storage.crafting.recipes[itemKey] then
+    return false, "Recipe for this item already exists.\nTo replace, remove this recipe on the left"
+  end
+  return true, itemKey, itemDetail.displayName, item.count, itemDetail.maxCount
 end
 
 function storage.crafting.preCacheRecipe(rawRecipe)

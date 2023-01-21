@@ -10,6 +10,9 @@ storage.crafting.tasks = {}
 -- a plan is a series of tasks for deep crafting
 storage.crafting.plans = {}
 
+storage.crafting.reservedPlans = {}
+storage.crafting.planIdCounter = 0
+
 -- TODO: crafting UI
 
 -- TODO: Recipes can be invalid, should throw a reasonable error in this case
@@ -73,6 +76,14 @@ local function checkChests(chests, itemName)
   storage.inputChest(chest)
 end
 
+function storage.crafting.getActivePlanCount()
+  return #storage.crafting.plans
+end
+
+function storage.crafting.hasCrafters()
+  return not table.isEmpty(storage.crafting.crafters)
+end
+
 function storage.crafting.pingCrafters()
   print("Locating crafters")
   
@@ -86,30 +97,33 @@ function storage.crafting.pingCrafters()
   
   print("Found " .. #storage.crafting.crafterIDs .. " crafting turtles")
 
-  storage.modem.transmit(craftingPortOut, craftingPortIn, {type = "empty_chest", ids = storage.crafting.crafterIDs})
-  handleAllReplies("empty_chest", function() end, storage.crafting.crafterIDs, true)
+  if #storage.crafting.crafterIDs > 0 then
+    storage.modem.transmit(craftingPortOut, craftingPortIn, {type = "empty_chest", ids = storage.crafting.crafterIDs})
+    handleAllReplies("empty_chest", function() end, storage.crafting.crafterIDs, true)
 
-  print("All crafter chests emptied")
+    print("All crafter chests emptied")
+  end
 end
 
 function storage.crafting.setupCrafters()
-  print("Locating crafter chests...")
   local chests = storage.crafting.candidates or {}
+  if #storage.crafting.crafterIDs > 0 then
+    print("Locating crafter chests...")
+    if table.isEmpty(storage.items) then error("Please place at least 1 item in one of the chests to initialise the system") end
+    local firstItemName, item = next(storage.items)
 
-  if table.isEmpty(storage.items) then error("Please place at least 1 item in one of the chests to initialise the system") end
-  local firstItemName, item = next(storage.items)
+    if table.isEmpty(chests) then
+      print("No crafting candidates found")
+      return
+    end
 
-  if table.isEmpty(chests) then
-    print("No crafting candidates found")
-    return
+    storage.dropItemTo(firstItemName, 1, chests[#chests])
+
+    checkChests(chests, item.detail.name)
+    print("Found chests for " .. table.count(storage.crafting.crafters) .. " crafting turtles and registered them.")
+
+    print(#chests .. " crafting chest candidates turned out to be normal chests.")
   end
-
-  storage.dropItemTo(firstItemName, 1, chests[#chests])
-
-  checkChests(chests, item.detail.name)
-  print("Found chests for " .. table.count(storage.crafting.crafters) .. " crafting turtles and registered them.")
-
-  print(#chests .. " crafting chest candidates turned out to be normal chests.")
   for _, chest in pairs(chests) do
     storage.addEmptyChest(chest)
   end
@@ -157,10 +171,12 @@ end
 -- plan.craftable = boolean -- is the plan executable
 -- plan.ingredients = {[itemName] = count}
 -- plan.missingIngredients = {[itemName] = count} -- empty if craftable
--- recommended to call reserve plan directly afterwards
+-- If craftable, reserves the plan
 function storage.crafting.makeCraftPlan(itemName, count)
   -- wrapper function so VScode doesn't see the `plan` and `parent` argument
+  storage.crafting.planIdCounter = storage.crafting.planIdCounter + 1
   local plan = {
+    id = storage.crafting.planIdCounter,
     nodes = {},
     leaves = {},
     ingredients = {},
@@ -173,7 +189,16 @@ function storage.crafting.makeCraftPlan(itemName, count)
   storage.crafting.makeCraftPlanAux(itemName, count, plan)
   plan.leaves = table.keys(plan.leaves)
   plan.craftedItems[itemName] = (plan.craftedItems[itemName] or 0) + count
-  return plan
+  if plan.craftable then
+    storage.crafting.reservePlan(plan)
+  end
+
+  -- Remove large recursive fields from the plan, to reduce transmit cost
+  local planCopy = table.shallowCopy(plan)
+  planCopy.nodes = nil
+  planCopy.leaves = nil
+
+  return planCopy
 end
 
 function storage.crafting.makeCraftPlanAux(itemName, count, plan, parent)
@@ -256,17 +281,32 @@ end
 
 function storage.crafting.reservePlan(plan)
   if not plan.craftable then return end
+  table.insert(storage.crafting.reservedPlans, plan)
   storage.reserveItems(plan.ingredients)
 end
 
-function storage.crafting.unreservePlan(plan)
-  if not plan.craftable then return end
+local function findAndRemovePlan(planId)
+  local plan
+  for i, _plan in ipairs(storage.crafting.reservedPlans) do
+    if _plan.id == planId then
+      plan = _plan
+      table.remove(storage.crafting.reservedPlans, i)
+      break
+    end
+  end
+  return plan
+end
+
+function storage.crafting.unreservePlan(planId)
+  local plan = findAndRemovePlan(planId)
   storage.unreserveItems(plan.ingredients)
 end
 
-function storage.crafting.runPlan(plan, cb)
-  if not plan.craftable then return false, "Uncraftable plan" end
+function storage.crafting.runPlan(planId, cb)
+  local plan = findAndRemovePlan(planId)
+  if not plan then return false, "Uncraftable/missing plan" end
   table.insert(storage.crafting.plans, plan)
+  hook.run("cc_crafting_plan_change", storage.crafting.getActivePlanCount())
 
   plan.intermediates = table.shallowCopy(plan.ingredients) -- maybe just set to ingredients if we dont care about ingreds after its made
   
@@ -299,6 +339,7 @@ function storage.crafting.runPlanAux(plan, node, cb)
     -- if node is root, unreserve crafteditems, run original cb, return
     if node.isRoot then
       table.removeByValue(storage.crafting.plans, plan)
+      hook.run("cc_crafting_plan_change", storage.crafting.getActivePlanCount())
       handleFailure(storage.unreserveItems(plan.craftedItems))
       if cb then cb() end
       return

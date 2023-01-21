@@ -9,7 +9,15 @@ local configurePage = {
 
 pages.addPage("configure", configurePage)
 
-local w, h = term.getSize()
+function configurePage.setupOtherPages()
+  for _, page in pairs(pages.pages) do
+    if page.configName then
+      page.backButtonDest = "configure"
+    end
+  end
+end
+
+local w = term.getSize()
 
 function configurePage.setup()
   local configPages = {}
@@ -20,7 +28,6 @@ function configurePage.setup()
   table.sort(configPages, function(a, b) return a.configName < b.configName end)
 
   for i, page in ipairs(configPages) do
-    page.backButtonDest = "configure"
     local pageButton = pages.elem(ui.text.create())
     pageButton:setSize(w - 8, 3)
     pageButton:setPos(4, i * 4 + 1)

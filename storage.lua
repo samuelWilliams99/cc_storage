@@ -1,34 +1,53 @@
+storage = {}
+storage.modem = peripheral.find("modem", function(_, p) return p.isWireless() end)
+
 require "utils.hooks"
 require "utils.timer"
-require "storage.items"
-require "storage.crafting"
-require "storage.enderChest"
-require "storage.remoteAccess"
+require "remote.shared"
+require "ui.pages.pages"
+
+if not storage.remote.isRemote then
+  require "storage.items"
+  require "storage.enderChest"
+  require "storage.lock"
+else
+  require "ui.pages.remoteClientConfig"
+end
+
 require "ui.buttonList"
 require "ui.text"
-require "ui.pages.configure"
 require "ui.pages.craftCount"
 require "ui.pages.itemList"
 require "ui.pages.lock"
+require "ui.pages.editLock"
 require "ui.pages.recipes"
-require "ui.pages.pages"
+require "ui.pages.configure"
 
-storage.crafting.pingCrafters()
-storage.updateChests()
-storage.updateItemMapping()
-storage.crafting.loadRecipes()
-storage.crafting.setupCrafters()
-storage.enderChest.loadChests()
+storage.remote.registerFunctions()
+pages.pages.configure.setupOtherPages()
 
--- void limit - needs a menu
---   same menu as the craft up-down for things like iron
-
-print("Rendering...")
-sleep(1)
+if not storage.remote.isRemote then
+  storage.crafting.pingCrafters()
+  storage.updateChests()
+  storage.updateItemMapping()
+  storage.crafting.loadRecipes()
+  storage.crafting.setupCrafters()
+  storage.enderChest.loadChests()
+  print("Rendering...")
+  sleep(1)
+else
+  storage.remote.readClientChestName()
+  storage.remote.setupItems()
+end
 
 hook.add("initialize", "testing", function()
-  if storage.lockPageEnabled then
+  if not storage.remote.isRemote and storage.lock.getEnabled() then
     pages.setPage("lock")
+    return
+  end
+
+  if storage.remote.isRemote and not storage.remote.clientChestName then
+    pages.setPage("remoteClientConfig")
   else
     pages.setPage("itemList")
   end
@@ -50,7 +69,10 @@ hook.setPreError(function(event, handlerName, err, stack)
   writeFile("logs.txt", logs)
 end)
 
-storage.startLockTimer()
-storage.enderChest.startInputTimer()
-storage.startInputTimer()
+if not storage.remote.isRemote then
+  storage.startLockTimer()
+  storage.enderChest.startInputTimer()
+  storage.startInputTimer()
+end
+
 hook.runLoop()

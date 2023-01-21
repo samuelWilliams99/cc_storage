@@ -5,9 +5,12 @@ if shell.getRunningProgram() == "cc_storage/startup.lua" then
   else
     fs.copy("cc_storage/startup.lua", "startup.lua")
     settings.set("motd.enable", false)
+    settings.save()
     os.reboot()
   end
 end
+
+shell.run("cc_storage/debug/setupMonPrint")
 
 if turtle then
   shell.run("cc_storage/crafterTurtle")

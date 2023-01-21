@@ -1,10 +1,13 @@
 require "utils.helpers"
 require "utils.timer"
-
-storage = {}
-storage.modem = peripheral.find("modem", function(_, p) return p.isWireless() end)
-
 require "storage.crafting"
+
+-- TODO: Implement maxstack
+-- Will need mechanism for fast item deletion, consider the double chest + turtle strat. Checking for this setup will be annoying, consider making it optional
+-- Also, a UI for this will be difficult, as we need to list all items. Consider making it part of the main buttonList UI, maybe a cog on each, or an "edit" mode
+-- in this we can do item stack limits, and maybe some other settings per item - say displaying the count on a monitor, or requiring an amt in players inv, idk
+
+-- TODO: Implement item waiting if the dropped-to inv is full, we don't currently check it
 
 -- Must not use peripherals that are wrapped sides, as pushItems doesn't work with them. Must instead be through the wired modem.
 local function avoidSides(name)
@@ -111,12 +114,12 @@ end
 
 function storage.withLock(f)
   return function(...)
-    while storage.lock do
+    while storage.itemLock do
       sleep(0.05)
     end
-    storage.lock = true
+    storage.itemLock = true
     local res = table.pack(f(...))
-    storage.lock = false
+    storage.itemLock = false
     return table.unpack(res, 1, res.n)
   end
 end
@@ -149,10 +152,15 @@ local function writeUpdate(text, stepNum, stepMax, progPrefix, prog, progMax, y)
   writeProgressBar(prog/progMax, y + 1)
 end
 
+function storage.getTotalSlotCount()
+  return storage.totalSlotCount
+end
+
 function storage.updateItemMapping()
   print("Building item matrix...")
   storage.items = {}
   storage.emptySlots = {}
+  storage.emptySlotCount = 0
   storage.totalSlotCount = 0
   local items = storage.items
   local itemCount = 0
@@ -200,6 +208,7 @@ function storage.updateItemMapping()
         end
       else
         table.insert(storage.emptySlots, {chest = chest, slot = slot})
+        storage.emptySlotCount = storage.emptySlotCount + 1
       end
     end
   end
@@ -216,6 +225,7 @@ function storage.addEmptyChest(chest)
   local size = chest.size()
   for slot = 1, size do
     table.insert(storage.emptySlots, {chest = chest, slot = slot})
+    storage.emptySlotCount = storage.emptySlotCount + 1
   end
   storage.totalSlotCount = storage.totalSlotCount + size
 end
@@ -273,6 +283,7 @@ function storage.dropItemsTo(locations, count, chest)
     if location.count == 0 then
       table.remove(locations, 1)
       table.insert(storage.emptySlots, {chest = location.chest, slot = location.slot})
+      storage.emptySlotCount = storage.emptySlotCount + 1
     end
 
     if count == 0 then
@@ -322,6 +333,7 @@ function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
   end
   
   local newSlot = table.remove(storage.emptySlots, 1)
+  storage.emptySlotCount = storage.emptySlotCount - 1
   chest.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot)
   
   storage.saveItem(item, newSlot.chest, newSlot.slot, useReserved)

@@ -13,7 +13,7 @@ local w, h = term.getSize()
 -- for now though we can do a "x crafting plans running" in the corner or some shit
 
 function craftCountPage.setup(itemName)
-  local recipe = storage.crafting.recipes[itemName]
+  local recipe = storage.crafting.getRecipe(itemName)
   if not recipe then error("Tried to craft a non-existent recipe?") end
 
   pages.writeTitle("Crafting " .. recipe.displayName)
@@ -47,7 +47,7 @@ function craftCountPage.setup(itemName)
   function makePlanButton:onClick()
     if count == 0 then return end
     if craftCountPage.plan and craftCountPage.plan.craftable then
-      storage.crafting.unreservePlan(craftCountPage.plan)
+      storage.crafting.unreservePlan(craftCountPage.plan.id)
     end
     craftCountPage.plan = storage.crafting.makeCraftPlan(itemName, count)
     craftCountPage.displayPlan()
@@ -144,10 +144,6 @@ function craftCountPage.setup(itemName)
 end
 
 function craftCountPage.displayPlan()
-  if craftCountPage.plan.craftable then
-    storage.crafting.reservePlan(craftCountPage.plan)
-  end
-
   craftCountPage.madeChange = false
 
   if not craftCountPage.ingredientsList then
@@ -170,7 +166,7 @@ function craftCountPage.displayPlan()
     craftBtn:setText("CRAFT")
     function craftBtn:onClick()
       if not craftCountPage.plan.craftable then return end
-      storage.crafting.runPlan(craftCountPage.plan)
+      storage.crafting.runPlan(craftCountPage.plan.id)
       craftCountPage.plan = nil
       pages.setPage("itemList")
     end
@@ -233,7 +229,7 @@ end
 
 function craftCountPage.cleanup()
   if craftCountPage.plan and craftCountPage.plan.craftable then
-    storage.crafting.unreservePlan(craftCountPage.plan)
+    storage.crafting.unreservePlan(craftCountPage.plan.id)
   end
   craftCountPage.ingredientsList = nil
   craftCountPage.plan = nil

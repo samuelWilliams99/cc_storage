@@ -18,15 +18,33 @@ function storage.enderChest.loadChests()
   end
 end
 
+function storage.enderChest.getChestNames()
+  return table.keys(storage.enderChest.chests)
+end
+
+function storage.enderChest.chestExists(chestName)
+  return storage.enderChest.chests[chestName] and true or false
+end
+
 function storage.enderChest.dropItem(chestName, key, count)
   local chestData = storage.enderChest.chests[chestName]
   if not chestData then return false, "No such chest" end
   while chestData.inputting do
     sleep(0.05)
   end
-  chestData.itemPaused = true
+  -- Do a full pause while items are being moved into the chest, then switch to itemPause
+  local oldFulledPaused = chestData.fullPaused
+  chestData.fullPaused = true
   storage.dropItemTo(key, count, chestData.chest)
+  chestData.fullPaused = oldFulledPaused
+  chestData.itemPaused = true
   return true
+end
+
+function storage.enderChest.itemPauseChest(chestName)
+  local chestData = storage.enderChest.chests[chestName]
+  if not chestData then return false, "No such chest" end
+  chestData.itemPaused = true
 end
 
 function storage.enderChest.pauseChest(chestName, unpause)
@@ -65,6 +83,7 @@ end
 function storage.enderChest.peripheralChange(peripheralName)
   if not peripheralName:startsWith("enderstorage:ender_chest_") then return end
   storage.enderChest.loadChests()
+  hook.run("cc_enderchest_change", storage.enderChest.getChestNames())
 end
 
 hook.add("peripheral", "enderChestAttach", storage.enderChest.peripheralChange)
