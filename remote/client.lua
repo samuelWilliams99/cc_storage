@@ -81,6 +81,10 @@ function storage.remote.storageIdExists()
 end
 
 function storage.remote.setStorageId(id)
+  if storage.remote.storageId and not storage.remote.pendingConnection then
+    storage.remote.transmitDisconnected()
+  end
+
   storage.remote.storageId = id
   if id then
     settings.set("cc_client_storage_id", id)
@@ -88,6 +92,7 @@ function storage.remote.setStorageId(id)
     settings.unset("cc_client_storage_id")
   end
   settings.save()
+  storage.remote.transmitConnected()
   storage.remote.setupItems()
 end
 
@@ -112,6 +117,7 @@ function storage.remote.readClientConnectionData()
     return
   end
 
+  storage.remote.transmitConnected()
   storage.remote.readClientChestName()
 end
 
@@ -149,3 +155,9 @@ hook.add("cc_storage_change_item_batched", "client_update_items", function(batch
 end)
 
 hook.add("cc_initialize", "reboot_on_init", os.reboot)
+
+timer.create("cc_server_ping", 2, 0, function()
+  if storage.remote.storageId and not storage.remote.pendingConnection then
+    storage.remote.transmitPing()
+  end
+end)

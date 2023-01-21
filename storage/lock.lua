@@ -42,7 +42,7 @@ function storage.lock.getEnabled()
   return storage.lock.enabled
 end
 
-function storage.startLockTimer()
+function storage.lock.startAutoLockTimer()
   hook.add("playerClick", "lockUnlockAttempt", function(playerName)
     if table.contains(authorisedPlayers, playerName) and storage.lock.enabled then
       pages.setPage(pages.pages.lock.active and "itemList" or "lock")

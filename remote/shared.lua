@@ -42,6 +42,13 @@ local sharedFuncs = {
   "storage.remote.getStorageId",
 }
 
+-- These functions are to be called only by clients, and will provide the client computer id as the first argument
+local sharedFuncsClientOnly = {
+  "storage.remote.transmitConnected",
+  "storage.remote.transmitPing",
+  "storage.remote.transmitDisconnected",
+}
+
 local forwardedHooks = {
   "cc_lock_authorised_players_change",
   "cc_lock_enabled_change",
@@ -60,7 +67,7 @@ else
   require "remote.server"
 end
 
-function storage.remote.sharedFunction(functionStr)
+function storage.remote.sharedFunction(functionStr, giveClientId)
   local names = {}
   for name in string.gmatch(functionStr, "([^\\.]+)") do
     table.insert(names, name)
@@ -68,13 +75,16 @@ function storage.remote.sharedFunction(functionStr)
   if storage.remote.isRemote then
     storage.remote.sharedFunctionClient(names, functionStr)
   else
-    storage.remote.sharedFunctionServer(names, functionStr)
+    storage.remote.sharedFunctionServer(names, functionStr, giveClientId)
   end
 end
 
 function storage.remote.registerFunctions()
   for _, func in ipairs(sharedFuncs) do
     storage.remote.sharedFunction(func)
+  end
+  for _, func in ipairs(sharedFuncsClientOnly) do
+    storage.remote.sharedFunction(func, true)
   end
   if not storage.remote.isRemote then
     for _, hookName in ipairs(forwardedHooks) do
@@ -84,3 +94,4 @@ function storage.remote.registerFunctions()
 end
 
 -- TODO: we also now need to consider concurrency, ensure all functions fail gracefully if acting on out of date data
+-- we'll fine out as the lads break it

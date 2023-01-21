@@ -8,16 +8,21 @@ local function getValue(names)
   return pos
 end
 
-function storage.remote.sharedFunctionServer(names, functionStr)
-  sharedFuncs[functionStr] = getValue(names)
+function storage.remote.sharedFunctionServer(names, functionStr, giveClientId)
+  sharedFuncs[functionStr] = {func = getValue(names), giveClientId = giveClientId}
 end
 
 hook.add("modem_message", "remote_function_handler", function(_, chan, _, data)
   if chan ~= storage.remote.funcChannel then return end
   if data.storageId and data.storageId ~= os.getComputerID() then return end
-  local f = sharedFuncs[data.functionStr]
-  if not f then return end
-  local ret = table.pack(f(table.unpack(data.args)))
+  local functionData = sharedFuncs[data.functionStr]
+  if not functionData then return end
+  local ret
+  if functionData.giveClientId then
+    ret = table.pack(functionData.func(data.computerID, table.unpack(data.args)))
+  else
+    ret = table.pack(functionData.func(table.unpack(data.args)))
+  end
   storage.modem.transmit(storage.remote.funcChannel, storage.remote.funcChannel, {computerID = data.computerID, id = data.id, args = ret})
 end)
 
@@ -63,7 +68,7 @@ end
 
 local batchKeys = {}
 local emptyItem = {removed = true}
-local function sendBatch()
+function storage.remote.sendItemChangeBatch()
   if table.isEmpty(batchKeys) then return end
   local batch = {}
   for _, key in ipairs(batchKeys) do
@@ -81,8 +86,50 @@ end
 
 hook.add("cc_storage_change_item", "remote_batching", function(key)
   table.insert(batchKeys, key)
-  timer.create("cc_item_batch_burst", 0.1, 1, sendBatch)
+  timer.create("cc_item_batch_burst", 0.1, 1, storage.remote.sendItemChangeBatch)
   if not timer.exists("cc_item_batch_cap") then
-    timer.create("cc_item_batch_cap", 0.5, 1, sendBatch)
+    timer.create("cc_item_batch_cap", 0.5, 1, storage.remote.sendItemChangeBatch)
   end
 end)
+
+local clients = {}
+
+local function getUnixTime()
+  return os.time(os.date("!*t"))
+end
+
+function storage.remote.transmitConnected(computerId)
+  if clients[computerId] then
+    storage.remote.transmitDisconnected(computerId)
+  end
+  clients[computerId] = {lastPing = getUnixTime()}
+  hook.run("cc_client_connect", computerId)
+end
+
+-- Expect the client to call this every 2 seconds, if nothing after 5s, disconnect them
+function storage.remote.transmitPing(computerId)
+  if not clients[computerId] then
+    storage.remote.transmitConnected(computerId)
+  else
+    clients[computerId].lastPing = getUnixTime()
+  end
+end
+
+function storage.remote.transmitDisconnected(computerId)
+  if not clients[computerId] then return end
+  clients[computerId] = nil
+  hook.run("cc_client_disconnect", computerId)
+end
+
+function storage.remote.startClientTimeoutTimer()
+  timer.create("cc_client_timeout", 1, 0, function()
+    local time = getUnixTime()
+    local clientIds = table.keys(clients)
+    for _, computerId in ipairs(clientIds) do
+      local clientData = clients[computerId]
+      if time - clientData.lastPing > 5 then
+        storage.remote.transmitDisconnected(computerId)
+      end
+    end
+  end)
+end

@@ -30,6 +30,7 @@ function remoteClientPendingPage.setup()
       -- above request takes 1 second, someone could press the config button in that time
       if not remoteClientPendingPage.active then return end
       storage.remote.pendingConnection = false
+      storage.remote.transmitConnected()
       storage.remote.setupItems()
       storage.remote.readClientChestName()
       if storage.remote.clientChestName then

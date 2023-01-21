@@ -79,9 +79,10 @@ hook.setPreError(function(event, handlerName, err, stack)
 end)
 
 if not storage.remote.isRemote then
-  storage.startLockTimer()
+  storage.lock.startAutoLockTimer()
   storage.enderChest.startInputTimer()
   storage.startInputTimer()
+  storage.remote.startClientTimeoutTimer()
 end
 
 hook.runLoop()

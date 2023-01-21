@@ -9,9 +9,6 @@ pages.addPage("craftCount", craftCountPage)
 
 local w, h = term.getSize()
 
--- TODO: need to handle unreserving plans if a remote terminal goes down
--- TODO: need to correctly handle ingredient counts, as storage data will not yet be updated when we render
-
 function craftCountPage.setup(itemName)
   local recipe = storage.crafting.getRecipe(itemName)
   if not recipe then error("Tried to craft a non-existent recipe?") end
@@ -49,7 +46,12 @@ function craftCountPage.setup(itemName)
     if craftCountPage.plan and craftCountPage.plan.craftable then
       storage.crafting.unreservePlan(craftCountPage.plan.id)
     end
-    craftCountPage.plan = storage.crafting.makeCraftPlan(itemName, count)
+    craftCountPage.plan = storage.crafting.makeCraftPlan(itemName, count, os.getComputerID())
+    -- Wait for reserve item updates on client
+    -- Consider a different mechanism, good enough for now
+    if storage.remote.isRemote then
+      sleep(0.2)
+    end
     craftCountPage.displayPlan()
   end
 

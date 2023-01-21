@@ -160,10 +160,9 @@ prioritisation - 2 metrics
     higher the better on both, but time is more important
 ]]
 
-function storage.crafting.makeAndRunPlan(itemName, count, cb)
-  local plan = storage.crafting.makeCraftPlan(itemName, count)
+function storage.crafting.makeAndRunPlan(itemName, count, clientId, cb)
+  local plan = storage.crafting.makeCraftPlan(itemName, count, clientId)
   if not plan.craftable then return false end
-  storage.reserveItems(plan.ingredients)
   storage.crafting.runPlan(plan, cb)
   return true
 end
@@ -174,7 +173,7 @@ end
 -- plan.ingredients = {[itemName] = count}
 -- plan.missingIngredients = {[itemName] = count} -- empty if craftable
 -- If craftable, reserves the plan
-function storage.crafting.makeCraftPlan(itemName, count)
+function storage.crafting.makeCraftPlan(itemName, count, clientId)
   -- wrapper function so VScode doesn't see the `plan` and `parent` argument
   storage.crafting.planIdCounter = storage.crafting.planIdCounter + 1
   local plan = {
@@ -186,13 +185,15 @@ function storage.crafting.makeCraftPlan(itemName, count)
     missingIngredients = {},
     craftedItems = {},
     craftable = true,
-    count = count
+    count = count,
+    clientId = clientId
   }
   storage.crafting.makeCraftPlanAux(itemName, count, plan)
   plan.leaves = table.keys(plan.leaves)
   plan.craftedItems[itemName] = (plan.craftedItems[itemName] or 0) + count
   if plan.craftable then
     storage.crafting.reservePlan(plan)
+    storage.remote.sendItemChangeBatch()
   end
 
   -- Remove large recursive fields from the plan, to reduce transmit cost
@@ -301,6 +302,7 @@ end
 
 function storage.crafting.unreservePlan(planId)
   local plan = findAndRemovePlan(planId)
+  if not plan then return false, "No such plan" end
   storage.unreserveItems(plan.ingredients)
 end
 
@@ -475,5 +477,13 @@ hook.add("modem_message", "crafting_reply", function(_, port, _, data)
     -- Implement prioritisation here to run jobs that block more time first
     local nextJob = table.remove(storage.crafting.jobQueue, 1)
     storage.crafting.runCrafter(nextJob, crafter)
+  end
+end)
+
+hook.add("cc_client_disconnect", "unreserve_client_plans", function(computerId)
+  for _, plan in ipairs(storage.crafting.reservedPlans) do
+    if plan.clientId == computerId then
+      storage.crafting.unreservePlan(plan.id)
+    end
   end
 end)
