@@ -5,10 +5,6 @@ storage.remote.hookChannel = 12395
 storage.modem.open(storage.remote.funcChannel)
 storage.modem.open(storage.remote.hookChannel)
 
--- TODO: need computer ids, store in settings
--- Have thing to request all cc_storage computer ids
--- put in list, select one and store in settings
-
 local sharedFuncs = {
   -- Items
   "storage.getTotalSlotCount",
@@ -16,9 +12,11 @@ local sharedFuncs = {
   "storage.enderChest.dropItem",
   "storage.enderChest.pauseChest",
   "storage.enderChest.unpauseChest",
+  "storage.enderChest.setChestPaused",
   "storage.enderChest.itemPauseChest",
   "storage.enderChest.getChestNames",
   "storage.enderChest.chestExists",
+  "storage.enderChest.isChestPaused",
   -- Lock
   "storage.lock.getOnlinePlayers",
   "storage.lock.getAuthorisedPlayers",
@@ -40,7 +38,8 @@ local sharedFuncs = {
   "storage.crafting.getPlacementFromInventory",
   "storage.crafting.getCraftedItemFromInventory",
   -- Remote
-  "storage.remote.getItems"
+  "storage.remote.getItems",
+  "storage.remote.getStorageId",
 }
 
 local forwardedHooks = {
@@ -50,6 +49,7 @@ local forwardedHooks = {
   "cc_enderchest_change",
   "cc_storage_change_item_batched",
   "cc_crafting_plan_change",
+  "cc_initialize",
 }
 
 storage.remote.isRemote = pocket and true or false
@@ -84,8 +84,3 @@ function storage.remote.registerFunctions()
 end
 
 -- TODO: we also now need to consider concurrency, ensure all functions fail gracefully if acting on out of date data
-
--- TODO: write a client side function for querying all _active_ computer ids, so those that are fully setup and ready
--- On startup, query this. If we dont have an ID set, go to the remote page. Said page should have a refresh button
--- If we do have an ID, and its in this list, continue as normal (unless no chest set ofc)
--- if its not in the list, create a new "pinging" page, which pings the above endpoint every 5s until it replies, and has a button to go to the config page

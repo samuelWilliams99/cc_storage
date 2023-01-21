@@ -14,6 +14,7 @@ end
 
 hook.add("modem_message", "remote_function_handler", function(_, chan, _, data)
   if chan ~= storage.remote.funcChannel then return end
+  if data.storageId and data.storageId ~= os.getComputerID() then return end
   local f = sharedFuncs[data.functionStr]
   if not f then return end
   local ret = table.pack(f(table.unpack(data.args)))
@@ -22,8 +23,13 @@ end)
 
 function storage.remote.sharedHookServer(hookName)
   hook.add(hookName, "remote_forwarder", function(...)
-    storage.modem.transmit(storage.remote.hookChannel, storage.remote.hookChannel, {hookName = hookName, args = table.pack(...)})
+    storage.modem.transmit(storage.remote.hookChannel, storage.remote.hookChannel, {hookName = hookName, args = table.pack(...), storageId = os.getComputerID()})
   end)
+end
+
+function storage.remote.getStorageId()
+  if table.isEmpty(storage.enderChest.chests) then return end
+  return {id = os.getComputerID(), name = os.getComputerLabel()}
 end
 
 -- Simplifies an item in the cheapest way, removing locations and non-required fields from detail

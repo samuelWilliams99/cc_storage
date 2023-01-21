@@ -13,6 +13,7 @@ function pages.addBackButton(page)
   function backButton:onClick()
     pages.setPage(page.backButtonDest or "itemList")
   end
+  return backButton
 end
 
 function pages.writeTitle(text, noLine)

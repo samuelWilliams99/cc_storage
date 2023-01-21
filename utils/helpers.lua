@@ -90,3 +90,14 @@ end
 function handleFailure(success, msg, ...)
   if success then return msg, ... else error(msg, 2) end
 end
+
+function sequenceCompares(order, arr)
+  local comp = order and (function(a, b) return a < b end) or (function(a, b) return a > b end)
+  for _, vals in ipairs(arr) do
+    local a, b = unpack(vals)
+    if a ~= b then
+      return comp(a, b)
+    end
+  end
+  return false
+end

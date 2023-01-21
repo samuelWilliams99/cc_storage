@@ -66,6 +66,7 @@ function Base:onResize()
 end
 
 function Base:remove()
+  if self.removed then return end
   if self.onRemove then self:onRemove() end
   self.removed = true
   if self.parent then

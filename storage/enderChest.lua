@@ -26,6 +26,10 @@ function storage.enderChest.chestExists(chestName)
   return storage.enderChest.chests[chestName] and true or false
 end
 
+function storage.enderChest.isChestPaused(chestName)
+  return (storage.enderChest.chests[chestName] or {fullPaused = false}).fullPaused
+end
+
 function storage.enderChest.dropItem(chestName, key, count)
   local chestData = storage.enderChest.chests[chestName]
   if not chestData then return false, "No such chest" end
@@ -47,14 +51,18 @@ function storage.enderChest.itemPauseChest(chestName)
   chestData.itemPaused = true
 end
 
-function storage.enderChest.pauseChest(chestName, unpause)
+function storage.enderChest.setChestPaused(chestName, paused)
   local chestData = storage.enderChest.chests[chestName]
   if not chestData then return false, "No such chest" end
-  chestData.fullPaused = not unpause
+  chestData.fullPaused = paused
+end
+
+function storage.enderChest.pauseChest(chestName)
+  return storage.enderChest.setChestPaused(chestName, true)
 end
 
 function storage.enderChest.unpauseChest(chestName)
-  return storage.enderChest.pauseChest(chestName, true)
+  return storage.enderChest.setChestPaused(chestName, false)
 end
 
 local function inputChest(chestData)

@@ -172,18 +172,6 @@ function storagePage.setup()
     end)
 
     local key = sorters[sorterIndex].key
-    local comp = order and (function(a, b) return a < b end) or (function(a, b) return a > b end)
-
-    local function sequenceCompares(...)
-      local arr = {...}
-      for _, vals in ipairs(arr) do
-        local a, b = unpack(vals)
-        if a ~= b then
-          return comp(a, b)
-        end
-      end
-      return false
-    end
 
     -- Sort by the comparator and what not, fall back to display name asc afterwards
     table.sort(itemKeys, function(aName, bName)
@@ -191,12 +179,12 @@ function storagePage.setup()
       local b = getItemData(bName)
       local aKey = key(a)
       local bKey = key(b)
-      return sequenceCompares(
+      return sequenceCompares(order, {
         {aKey, bKey},
         {a.detail.displayName, b.detail.displayName},
         {a.detail.damage or math.huge, b.detail.damage or math.huge},
         {a.detail.nbt or "", b.detail.nbt or ""}
-      )
+      })
     end)
 
     buttonList:setOptions(itemKeys)

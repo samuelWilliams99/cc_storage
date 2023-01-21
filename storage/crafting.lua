@@ -18,6 +18,8 @@ storage.crafting.planIdCounter = 0
 -- TODO: Recipes can be invalid, should throw a reasonable error in this case
 -- or, force verification when adding a recipe?
 
+-- TODO: oredict crafting
+
 local craftingPortOut = 1357
 local craftingPortIn = craftingPortOut + 1
 storage.modem.open(craftingPortIn)

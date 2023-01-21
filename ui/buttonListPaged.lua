@@ -10,6 +10,7 @@ function ui.buttonListPaged.create(parent)
   elem.buttonList = ui.buttonList.create(elem)
 
   function elem.buttonList:handleClick(btn, data)
+    if data._isHeader then return end
     elem:handleClick(btn, data, elem.options[data.index], data.index)
   end
 
@@ -86,7 +87,7 @@ function ui.buttonListPaged.create(parent)
     local startIndex = (self.page - 1) * pageSize + 1
     local options = {}
     if self.header then
-      options[1] = {displayText = self.header}
+      options[1] = {displayText = self.header, _isHeader = true}
     end
     for i = startIndex, math.min(startIndex + pageSize - 1, #self.options) do
       local option = self:preProcess(self.options[i])

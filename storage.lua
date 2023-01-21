@@ -12,6 +12,7 @@ if not storage.remote.isRemote then
   require "storage.lock"
 else
   require "ui.pages.remoteClientConfig"
+  require "ui.pages.remoteClientPending"
 end
 
 require "ui.buttonList"
@@ -36,19 +37,27 @@ if not storage.remote.isRemote then
   print("Rendering...")
   sleep(1)
 else
-  storage.remote.readClientChestName()
-  storage.remote.setupItems()
+  storage.remote.readClientConnectionData()
+  if storage.remote.storageId and not storage.remote.pendingConnection then
+    storage.remote.setupItems()
+  end
 end
 
 hook.add("initialize", "testing", function()
-  if not storage.remote.isRemote and storage.lock.getEnabled() then
-    pages.setPage("lock")
-    return
-  end
-
-  if storage.remote.isRemote and not storage.remote.clientChestName then
-    pages.setPage("remoteClientConfig")
+  if storage.remote.isRemote then
+    if storage.remote.pendingConnection then
+      pages.setPage("remoteClientPending")
+    elseif not storage.remote.storageId or not storage.remote.clientChestName then
+      pages.setPage("remoteClientConfig")
+    else
+      pages.setPage("itemList")
+    end  
   else
+    hook.run("cc_initialize")
+    if storage.lock.getEnabled() then
+      pages.setPage("lock")
+      return
+    end
     pages.setPage("itemList")
   end
 end)

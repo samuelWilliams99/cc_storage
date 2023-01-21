@@ -9,8 +9,8 @@ pages.addPage("craftCount", craftCountPage)
 
 local w, h = term.getSize()
 
--- later we'll need an active plans page.
--- for now though we can do a "x crafting plans running" in the corner or some shit
+-- TODO: need to handle unreserving plans if a remote terminal goes down
+-- TODO: need to correctly handle ingredient counts, as storage data will not yet be updated when we render
 
 function craftCountPage.setup(itemName)
   local recipe = storage.crafting.getRecipe(itemName)
