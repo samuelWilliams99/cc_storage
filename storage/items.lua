@@ -2,7 +2,7 @@ require "utils.helpers"
 require "utils.timer"
 require "storage.crafting"
 
--- TODO: Switch crafting to use wired modem, connect turtle directly using full block modems, drop turtle scanning and just scan for turtles on the wired network
+-- TODO: (next) Switch crafting to use wired modem, connect turtle directly using full block modems, drop turtle scanning and just scan for turtles on the wired network
 -- Filter purpose by label, crafters must be called "cc_crafter"
 -- also put the player detector on a full block modem
 
@@ -305,13 +305,17 @@ end
 -- We provide a way to give the input items, to save on calls to list
 function storage.inputChestUnsafe(chest, useReserved, inputItems)
   inputItems = inputItems or chest.list()
-  if table.isEmpty(inputItems) then
+  if table.isEmpty(inputItems or {}) then
     return
   end
 
   for k, item in pairs(inputItems) do
     storage.inputItemFromUnsafe(k, item, chest, useReserved)
   end
+end
+
+local function peripheralPresent(p)
+  return peripheral.isPresent(peripheral.getName(p))
 end
 
 storage.inputChest = storage.withLock(storage.inputChestUnsafe)
@@ -330,7 +334,7 @@ function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
     return
   end
   
-  if #storage.emptySlots == 0 then
+  if #storage.emptySlots == 0 or not peripheralPresent(chest) then
     if item.count ~= startingCount and not useReserved then
       itemChanged(key, startingCount - item.count, storedItem)
     end
@@ -340,6 +344,7 @@ function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
   
   local newSlot = table.remove(storage.emptySlots, 1)
   storage.emptySlotCount = storage.emptySlotCount - 1
+
   chest.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot)
   
   storage.saveItem(item, newSlot.chest, newSlot.slot, useReserved)
@@ -361,6 +366,8 @@ function storage.inputItemsFrom(item, slot, newItem, chest, useReserved)
       if canAdd >= newItem.count then
         toMove = newItem.count
       end
+
+      if not peripheralPresent(chest) then return end
       chest.pushItems(peripheral.getName(location.chest), slot, toMove, location.slot)
       location.count = location.count + toMove
 

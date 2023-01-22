@@ -1,5 +1,3 @@
--- TODO: slot counter isn't updating?
-
 local function setValue(names, val)
   local pos = _ENV
   for k = 1, #names - 1 do
@@ -145,7 +143,8 @@ function storage.remote.setupItems()
   storage.items, storage.emptySlotCount = storage.remote.getItems()
 end
 
-hook.add("cc_storage_change_item_batched", "client_update_items", function(batch)
+hook.add("cc_storage_change_item_batched", "client_update_items", function(batch, emptySlotCount)
+  storage.emptySlotCount = emptySlotCount
   for key, item in pairs(batch) do
     if item.removed then
       storage.items[key] = nil

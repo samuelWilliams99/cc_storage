@@ -2,8 +2,6 @@ require "utils.helpers"
 
 storage.enderChest = {}
 
--- TODO: computer crashes sometimes when disconnecting chests
-
 local function avoidSides(name)
   if name:find("_") then return true end
 end
@@ -69,6 +67,7 @@ end
 
 local function inputChest(chestData)
   local items = chestData.chest:list()
+  if not items then return end
   if chestData.itemPaused then
     if table.isEmpty(items) then
       chestData.itemPaused = false

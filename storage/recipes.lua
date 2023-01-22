@@ -101,7 +101,7 @@ function storage.crafting.getPlacementFromInventory(isDropper, chestName)
       return false, "Recipe not within a 3x3 grid"
     end
 
-    local slot = (y - 1) * chestWidth + x - recipeXPosition + 1
+    local slot = (y - 1) * 3 + x - recipeXPosition + 1
     
     if item.count ~= 1 then
       return false, "Must be 0 or 1 item in each slot"
