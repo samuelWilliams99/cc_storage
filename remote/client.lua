@@ -1,3 +1,5 @@
+-- TODO: slot counter isn't updating?
+
 local function setValue(names, val)
   local pos = _ENV
   for k = 1, #names - 1 do
@@ -18,7 +20,7 @@ function storage.remote.sharedFunctionClient(names, functionStr)
     -- Note, we cannot transmit functions, so any function with a callback will not work
     -- We _could_ implement this support, but this is a lot of back and forth
     -- For now, we see if we can live without :)
-    storage.modem.transmit(storage.remote.funcChannel, storage.remote.funcChannel, {
+    storage.wirelessModem.transmit(storage.remote.funcChannel, storage.remote.funcChannel, {
       functionStr = functionStr,
       args = table.pack(...),
       computerID = os.getComputerID(),
@@ -42,7 +44,7 @@ function storage.remote.getStorageIds()
   local timeoutTimerId = os.startTimer(relayDelayBuffer)
 
   local storageIds = {}
-  storage.modem.transmit(storage.remote.funcChannel, storage.remote.funcChannel, {functionStr = "storage.remote.getStorageId", args = {}, computerID = os.getComputerID(), id = idCounter})
+  storage.wirelessModem.transmit(storage.remote.funcChannel, storage.remote.funcChannel, {functionStr = "storage.remote.getStorageId", args = {}, computerID = os.getComputerID(), id = idCounter})
   while true do
     local evt, timerId, chan, _, data = os.pullEvent()
     if evt == "modem_message" and chan == storage.remote.funcChannel and data.computerID == os.getComputerID() and data.id == idCounter then

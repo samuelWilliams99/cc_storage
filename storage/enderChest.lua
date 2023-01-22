@@ -2,6 +2,8 @@ require "utils.helpers"
 
 storage.enderChest = {}
 
+-- TODO: computer crashes sometimes when disconnecting chests
+
 local function avoidSides(name)
   if name:find("_") then return true end
 end

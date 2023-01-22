@@ -2,8 +2,8 @@ storage.remote = {}
 storage.remote.funcChannel = 12394
 storage.remote.hookChannel = 12395
 
-storage.modem.open(storage.remote.funcChannel)
-storage.modem.open(storage.remote.hookChannel)
+storage.wirelessModem.open(storage.remote.funcChannel)
+storage.wirelessModem.open(storage.remote.hookChannel)
 
 local sharedFuncs = {
   -- Items

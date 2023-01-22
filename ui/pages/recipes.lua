@@ -8,6 +8,8 @@ local recipesPage = {
   configName = "Recipe Manager"
 }
 
+-- TODO: Recipe made on phone was broken
+
 pages.addPage("recipes", recipesPage)
 
 local w, h = term.getSize()

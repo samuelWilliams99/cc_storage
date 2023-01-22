@@ -11,7 +11,6 @@ pages.addPage("remoteClientConfig", remoteClientConfigPage)
 
 local lineX = 2 + math.floor((w - 4) * 0.5)
 local centLeft = 2 + math.floor((w - 4) * 0.25)
-local centRight = 2 + math.floor((w - 4) * 0.75)
 
 function remoteClientConfigPage.updateActiveButton()
   if not remoteClientConfigPage.pauseButton then return end

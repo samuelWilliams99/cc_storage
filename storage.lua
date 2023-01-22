@@ -1,5 +1,6 @@
 storage = {}
-storage.modem = peripheral.find("modem", function(_, p) return p.isWireless() end)
+storage.wiredModem = peripheral.find("modem", function(_, p) return not p.isWireless() end)
+storage.wirelessModem = peripheral.find("modem", function(_, p) return p.isWireless() end)
 
 require "utils.hooks"
 require "utils.timer"

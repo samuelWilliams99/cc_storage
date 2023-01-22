@@ -22,7 +22,7 @@ storage.crafting.planIdCounter = 0
 
 local craftingPortOut = 1357
 local craftingPortIn = craftingPortOut + 1
-storage.modem.open(craftingPortIn)
+storage.wirelessModem.open(craftingPortIn)
 
 -- We specifically use os.pullEvent here as this code all runs _before_ the hook system gets enabled
 -- Also, it allows us to treat these replies as syncronous calls, which makes the setup easier
@@ -57,7 +57,7 @@ local function checkChests(chests, itemName)
   for i = #chests, 1, -1 do
     chest = chests[i]
     
-    storage.modem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = itemName, ids = storage.crafting.crafterIDs})
+    storage.wirelessModem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = itemName, ids = storage.crafting.crafterIDs})
     local shouldEmpty = handleAllReplies("check", function(data)
       if data.found then
         storage.crafting.crafters[data.computerID] = {computerID = data.computerID, chest = chest}
@@ -89,7 +89,7 @@ end
 function storage.crafting.pingCrafters()
   print("Locating crafters")
   
-  storage.modem.transmit(craftingPortOut, craftingPortIn, {type = "scan"})
+  storage.wirelessModem.transmit(craftingPortOut, craftingPortIn, {type = "scan"})
   storage.crafting.crafterIDs = {}
 
   handleAllReplies("scan", function(data)
@@ -100,7 +100,7 @@ function storage.crafting.pingCrafters()
   print("Found " .. #storage.crafting.crafterIDs .. " crafting turtles")
 
   if #storage.crafting.crafterIDs > 0 then
-    storage.modem.transmit(craftingPortOut, craftingPortIn, {type = "empty_chest", ids = storage.crafting.crafterIDs})
+    storage.wirelessModem.transmit(craftingPortOut, craftingPortIn, {type = "empty_chest", ids = storage.crafting.crafterIDs})
     handleAllReplies("empty_chest", function() end, storage.crafting.crafterIDs, true)
 
     print("All crafter chests emptied")
@@ -449,7 +449,7 @@ function storage.crafting.runCrafter(job, crafter)
   for name, amt in pairs(job.recipe.ingredients) do
     storage.dropItemTo(name, amt * job.craftCount, crafter.chest, job.useReserved)
   end
-  storage.modem.transmit(craftingPortOut, craftingPortIn, msg)
+  storage.wirelessModem.transmit(craftingPortOut, craftingPortIn, msg)
 end
 
 hook.add("modem_message", "crafting_reply", function(_, port, _, data)
