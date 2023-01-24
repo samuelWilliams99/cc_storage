@@ -22,13 +22,13 @@ storage.crafting.planIdCounter = 0
 
 local craftingPortOut = 1357
 local craftingPortIn = craftingPortOut + 1
-storage.wirelessModem.open(craftingPortIn)
+storage.wiredModem.open(craftingPortIn)
 
 -- We specifically use os.pullEvent here as this code all runs _before_ the hook system gets enabled
 -- Also, it allows us to treat these replies as syncronous calls, which makes the setup easier
 -- ideally we'd use promises, but they're a little heavy for CC
-local function handleAllReplies(msgType, handler, ids, ignoreTimer)
-  local timerID = os.startTimer(1)
+local function handleAllReplies(msgType, handler, ids, timeout)
+  local timerID = os.startTimer(timeout)
   local remaining = table.shallowCopy(ids or {})
   while true do
     local data = {os.pullEvent()}
@@ -42,7 +42,7 @@ local function handleAllReplies(msgType, handler, ids, ignoreTimer)
         table.removeByValue(remaining, data[5].computerID)
         if table.isEmpty(remaining) then break end
       end
-    elseif data[1] == "timer" and data[2] == timerID and not ignoreTimer then
+    elseif data[1] == "timer" and data[2] == timerID and timeout then
       break
     end
   end
@@ -57,21 +57,21 @@ local function checkChests(chests, itemName)
   for i = #chests, 1, -1 do
     chest = chests[i]
     
-    storage.wirelessModem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = itemName, ids = storage.crafting.crafterIDs})
+    storage.wiredModem.transmit(craftingPortOut, craftingPortIn, {type = "check", name = itemName, ids = storage.crafting.crafterIDs})
     local shouldEmpty = handleAllReplies("check", function(data)
       if data.found then
         storage.crafting.crafters[data.computerID] = {computerID = data.computerID, chest = chest}
         table.remove(chests, i)
         return true, data.shouldEmpty
       end
-    end, storage.crafting.crafterIDs)
+    end, storage.crafting.crafterIDs, 1)
 
     if i > 1 then
       chest.pushItems(peripheral.getName(chests[i - 1]), 1, 1, 1)
     end
 
     if shouldEmpty then
-      handleAllReplies("chest_emptied", function() return true end, storage.crafting.crafterIDs, true)
+      handleAllReplies("chest_emptied", function() return true end, storage.crafting.crafterIDs)
       storage.inputChest(chest)
     end
   end
@@ -87,21 +87,18 @@ function storage.crafting.hasCrafters()
 end
 
 function storage.crafting.pingCrafters()
-  print("Locating crafters")
-  
-  storage.wirelessModem.transmit(craftingPortOut, craftingPortIn, {type = "scan"})
   storage.crafting.crafterIDs = {}
-
-  handleAllReplies("scan", function(data)
-    local compID = data.computerID
-    table.insert(storage.crafting.crafterIDs, compID)
-  end)
+  for _, turtle in ipairs(storage.turtles) do
+    if turtle.getLabel() == "crafter" then
+      table.insert(storage.crafting.crafterIDs, turtle.getID())
+    end
+  end
   
   print("Found " .. #storage.crafting.crafterIDs .. " crafting turtles")
 
   if #storage.crafting.crafterIDs > 0 then
-    storage.wirelessModem.transmit(craftingPortOut, craftingPortIn, {type = "empty_chest", ids = storage.crafting.crafterIDs})
-    handleAllReplies("empty_chest", function() end, storage.crafting.crafterIDs, true)
+    storage.wiredModem.transmit(craftingPortOut, craftingPortIn, {type = "empty_chest", ids = storage.crafting.crafterIDs})
+    handleAllReplies("empty_chest", function() end, storage.crafting.crafterIDs)
 
     print("All crafter chests emptied")
   end
@@ -449,7 +446,7 @@ function storage.crafting.runCrafter(job, crafter)
   for name, amt in pairs(job.recipe.ingredients) do
     storage.dropItemTo(name, amt * job.craftCount, crafter.chest, job.useReserved)
   end
-  storage.wirelessModem.transmit(craftingPortOut, craftingPortIn, msg)
+  storage.wiredModem.transmit(craftingPortOut, craftingPortIn, msg)
 end
 
 hook.add("modem_message", "crafting_reply", function(_, port, _, data)

@@ -2,10 +2,6 @@ require "utils.helpers"
 require "utils.timer"
 require "storage.crafting"
 
--- TODO: (next) Switch crafting to use wired modem, connect turtle directly using full block modems, drop turtle scanning and just scan for turtles on the wired network
--- Filter purpose by label, crafters must be called "cc_crafter"
--- also put the player detector on a full block modem
-
 -- TODO: Implement maxstack
 -- Will need mechanism for fast item deletion, consider the double chest + turtle strat. Checking for this setup will be annoying, consider making it optional
 -- Also, a UI for this will be difficult, as we need to list all items. Consider making it part of the main buttonList UI, maybe a cog on each, or an "edit" mode
@@ -31,6 +27,7 @@ function storage.updateChests()
   end
 
   storage.turtles = {peripheral.find("turtle", avoidSides)}
+  for _, turtle in ipairs(storage.turtles) do turtle.turnOn() end
 
   print("Found " .. #storage.chests .. " chests, " .. #storage.crafting.candidates .. " crafter candidates and " .. #storage.turtles .. " turtles")
   storage.dropper = peripheral.find("minecraft:trapped_chest", avoidSides)

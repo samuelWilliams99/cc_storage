@@ -50,7 +50,9 @@ function craftCountPage.setup(itemName)
     -- Wait for reserve item updates on client
     -- Consider a different mechanism, good enough for now
     if storage.remote.isRemote then
+      craftCountPage.sleeping = true
       sleep(0.2)
+      craftCountPage.sleeping = false
     end
     craftCountPage.displayPlan()
   end
@@ -125,7 +127,9 @@ function craftCountPage.setup(itemName)
           updateCount(1)
         end
         if craftCountPage.plan and craftCountPage.plan.count == count then
-          craftCountPage.craftBtn:onClick()
+          if craftCountPage.sleeping then
+            craftCountPage.craftBtn:onClick()
+          end
         else
           makePlanButton:onClick()
         end

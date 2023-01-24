@@ -3,7 +3,7 @@ require "utils.helpers"
 
 local craftingPortIn = 1357
 local craftingPortOut = craftingPortIn + 1
-local modem = peripheral.find("modem")
+local modem = peripheral.find("modem", function(_, p) return not p.isWireless() end)
 modem.open(craftingPortIn)
 
 local gridTranslation = {1,2,3,5,6,7,9,10,11}
@@ -64,11 +64,6 @@ hook.add("modem_message", "doCraft", function(_, port, _, data)
       handleCrafting(data)
       print("Finished!")
     end
-  elseif data.type == "scan" then
-    modem.transmit(craftingPortOut, craftingPortIn, {type = "scan", computerID = os.getComputerID()})
-    term.clear()
-    term.setCursorPos(1, 1)
-    print("Replied to crafter ping!")
   elseif data.type == "check" then
     if not table.contains(data.ids, os.getComputerID()) then return end
     print("Received a check message, looking for " .. data.name)
