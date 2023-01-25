@@ -144,9 +144,35 @@ function storagePage.setup()
     pages.setPage("configure")
   end
 
+  local editMode = false
+  local editItemButton = pages.elem(ui.text.create())
+  editItemButton:setPos(10, h - 1)
+  editItemButton:setSize(9, 1)
+
+  local function updateEditButton()
+    editItemButton:setText(editMode and " Cancel" or "Edit Item")
+    editItemButton:setBgColor(editMode and colors.green or colors.gray)
+  end
+
+  updateEditButton()
+
+  function editItemButton:onClick()
+    editMode = not editMode
+    updateEditButton()
+    if editMode then
+      timer.create("edit_mode_revert", 10, 1, function()
+        editMode = false
+        updateEditButton()
+      end)
+    else
+      timer.remove("edit_mode_revert")
+    end
+  end
+
   function buttonList:onDoDraw()
     slotCounter:doDraw()
     configureButton:doDraw()
+    editItemButton:doDraw()
   end
 
   -- TODO: optimise this a lot
@@ -194,6 +220,11 @@ function storagePage.setup()
 
   function buttonList:handleClick(btn, data)
     if not data.name then return end
+
+    if editMode then
+      pages.setPage("editItem", data.name)
+      return
+    end
 
     local canCraft = recipeNames[data.name] and hasCrafters
     local dropItem = storage.remote.isRemote and storage.remote.dropItem or storage.dropItem
