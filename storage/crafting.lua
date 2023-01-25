@@ -28,7 +28,7 @@ storage.wiredModem.open(craftingPortIn)
 -- Also, it allows us to treat these replies as syncronous calls, which makes the setup easier
 -- ideally we'd use promises, but they're a little heavy for CC
 local function handleAllReplies(msgType, handler, ids, timeout)
-  local timerID = os.startTimer(timeout)
+  local timerID = timeout and os.startTimer(timeout)
   local remaining = table.shallowCopy(ids or {})
   while true do
     local data = {os.pullEvent()}
@@ -42,11 +42,13 @@ local function handleAllReplies(msgType, handler, ids, timeout)
         table.removeByValue(remaining, data[5].computerID)
         if table.isEmpty(remaining) then break end
       end
-    elseif data[1] == "timer" and data[2] == timerID and timeout then
+    elseif timeout and data[1] == "timer" and data[2] == timerID then
       break
     end
   end
-  os.cancelTimer(timerID)
+  if timerID then
+    os.cancelTimer(timerID)
+  end
 end
 
 local function checkChests(chests, itemName)

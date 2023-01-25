@@ -29,8 +29,8 @@ storage.remote.registerFunctions()
 pages.pages.configure.setupOtherPages()
 
 if not storage.remote.isRemote then
-  storage.crafting.pingCrafters()
   storage.updateChests()
+  storage.crafting.pingCrafters()
   storage.updateItemMapping()
   storage.crafting.loadRecipes()
   storage.crafting.setupCrafters()

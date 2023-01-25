@@ -1,9 +1,12 @@
 require "utils.hooks"
 require "utils.helpers"
 
+os.setComputerLabel("crafter")
+
 local craftingPortIn = 1357
 local craftingPortOut = craftingPortIn + 1
 local modem = peripheral.find("modem", function(_, p) return not p.isWireless() end)
+if not modem then error("Not connected to a wired modem") end
 modem.open(craftingPortIn)
 
 local gridTranslation = {1,2,3,5,6,7,9,10,11}
