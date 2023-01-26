@@ -10,13 +10,32 @@ hook.routines = {}
 
 -- Returning values out of hooks does nothing, EXCEPT for the `terminate` hook, in which case, returning true will disable the usual Terminate error thrown
 -- For example, `hook.add("terminate", "prevent_terminate", function() return true end)` will prevent terminating
-function hook.add(eventName, handlerName, handler)
+function hook.add(eventName, handlerName, handler, priority)
+  priority = priority or 0
   hook.handlers[eventName] = hook.handlers[eventName] or {}
-  hook.handlers[eventName][handlerName] = handler
+
+  local newHandlerData = {
+    handler = handler,
+    handlerName = handlerName,
+    priority = priority
+  }
+
+  for i, handlerData in ipairs(hook.handlers[eventName]) do
+    if handlerData.priority <= priority then
+      table.insert(hook.handlers[eventName], i, newHandlerData) -- check i does what we want
+      return
+    end
+  end
+  table.insert(hook.handlers[eventName], newHandlerData) -- must insert at the end
 end
 
 function hook.remove(eventName, handlerName)
-  hook.add(eventName, handlerName, nil) -- Set the handler to nil
+  for i, handlerData in ipairs(hook.handlers[eventName] or {}) do
+    if handlerData.handlerName == handlerName then
+      table.remove(hook.handlers[eventName], i)
+      return
+    end
+  end
 end
 
 local function throwError(event, handlerName, data, co)
@@ -79,31 +98,29 @@ function hook.runLoop()
 
     local shouldTerminate = isTerminate
 
-    -- acts as a copy
-    -- Avoids errors if a handler is removed by another on the same event
-    local handlerNames = table.keys(handlerTable or {})
+    -- copy to avoid hook changes in hook
+    local handlerTableCopy = table.shallowCopy(handlerTable or {})
 
     -- Run handlers
-    for _, handlerName in pairs(handlerNames) do
-      local handler = handlerTable[handlerName]
-      if handler then -- I wish we had continue or even goto
-        local co = coroutine.create(function() return handler(table.unpack(eventData, 2, eventData.n)) end)
-        local success, data = coroutine.resume(co)
+    for _, handlerData in ipairs(handlerTableCopy) do
+      local handlerName = handlerData.handlerName
+      local handler = handlerData.handler
+      local co = coroutine.create(function() return handler(table.unpack(eventData, 2, eventData.n)) end)
+      local success, data = coroutine.resume(co)
 
-        if not success then throwError(event, handlerName, data, co) end
+      if not success then throwError(event, handlerName, data, co) end
 
-        local finished = coroutine.status(co) == "dead"
+      local finished = coroutine.status(co) == "dead"
 
-        if not finished then
-          table.insert(hook.routines, {routine = co, filter = data, isTerminate = isTerminate, event = event, handlerName = handlerName})
-          if isTerminate then
-            shouldTerminate = false
-          end
-        end
-
-        if isTerminate and data then
+      if not finished then
+        table.insert(hook.routines, {routine = co, filter = data, isTerminate = isTerminate, event = event, handlerName = handlerName})
+        if isTerminate then
           shouldTerminate = false
         end
+      end
+
+      if isTerminate and data then
+        shouldTerminate = false
       end
     end
 
