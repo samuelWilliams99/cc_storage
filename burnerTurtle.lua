@@ -7,16 +7,17 @@ local modem = peripheral.find("modem", function(_, p) return not p.isWireless() 
 if not modem then error("Not connected to a wired modem") end
 modem.open(burningPortIn)
 
-for i = 2, 16 do
+for i = 1, 16 do
   if turtle.getItemCount(i) == 0 then
-    error("Must have items in all but first slot")
+    error("Must have unstackable items in all but first slot, with trapped chest in first slot (in addition to once placed)")
   end
 end
 
-if turtle.getItemCount(1) > 0 then
-  if turtle.getItemDetail(1).name ~= "trapped_chest" then
-    error("First item must be either empty or trapped chest")
-  end
+if turtle.getItemDetail(1).name ~= "trapped_chest" then
+  error("First item must be either empty or trapped chest")
+end
+
+if turtle.getItemCount(1) > 1 then
   turtle.place()
 end
 
