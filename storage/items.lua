@@ -1,6 +1,7 @@
 require "utils.helpers"
 require "utils.timer"
 require "storage.crafting"
+require "storage.burnItems"
 
 -- TODO: Implement maxstack
 -- Will need mechanism for fast item deletion, consider the double chest + turtle strat. Checking for this setup will be annoying, consider making it optional
@@ -14,6 +15,11 @@ local function avoidSides(name)
   if name:find("_") then return true end
 end
 
+function storage.findTurtles()
+  storage.turtles = {peripheral.find("turtle", avoidSides)}
+  for _, turtle in ipairs(storage.turtles) do turtle.turnOn() end
+end
+
 function storage.updateChests()
   local chests = {peripheral.find("minecraft:chest", avoidSides)}
   storage.chests = {}
@@ -25,9 +31,6 @@ function storage.updateChests()
       table.insert(storage.chests, chest)
     end
   end
-
-  storage.turtles = {peripheral.find("turtle", avoidSides)}
-  for _, turtle in ipairs(storage.turtles) do turtle.turnOn() end
 
   print("Found " .. #storage.chests .. " chests, " .. #storage.crafting.candidates .. " crafter candidates and " .. #storage.turtles .. " turtles")
 
@@ -340,7 +343,7 @@ function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
   local storedItem = storage.items[key]
   local startingCount = item.count
   if not useReserved then
-    startingCount = storage.burnitems.preInputHandler(key, chest, slot, item.count)
+    startingCount = storage.burnItems.preInputHandler(key, chest, slot, item.count)
   end
 
   if startingCount == 0 then return end

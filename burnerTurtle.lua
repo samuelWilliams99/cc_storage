@@ -20,9 +20,12 @@ if turtle.getItemCount(1) > 0 then
   turtle.place()
 end
 
-hook.add("modem_message", "doBurn", function(_, port)
+hook.add("modem_message", "doBurn", function(_, port, _, computerId)
   if port ~= burningPortIn then return end
+  if os.getComputerID() ~= computerId then return end
   turtle.dig()
   turtle.place()
   modem.transmit(burningPortOut, burningPortIn, true) -- True is a very small amount of data, would use `nil` if allowed
 end)
+
+hook.runLoop()

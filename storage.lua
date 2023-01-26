@@ -11,7 +11,6 @@ if not storage.remote.isRemote then
   require "storage.items"
   require "storage.enderChest"
   require "storage.lock"
-  require "storage.burnItems"
 else
   require "ui.pages.remoteClientConfig"
   require "ui.pages.remoteClientPending"
@@ -31,9 +30,10 @@ storage.remote.registerFunctions()
 pages.pages.configure.setupOtherPages()
 
 if not storage.remote.isRemote then
+  storage.findTurtles()
+  storage.crafting.pingCrafters()
   storage.updateChests()
   storage.burnItems.setup()
-  storage.crafting.pingCrafters()
   storage.updateItemMapping()
   storage.crafting.loadRecipes()
   storage.crafting.setupCrafters()

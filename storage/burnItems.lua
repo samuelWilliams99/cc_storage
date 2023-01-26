@@ -27,8 +27,8 @@ itemSettings: {
 function storage.burnItems.setup()
   storage.burnItems.itemSettings = readFile(storage.burnItems.itemSettingsPath) or {}
   for _, turtle in ipairs(storage.turtles) do
-    if turtle.getComputerLabel() == "burner" then
-      storage.burnItems = turtle
+    if turtle.getLabel() == "burner" then
+      storage.burnItems.turtle = turtle
       return
     end
   end
@@ -37,7 +37,7 @@ end
 
 function storage.burnItems.burnChest()
   if storage.burnItems.slotsLeft == 27 then return end
-  storage.wiredModem.transmit(burningPortOut, burningPortIn, true)
+  storage.wiredModem.transmit(burningPortOut, burningPortIn, storage.burnItems.turtle.getID())
   while true do
     local _, _, port = os.pullEvent("modem_message")
     if port == burningPortIn then break end
@@ -130,14 +130,14 @@ end
 
 storage.burnItems.burnItem = storage.burnItems.withBurnLock(storage.burnItems.burnItemUnsafe)
 
-function storage.burnitems.preInputHandler(itemKey, chest, slot, count)
+function storage.burnItems.preInputHandler(itemKey, chest, slot, count)
   local currentCount = storage.items[itemKey] and storage.items[itemKey].count or 0
   local itemSetting = storage.burnItems.itemSettings[itemKey]
   if not itemSetting or not itemSetting.limit then return count end
   local amtToBurn = math.max(0, (currentCount + count) - itemSetting.limit)
 
   if storage.burnItems.canBurnInCurrentBatch() then
-    storage.burnitems.burnItemStackFromInput(chest, slot, amtToBurn)
+    storage.burnItems.burnItemStackFromInput(chest, slot, amtToBurn)
     return count - amtToBurn
   end
   return count
