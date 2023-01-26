@@ -13,7 +13,17 @@ end
 shell.run("cc_storage/debug/setupMonPrint")
 
 if turtle then
-  shell.run("cc_storage/crafterTurtle")
+  local label = os.getComputerLabel()
+  if label == "crafter" then
+    shell.run("cc_storage/crafterTurtle")
+  elseif label == "burner" then
+    shell.run("cc_storage/burnerTurtle")
+  else
+    print("No turtle type set, select from \"crafter\" or \"burner\":")
+    local l = read()
+    os.setComputerLabel(l)
+    os.reboot()
+  end
 else
   shell.run("cc_storage/storage")
 end

@@ -30,12 +30,29 @@ function storage.updateChests()
   for _, turtle in ipairs(storage.turtles) do turtle.turnOn() end
 
   print("Found " .. #storage.chests .. " chests, " .. #storage.crafting.candidates .. " crafter candidates and " .. #storage.turtles .. " turtles")
-  storage.dropper = peripheral.find("minecraft:trapped_chest", avoidSides)
+
+  local trappedChests = {peripheral.find("minecraft:trapped_chest", avoidSides)}
+
+  for _, chest in ipairs(trappedChests) do
+    if chest.size() == 27 then
+      storage.dropper = chest
+    else
+      storage.burnItems.chest = chest
+    end
+  end
+
   if storage.dropper then
     print("Found dropper chest")
   else
-    error("Could not find dropper chest, please add a trapped_chest to the network")
+    error("Could not find dropper chest, please add a single trapped_chest to the network")
   end
+
+  if storage.burnItems.chest then
+    print("Found burner chest")
+  else
+    error("Could not find burner chest, please setup the double trapped_chest and burner bot")
+  end
+
   storage.input = peripheral.find("minecraft:barrel", avoidSides)
   if storage.input then
     print("Found input barrel")
@@ -319,8 +336,15 @@ storage.inputChest = storage.withLock(storage.inputChestUnsafe)
 
 function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
   local key = storage.getItemKey(item)
+
   local storedItem = storage.items[key]
   local startingCount = item.count
+  if not useReserved then
+    startingCount = storage.burnitems.preInputHandler(key, chest, slot, item.count)
+  end
+
+  if startingCount == 0 then return end
+
   if storedItem then
     storage.inputItemsFrom(storedItem, slot, item, chest, useReserved)
   end

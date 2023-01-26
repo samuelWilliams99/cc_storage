@@ -1,8 +1,6 @@
 require "utils.hooks"
 require "utils.helpers"
 
-os.setComputerLabel("crafter")
-
 local craftingPortIn = 1357
 local craftingPortOut = craftingPortIn + 1
 local modem = peripheral.find("modem", function(_, p) return not p.isWireless() end)
@@ -61,6 +59,7 @@ local function toBool(x)
 end
 
 hook.add("modem_message", "doCraft", function(_, port, _, data)
+  if port ~= craftingPortIn then return end
   if data.type == "craft" then
     if data.computerID == os.getComputerID() then
       print("Received a craft request, handling...")

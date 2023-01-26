@@ -40,6 +40,9 @@ local sharedFuncs = {
   -- Remote
   "storage.remote.getItems",
   "storage.remote.getStorageId",
+  -- Burn items
+  "storage.burnItems.getItemSetting",
+  "storage.burnItems.setItemLimit",
 }
 
 -- These functions are to be called only by clients, and will provide the client computer id as the first argument
@@ -57,6 +60,7 @@ local forwardedHooks = {
   "cc_storage_change_item_batched",
   "cc_crafting_plan_change",
   "cc_initialize",
+  "cc_burn_items_settings_change",
 }
 
 storage.remote.isRemote = pocket and true or false
