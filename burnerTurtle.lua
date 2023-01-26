@@ -13,7 +13,7 @@ for i = 1, 16 do
   end
 end
 
-if turtle.getItemDetail(1).name ~= "trapped_chest" then
+if turtle.getItemDetail(1).name ~= "minecraft:trapped_chest" then
   error("First item must be either empty or trapped chest")
 end
 
