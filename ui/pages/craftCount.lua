@@ -1,4 +1,5 @@
 require "ui.pages.pages"
+require "ui.numberInput"
 
 local craftCountPage = {
   shouldMakeBackButton = true,
@@ -30,11 +31,10 @@ function craftCountPage.setup(itemName)
   term.setCursorPos(math.ceil(midLeftX - #countTitleText / 2), 6)
   term.write(countTitleText)
 
-  local count = 1
-  local countText = pages.elem(ui.text.create())
-  countText:setPos(2, 8)
-  countText:setSize(lineX - 5, 3)
-  countText:setTextDrawPos(0, 1)
+  local countInput = pages.elem(ui.numberInput.create())
+  countInput:setPos(2, 8)
+  countInput:setSize(lineX - 5, 3)
+  countInput:setValue(1)
 
   local makePlanButton = pages.elem(ui.text.create())
   makePlanButton:setPos(lineX - 16, h - 4)
@@ -42,11 +42,11 @@ function craftCountPage.setup(itemName)
   makePlanButton:setTextDrawPos(2, 1)
   makePlanButton:setText("Make plan")
   function makePlanButton:onClick()
-    if count == 0 then return end
+    if countInput:getValue() == 0 then return end
     if craftCountPage.plan and craftCountPage.plan.craftable then
       storage.crafting.unreservePlan(craftCountPage.plan.id)
     end
-    craftCountPage.plan = storage.crafting.makeCraftPlan(itemName, count, os.getComputerID())
+    craftCountPage.plan = storage.crafting.makeCraftPlan(itemName, countInput:getValue(), os.getComputerID())
     -- Wait for reserve item updates on client
     -- Consider a different mechanism, good enough for now
     if storage.remote.isRemote then
@@ -57,21 +57,8 @@ function craftCountPage.setup(itemName)
     craftCountPage.displayPlan()
   end
 
-  local showUnderscore = true
-  local function updateCount(n)
-    if n > 9999 then return end
-    local changed = count ~= n
-    
-    count = n
-    local str = ""
-    if count > 0 then str = tostring(count) end 
-    if showUnderscore then str = str .. "_" end
-    countText:setText("  " .. str)
-    countText:invalidateLayout(true)
-    
-    if not changed then return end
-
-    if count == 0 then
+  function countInput:onChange(_, new)
+    if new == 0 then
       makePlanButton:setTextColor(colors.black)
       makePlanButton:setBgColor(colors.black)
     else
@@ -79,13 +66,6 @@ function craftCountPage.setup(itemName)
       makePlanButton:setBgColor(colors.gray)
     end
   end
-
-  updateCount(1)
-
-  timer.create("craftCountUnderscore", 0.5, 0, function()
-    showUnderscore = not showUnderscore
-    updateCount(count)
-  end)
 
   local function countChangeButton(num, x, y)
     local btn = pages.elem(ui.text.create())
@@ -98,10 +78,10 @@ function craftCountPage.setup(itemName)
     btn:setPos(x, y)
     function btn:onClick()
       if num then
-        if count == 1 and num == 64 then updateCount(0) end -- If running +64 on 1, it should go to 64 for convenience
-        updateCount(math.max(count + num, 1))
+        if countInput:getValue() == 1 and num == 64 then return countInput:setValue(64) end -- If running +64 on 1, it should go to 64 for convenience
+        countInput:setValue(math.max(countInput:getValue() + num, 1))
       else
-        updateCount(1)
+        countInput:setValue(1)
       end
     end
   end
@@ -112,27 +92,19 @@ function craftCountPage.setup(itemName)
   countChangeButton(64, midLeftX, 16)
   countChangeButton(nil, midLeftX - 10, 20)
 
-  hook.add("char", "craftCountChar", function(char)
-    local num = tonumber(char)
-    if not num then return end
-    updateCount(count * 10 + num)
-  end)
-
   timer.simple(0.05, function()
     hook.add("key", "craftCountKey", function(key)
-      if key == keys.backspace then
-        updateCount(math.floor(count / 10))
-      elseif key == keys.enter then
-        if count == 0 then
-          updateCount(1)
+      if key ~= keys.enter then return end
+
+      if countInput:getValue() == 0 then
+        countInput:setValue(1)
+      end
+      if craftCountPage.plan and craftCountPage.plan.count == countInput:getValue() then
+        if craftCountPage.sleeping then
+          craftCountPage.craftBtn:onClick()
         end
-        if craftCountPage.plan and craftCountPage.plan.count == count then
-          if craftCountPage.sleeping then
-            craftCountPage.craftBtn:onClick()
-          end
-        else
-          makePlanButton:onClick()
-        end
+      else
+        makePlanButton:onClick()
       end
     end)
   end)
@@ -239,7 +211,4 @@ function craftCountPage.cleanup()
   end
   craftCountPage.ingredientsList = nil
   craftCountPage.plan = nil
-  hook.remove("char", "craftCountChar")
-  hook.remove("key", "craftCountKey")
-  timer.remove("craftCountUnderscore")
 end
