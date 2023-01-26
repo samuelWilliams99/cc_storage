@@ -94,15 +94,11 @@ end)
 
 local clients = {}
 
-local function getUnixTime()
-  return os.time(os.date("!*t"))
-end
-
 function storage.remote.transmitConnected(computerId)
   if clients[computerId] then
     storage.remote.transmitDisconnected(computerId)
   end
-  clients[computerId] = {lastPing = getUnixTime()}
+  clients[computerId] = {lastPing = os.unixTime()}
   hook.run("cc_client_connect", computerId)
 end
 
@@ -111,7 +107,7 @@ function storage.remote.transmitPing(computerId)
   if not clients[computerId] then
     storage.remote.transmitConnected(computerId)
   else
-    clients[computerId].lastPing = getUnixTime()
+    clients[computerId].lastPing = os.unixTime()
   end
 end
 
@@ -123,7 +119,7 @@ end
 
 function storage.remote.startClientTimeoutTimer()
   timer.create("cc_client_timeout", 1, 0, function()
-    local time = getUnixTime()
+    local time = os.unixTime()
     local clientIds = table.keys(clients)
     for _, computerId in ipairs(clientIds) do
       local clientData = clients[computerId]

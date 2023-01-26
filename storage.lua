@@ -63,6 +63,7 @@ hook.add("initialize", "testing", function()
       return
     end
     pages.setPage("itemList")
+    storage.burnItems.bringAllItemsToLimit()
   end
 end)
 

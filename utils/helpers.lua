@@ -101,3 +101,7 @@ function sequenceCompares(order, arr)
   end
   return false
 end
+
+function os.unixTime()
+  return os.time(os.date("!*t"))
+end

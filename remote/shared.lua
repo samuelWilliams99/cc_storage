@@ -43,6 +43,9 @@ local sharedFuncs = {
   -- Burn items
   "storage.burnItems.getItemSetting",
   "storage.burnItems.setItemLimit",
+  "storage.burnItems.getNextBurnTime",
+  "storage.burnItems.getBurnSlotsUsed",
+  "storage.burnItems.getMaxBurnSlots",
 }
 
 -- These functions are to be called only by clients, and will provide the client computer id as the first argument
@@ -61,6 +64,7 @@ local forwardedHooks = {
   "cc_crafting_plan_change",
   "cc_initialize",
   "cc_burn_items_settings_change",
+  "cc_burn_items_next_burn_time",
 }
 
 storage.remote.isRemote = pocket and true or false
@@ -96,6 +100,3 @@ function storage.remote.registerFunctions()
     end
   end
 end
-
--- TODO: we also now need to consider concurrency, ensure all functions fail gracefully if acting on out of date data
--- we'll fine out as the lads break it

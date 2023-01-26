@@ -3,11 +3,6 @@ require "utils.timer"
 require "storage.crafting"
 require "storage.burnItems"
 
--- TODO: Implement maxstack
--- Will need mechanism for fast item deletion, consider the double chest + turtle strat. Checking for this setup will be annoying, consider making it optional
--- Also, a UI for this will be difficult, as we need to list all items. Consider making it part of the main buttonList UI, maybe a cog on each, or an "edit" mode
--- in this we can do item stack limits, and maybe some other settings per item - say displaying the count on a monitor, or requiring an amt in players inv, idk
-
 -- TODO: Implement item waiting if the dropped-to inv is full, we don't currently check it
 
 -- Must not use peripherals that are wrapped sides, as pushItems doesn't work with them. Must instead be through the wired modem.
@@ -341,10 +336,10 @@ function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
   local key = storage.getItemKey(item)
 
   local storedItem = storage.items[key]
-  local startingCount = item.count
   if not useReserved then
-    startingCount = storage.burnItems.preInputHandler(key, chest, slot, item.count)
+    item.count = storage.burnItems.preInputHandler(key, chest, slot, item.count)
   end
+  local startingCount = item.count
 
   if startingCount == 0 then return end
 

@@ -24,6 +24,7 @@ end
 hook.add("modem_message", "doBurn", function(_, port, _, computerId)
   if port ~= burningPortIn then return end
   if os.getComputerID() ~= computerId then return end
+  print("Destroying items at " .. os.date())
   turtle.dig()
   turtle.place()
   modem.transmit(burningPortOut, burningPortIn, true) -- True is a very small amount of data, would use `nil` if allowed
