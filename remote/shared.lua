@@ -46,6 +46,8 @@ local sharedFuncs = {
   "storage.burnItems.getNextBurnTime",
   "storage.burnItems.getBurnSlotsUsed",
   "storage.burnItems.getMaxBurnSlots",
+  "storage.burnItems.burnAllOfItem",
+  "storage.burnItems.reclaimItems",
 }
 
 -- These functions are to be called only by clients, and will provide the client computer id as the first argument
@@ -65,6 +67,7 @@ local forwardedHooks = {
   "cc_initialize",
   "cc_burn_items_settings_change",
   "cc_burn_items_next_burn_time",
+  "cc_burn_items_slots_change",
 }
 
 storage.remote.isRemote = pocket and true or false

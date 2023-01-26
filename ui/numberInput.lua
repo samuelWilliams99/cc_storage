@@ -6,7 +6,7 @@ ui.numberInput = {}
 function ui.numberInput.create(parent)
   local elem = ui.text.create(parent)
   elem:setTextDrawPos(0, 1)
-  elem.count = 0
+  elem.value = 0
   elem.max = nil
 
   function elem:setMax(n)
@@ -14,23 +14,23 @@ function ui.numberInput.create(parent)
   end
 
   function elem:getValue()
-    return elem.count
+    return elem.value
   end
 
   local showUnderscore = true
   function elem:setValue(n)
     if elem.max and n > elem.max then return end
-    local old = elem.count
+    local old = elem.value
     
-    elem.count = n
+    elem.value = n
     local str = ""
-    if elem.count > 0 then str = tostring(elem.count) end
+    if elem.value > 0 then str = tostring(elem.value) end
     if showUnderscore then str = str .. "_" end
     elem:setText("  " .. str)
     elem:invalidateLayout(true)
 
-    if old ~= elem.count then
-      elem:onChange(old, elem.count)
+    if old ~= elem.value then
+      elem:onChange(old, elem.value)
     end
   end
 
@@ -39,18 +39,18 @@ function ui.numberInput.create(parent)
 
   timer.create("numberInputUnderscore" .. elem.id, 0.5, 0, function()
     showUnderscore = not showUnderscore
-    elem:setValue(elem.count)
+    elem:setValue(elem.value)
   end)
 
   hook.add("key", "numberInputKey" .. elem.id, function(key)
     if key ~= keys.backspace then return end
-    elem:setValue(math.floor(elem.count / 10))
+    elem:setValue(math.floor(elem.value / 10))
   end)
 
   hook.add("char", "numberInputChar" .. elem.id, function(char)
     local num = tonumber(char)
     if not num then return end
-    elem:setValue(elem * 10 + num)
+    elem:setValue(elem.value * 10 + num)
   end)
 
   local oldOnRemove = elem.onRemove

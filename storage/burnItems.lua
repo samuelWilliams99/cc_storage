@@ -11,6 +11,8 @@ storage.burnItems.itemSettingsPath = "./itemSettings.txt"
 -- TODO: Add a config page to quickly get to existing item settings, as else setting an item to 0 permanently blocks it from computer
 -- This page should have a "bin slots used" thing, as well as a "reclaim burned items" button
 
+-- TODO: add a nice way to just delete items on the main list, for shit like old bows and stuff, probably using a double click mechanism to remove ALL
+
 -- Returns number | nil
 function storage.burnItems.getItemLimit(itemKey)
   local itemSetting = storage.burnItems.itemSettings[itemKey]
@@ -61,6 +63,7 @@ function storage.burnItems.burnChest(ignoreSlots)
     if port == burningPortIn then break end
   end
   storage.burnItems.slotsLeft = storage.burnItems.maxSlots
+  hook.run("cc_burn_items_slots_change", storage.burnItems.slotsLeft)
 end
 
 function storage.burnItems.withBurnLock(f, pred)
@@ -89,6 +92,16 @@ function storage.burnItems.setBurnIn(t)
   hook.run("cc_burn_items_next_burn_time", storage.burnItems.nextBurnTime)
 end
 
+function storage.burnItems.reclaimItems()
+  if storage.burnItems.slotsLeft == storage.burnItems.maxSlots then return end
+  storage.burnItems.setBurnIn(nil)
+  storage.burnItems.noPreHandle = true
+  storage.inputChest(storage.burnItems.chest)
+  storage.burnItems.noPreHandle = false
+  storage.burnItems.slotsLeft = storage.burnItems.maxSlots
+  hook.run("cc_burn_items_slots_change", storage.burnItems.slotsLeft)
+end
+
 -- Starts a timer to, or immediately clears the burn chest
 function storage.burnItems.checkBurnChest(async)
   if storage.burnItems.slotsLeft == 0 then
@@ -110,6 +123,7 @@ function storage.burnItems.burnItemStackFromInputUnsafe(chest, slot, amt)
   if storage.burnItems.slotsLeft == 0 then return end
   chest.pushItems(peripheral.getName(storage.burnItems.chest), slot, amt)
   storage.burnItems.slotsLeft = storage.burnItems.slotsLeft - 1
+  hook.run("cc_burn_items_slots_change", storage.burnItems.slotsLeft)
   storage.burnItems.checkBurnChest(true)
 end
 
@@ -156,6 +170,12 @@ function storage.burnItems.bringToLimit(itemKey)
   itemsBeingLimited[itemKey] = nil
 end
 
+function storage.burnItems.burnAllOfItem(itemKey)
+  while storage.items[itemKey] do
+    storage.burnItems.burnItem(itemKey, storage.items[itemKey].count)
+  end
+end
+
 function storage.burnItems.bringAllItemsToLimit()
   hook.runInHandlerContext(function()
     for itemKey in pairs(storage.burnItems.itemSettings) do
@@ -174,6 +194,7 @@ function storage.burnItems.burnItemUnsafe(itemKey, amt)
 
   storage.dropItemTo(itemKey, itemsAble, storage.burnItems.chest)
   storage.burnItems.slotsLeft = storage.burnItems.slotsLeft - stacksAble
+  hook.run("cc_burn_items_slots_change", storage.burnItems.slotsLeft)
 
   storage.burnItems.checkBurnChest()
 end
@@ -181,6 +202,7 @@ end
 storage.burnItems.burnItem = storage.burnItems.withBurnAndItemLock(storage.burnItems.burnItemUnsafe)
 
 function storage.burnItems.preInputHandler(itemKey, chest, slot, count)
+  if storage.burnItems.noPreHandle then return count end
   local currentCount = storage.items[itemKey] and storage.items[itemKey].count or 0
   local itemSetting = storage.burnItems.itemSettings[itemKey]
   if not itemSetting or not itemSetting.limit then return count end
