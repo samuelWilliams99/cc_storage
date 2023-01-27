@@ -36,6 +36,7 @@ function craftCountPage.setup(itemName)
   countInput:setSize(lineX - 5, 3)
   countInput:setValue(1)
   countInput:setMax(9999)
+  countInput:setCanDeselect(false)
 
   local makePlanButton = pages.elem(ui.text.create())
   makePlanButton:setPos(lineX - 16, h - 4)
