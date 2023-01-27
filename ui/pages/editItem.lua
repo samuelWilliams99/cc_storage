@@ -61,7 +61,8 @@ local function addOptionalNumberSetting(str, index, startValue, def, max, update
   end
 end
 
-function editItemPage.setup(itemKey)
+function editItemPage.setup(itemKey, returnToList)
+  editItemPage.backButtonDest = returnToList and "editItemList" or "itemList"
   local itemName = storage.items[itemKey] and storage.items[itemKey].detail.displayName or storage.crafting.recipes[itemKey].displayName
   pages.writeTitle("Settings for " .. itemName)
 
@@ -96,7 +97,7 @@ function editItemPage.setup(itemKey)
     storage.burnItems.setItemLimit(itemKey, new)
   end)
 
-  hook.add("cc_burn_items_settings_change", "update_menu", function(_itemKey, _itemSetting)
+  hook.add("cc_burn_items_setting_change", "update_menu", function(_itemKey, _itemSetting)
     if itemKey ~= _itemKey then return end
     itemSetting = _itemSetting
     limitSetter(itemSetting.limit)
@@ -111,7 +112,7 @@ function editItemPage.setup(itemKey)
 end
 
 function editItemPage.cleanup()
-  hook.remove("cc_burn_items_settings_change", "update_menu")
+  hook.remove("cc_burn_items_setting_change", "update_menu")
   hook.remove("cc_storage_change", "update_menu")
   hook.remove("cc_recipes_change", "update_menu")
 end

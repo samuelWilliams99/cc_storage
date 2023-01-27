@@ -42,12 +42,14 @@ local sharedFuncs = {
   "storage.remote.getStorageId",
   -- Burn items
   "storage.burnItems.getItemSetting",
+  "storage.burnItems.getItemSettings",
   "storage.burnItems.setItemLimit",
   "storage.burnItems.getNextBurnTime",
   "storage.burnItems.getBurnSlotsUsed",
   "storage.burnItems.getMaxBurnSlots",
   "storage.burnItems.burnAllOfItem",
   "storage.burnItems.reclaimItems",
+  "storage.burnItems.burnChestNow",
   -- Util
   "printMon"
 }
@@ -67,6 +69,7 @@ local forwardedHooks = {
   "cc_storage_change_item_batched",
   "cc_crafting_plan_change",
   "cc_initialize",
+  "cc_burn_items_setting_change",
   "cc_burn_items_settings_change",
   "cc_burn_items_next_burn_time",
   "cc_burn_items_slots_change",

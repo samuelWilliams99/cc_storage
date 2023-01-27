@@ -25,6 +25,7 @@ require "ui.pages.editLock"
 require "ui.pages.recipes"
 require "ui.pages.configure"
 require "ui.pages.editItem"
+require "ui.pages.editItemList"
 
 storage.remote.registerFunctions()
 pages.pages.configure.setupOtherPages()
