@@ -51,7 +51,7 @@ function storage.lock.startAutoLockTimer()
 
   timer.create("autolock", 5, 0, function()
     if pages.pages.lock.active or not storage.lock.enabled then return end
-    local plys = playerDetector.getPlayersInRange(5)
+    local plys = playerDetector.getPlayersInRange(5) or {}
     local foundPlayer = false
     for _, ply in pairs(plys) do
       if table.contains(authorisedPlayers, ply) then
