@@ -211,6 +211,7 @@ function craftCountPage.cleanup()
   if craftCountPage.plan and craftCountPage.plan.craftable then
     storage.crafting.unreservePlan(craftCountPage.plan.id)
   end
+  hook.remove("key", "craftCountKey")
   craftCountPage.ingredientsList = nil
   craftCountPage.plan = nil
 end

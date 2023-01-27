@@ -49,6 +49,7 @@ function ui.numberInput.create(parent)
   end
 
   function elem:setValue(n)
+    if self.removed then return end
     if elem.max and n > elem.max then return end
     local old = elem.value
     
@@ -81,8 +82,13 @@ function ui.numberInput.create(parent)
 
   hook.add("key", "numberInputKey" .. elem.id, function(key)
     if not elem.selected then return end
-    if key ~= keys.backspace then return end
-    elem:setValue(math.floor(elem.value / 10))
+    if key == keys.backspace then
+      elem:setValue(math.floor(elem.value / 10))
+    elseif key == keys.enter then
+      if elem.canDeselect then
+        elem:setSelected(false)
+      end
+    end
   end)
 
   hook.add("char", "numberInputChar" .. elem.id, function(char)
@@ -103,10 +109,13 @@ function ui.numberInput.create(parent)
     if outsideX or outsideY and elem.selected then
       elem:setSelected(false)
     end
-  end)
+  end, -1) -- Lower priority than onClick
 
   local oldOnRemove = elem.onRemove
   function elem:onRemove()
+    if self.selected and self.canDeselect then
+      self:onDeselect(self.value)
+    end
     self:stopUnderscoreTimer()
     hook.remove("key", "numberInputKey" .. elem.id)
     hook.remove("char", "numberInputChar" .. elem.id)

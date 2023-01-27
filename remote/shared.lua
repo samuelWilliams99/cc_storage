@@ -48,6 +48,8 @@ local sharedFuncs = {
   "storage.burnItems.getMaxBurnSlots",
   "storage.burnItems.burnAllOfItem",
   "storage.burnItems.reclaimItems",
+  -- Util
+  "printMon"
 }
 
 -- These functions are to be called only by clients, and will provide the client computer id as the first argument

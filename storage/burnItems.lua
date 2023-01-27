@@ -139,11 +139,12 @@ function storage.burnItems.getItemSetting(itemKey)
 end
 
 function storage.burnItems.setItemLimit(itemKey, limit)
+  storage.burnItems.addItemEntry(itemKey)
   storage.burnItems.itemSettings[itemKey].limit = limit
   if not limit then -- This will need changing later if we add more settings
     storage.burnItems.itemSettings[itemKey] = nil
   end
-  hook.run("cc_burn_items_settings_change", itemKey, storage.burnItems.itemSettings[itemKey])
+  hook.run("cc_burn_items_settings_change", itemKey, storage.burnItems.itemSettings[itemKey] or {})
   storage.burnItems.saveSettings()
   -- Delay this to another coroutine, so the function may return immediately
   timer.simple(0.05, function()

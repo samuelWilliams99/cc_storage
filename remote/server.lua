@@ -34,7 +34,7 @@ end
 
 function storage.remote.getStorageId()
   if table.isEmpty(storage.enderChest.chests) then return end
-  return {id = os.getComputerID(), name = os.getComputerLabel()}
+  return {id = os.getComputerID(), label = os.getComputerLabel()}
 end
 
 -- Simplifies an item in the cheapest way, removing locations and non-required fields from detail

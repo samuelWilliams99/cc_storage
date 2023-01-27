@@ -6,6 +6,7 @@ ui.checkbox = {}
 function ui.checkbox.create(parent)
   local elem = ui.text.create(parent)
   elem.checked = false
+  elem.checkboxText = ""
 
   elem.oldSetText = elem.setText
 
@@ -19,6 +20,7 @@ function ui.checkbox.create(parent)
     self.checked = checked
     self:updateText()
     self:onChange(self.checked)
+    self:invalidateLayout(true)
   end
 
   function elem:onChange(checked)
@@ -32,9 +34,9 @@ function ui.checkbox.create(parent)
     end
     text = text .. string.rep(" ", w - 3 - #text)
     if self.checked then
-      text = text .. " [X]"
+      text = text .. "[X]"
     else
-      text = text .. " [ ]"
+      text = text .. "[ ]"
     end
     self:oldSetText(text)
   end

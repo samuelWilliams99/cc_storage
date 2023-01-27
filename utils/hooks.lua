@@ -20,13 +20,24 @@ function hook.add(eventName, handlerName, handler, priority)
     priority = priority
   }
 
-  for i, handlerData in ipairs(hook.handlers[eventName]) do
-    if handlerData.priority <= priority then
-      table.insert(hook.handlers[eventName], i, newHandlerData) -- check i does what we want
-      return
+  local handlers = hook.handlers[eventName]
+  local inserted = false
+
+  for i = #handlers, 1, -1 do
+    local handlerData = handlers[i]
+    if handlerData.handlerName == handlerName then
+      table.remove(handlers, i)
+      i = i - 1
+    end
+    if not inserted and handlerData.priority >= priority then
+      table.insert(handlers, i + 1, newHandlerData)
+      inserted = true
     end
   end
-  table.insert(hook.handlers[eventName], newHandlerData) -- must insert at the end
+  
+  if not inserted then
+    table.insert(handlers, 1, newHandlerData)
+  end
 end
 
 function hook.remove(eventName, handlerName)

@@ -96,9 +96,11 @@ function remoteClientConfigPage.pingStorageIds()
     for i, storageData in ipairs(storageIds) do
       local connected = storageData.id == storage.remote.storageId
       if connected then found = true end
+      local idStr = tostring(storageData.id)
+      local displayStr = storageData.label and (storageData.label .. " (" .. idStr .. ")") or idStr
       options[i] = {
         id = storageData.id,
-        displayText = storageData.label or tostring(storageData.id),
+        displayText = displayStr,
         hasLabel = storageData.label and true or false,
         bgColor = connected and colors.blue or nil
       }
