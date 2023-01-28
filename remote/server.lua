@@ -19,9 +19,9 @@ hook.add("modem_message", "remote_function_handler", function(_, chan, _, data)
   if not functionData then return end
   local ret
   if functionData.giveClientId then
-    ret = table.pack(functionData.func(data.computerID, table.unpack(data.args)))
+    ret = table.pack(functionData.func(data.computerID, table.unpack(data.args, 1, data.args.n)))
   else
-    ret = table.pack(functionData.func(table.unpack(data.args)))
+    ret = table.pack(functionData.func(table.unpack(data.args, 1, data.args.n)))
   end
   storage.wirelessModem.transmit(storage.remote.funcChannel, storage.remote.funcChannel, {computerID = data.computerID, id = data.id, args = ret})
 end)

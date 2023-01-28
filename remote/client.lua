@@ -14,6 +14,7 @@ local relayDelayBuffer = 0.5
 function storage.remote.sharedFunctionClient(names, functionStr)
   setValue(names, function(...)
     idCounter = idCounter + 1
+    local messageId = idCounter
     local timeoutTimerId = os.startTimer(relayDelayBuffer)
     -- Note, we cannot transmit functions, so any function with a callback will not work
     -- We _could_ implement this support, but this is a lot of back and forth
@@ -22,12 +23,12 @@ function storage.remote.sharedFunctionClient(names, functionStr)
       functionStr = functionStr,
       args = table.pack(...),
       computerID = os.getComputerID(),
-      id = idCounter,
+      id = messageId,
       storageId = storage.remote.storageId
     })
     while true do
       local evt, timerId, chan, _, data = os.pullEvent()
-      if evt == "modem_message" and chan == storage.remote.funcChannel and data.computerID == os.getComputerID() and data.id == idCounter then
+      if evt == "modem_message" and chan == storage.remote.funcChannel and data.computerID == os.getComputerID() and data.id == messageId then
         return table.unpack(data.args, 1, data.args.n)
       elseif evt == "timer" and timerId == timeoutTimerId then
         os.reboot()
