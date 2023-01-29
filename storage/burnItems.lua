@@ -8,8 +8,6 @@ storage.wiredModem.open(burningPortIn)
 
 storage.burnItems.itemSettingsPath = "./itemSettings.txt"
 
--- TODO: add a nice way to just delete items on the main list, for shit like old bows and stuff, probably using a double click mechanism to remove ALL
-
 function storage.burnItems.getItemSettings()
   return storage.burnItems.itemSettings
 end
@@ -171,9 +169,14 @@ function storage.burnItems.bringToLimit(itemKey)
 end
 
 function storage.burnItems.burnAllOfItem(itemKey)
-  while storage.items[itemKey] do
-    storage.burnItems.burnItem(itemKey, storage.items[itemKey].count)
-  end
+  timer.simple(0.05, function()
+    if storage.items[itemKey] then
+      storage.items[itemKey].removing = true
+    end
+    while storage.items[itemKey] do
+      storage.burnItems.burnItem(itemKey, storage.items[itemKey].count)
+    end
+  end)
 end
 
 function storage.burnItems.bringAllItemsToLimit()

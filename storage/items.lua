@@ -12,15 +12,11 @@ end
 
 function storage.findTurtles()
   storage.turtles = {peripheral.find("turtle", avoidSides)}
-  local anyOff = false
   for _, turtle in ipairs(storage.turtles) do
-    if not turtle.isOn() then
       turtle.turnOn()
-      anyOff = true
-    end
   end
-  print("Waiting for turtles to boot")
-  if anyOff then sleep(1) end
+  print("Waiting for turtles...")
+  sleep(0.5)
 end
 
 function storage.updateChests()

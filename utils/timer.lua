@@ -43,6 +43,20 @@ function timer.create(name, delay, reps, callback)
   }
 end
 
+-- Restarts the delay
+function timer.restart(name)
+  local timerData = timer.timers[name]
+  if not timerData then return end
+
+  timer.ccTimerIDLookup[timerData.ccTimerID] = nil
+
+  os.cancelTimer(timerData.ccTimerID)
+
+  local newCCTimerID = os.startTimer(timerData.delay)
+  timer.ccTimerIDLookup[newCCTimerID] = name
+  timerData.ccTimerID = newCCTimerID
+end
+
 function timer.simple(delay, callback)
   timer.create("simple_timer_" .. timer.nameCounter, delay, 1, callback)
   timer.nameCounter = timer.nameCounter + 1

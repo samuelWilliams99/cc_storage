@@ -63,6 +63,9 @@ function storagePage.setup()
     return displayName
   end
 
+  -- Used for delete button, needed for preProcess
+  local selectedDeleteItem = nil
+
   local buttonList = pages.elem(ui.buttonListPaged.create())
   buttonList:setSize(w - 4, h - 4)
   buttonList:setPos(2, 4)
@@ -78,10 +81,18 @@ function storagePage.setup()
       countText = countText .. " *" -- Add a star :)
     end
 
+    local bgColor = nil
+
+    if selectedDeleteItem == name then
+      countText = "Delete?"
+      bgColor = colors.red
+    end
+
     return {
       displayText = {displayName, countText},
       name = name,
-      maxCount = item.detail.maxCount -- Will be nil for non craftables
+      maxCount = item.detail.maxCount, -- Will be nil for non craftables
+      bgColor = bgColor
     }
   end
 
@@ -130,8 +141,7 @@ function storagePage.setup()
   local function updateSlotCounter()
     local slotsUsed = totalSlotCount - storage.emptySlotCount
     local str = slotsUsed .. "/" .. totalSlotCount .. " slots used"
-    slotCounter:setPos(w - #str, h - 1)
-    slotCounter:setSize(#str, 1)
+    slotCounter:setPosAndSize(w - #str, h - 1, #str, 1)
     slotCounter:setText(str)
   end
   updateSlotCounter()
@@ -151,13 +161,32 @@ function storagePage.setup()
 
   local function updateEditButton()
     editItemButton:setText(editMode and " Cancel" or "Edit Item")
-    editItemButton:setBgColor(editMode and colors.green or colors.gray)
+    editItemButton:setBgColor(editMode and colors.blue or colors.gray)
   end
 
   updateEditButton()
 
+  local deleteMode = false
+  local deleteButton = pages.elem(ui.text.create())
+  deleteButton:setPos(20, h - 1)
+  deleteButton:setSize(11, 1)
+
+  local function updateDeleteButton()
+    deleteButton:setText(deleteMode and "  Cancel" or "Remove Item")
+    deleteButton:setBgColor(deleteMode and colors.red or colors.gray)
+  end
+
+  updateEditButton()
+  updateDeleteButton()
+
   function editItemButton:onClick()
     editMode = not editMode
+    if deleteMode then
+      deleteMode = false
+      selectedDeleteItem = nil
+      buttonList:updatePage()
+      updateDeleteButton()
+    end
     updateEditButton()
     if editMode then
       timer.create("edit_mode_revert", 10, 1, function()
@@ -169,33 +198,62 @@ function storagePage.setup()
     end
   end
 
+  local function setDeleteMode(mode)
+    deleteMode = mode
+    if deleteMode then
+      editMode = false
+      updateEditButton()
+      timer.create("delete_mode_revert", 5, 1, function()
+        setDeleteMode(false)
+      end)
+    else
+      selectedDeleteItem = nil
+      buttonList:updatePage()
+      timer.remove("delete_mode_revert")
+    end
+    updateDeleteButton()
+  end
+
+  function deleteButton:onClick()
+    setDeleteMode(not deleteMode)
+  end
+
+  local function refreshDeleteRevertTimer()
+    timer.restart("delete_mode_revert")
+  end
+
   function buttonList:onDoDraw()
     slotCounter:doDraw()
     configureButton:doDraw()
     editItemButton:doDraw()
+    deleteButton:doDraw()
   end
 
-  -- TODO: optimise this a lot
-  -- At very least, keys + recipe adding, as well as filter, can all be one loop, rather than 3
-  -- Consider if its possible to not recreate the ensure list each time, but instead update it as needed
   local function updateDisplay()
     if not storagePage.active then return end
-    local itemKeys = table.keys(storage.items)
 
-    if hasCrafters then
-      for name in pairs(recipeNames) do
-        if not storage.items[name] then
-          table.insert(itemKeys, name)
-        end
-      end
-    end
-
-    itemKeys = table.filter(itemKeys, function(name)
+    local function filter(name)
       if storage.items[name] and storage.items[name].count == 0 then return false end
       if searchString == "" then return true end
       local itemData = getItemData(name)
       return itemData.detail.displayName:lower():find(searchString, nil, true)
-    end)
+    end
+
+    local itemKeys = {}
+
+    for name in pairs(storage.items) do
+      if filter(name) then
+        table.insert(itemKeys, name)
+      end
+    end
+
+    if hasCrafters then
+      for name in pairs(recipeNames) do
+        if not storage.items[name] and filter(name) then
+          table.insert(itemKeys, name)
+        end
+      end
+    end
 
     local key = sorters[sorterIndex].key
 
@@ -223,6 +281,19 @@ function storagePage.setup()
 
     if editMode then
       pages.setPage("editItem", data.name)
+      return
+    end
+
+    if deleteMode then
+      refreshDeleteRevertTimer()
+      if selectedDeleteItem == data.name then
+        storage.burnItems.burnAllOfItem(selectedDeleteItem)
+        selectedDeleteItem = nil
+      else
+        if not storage.items[data.name] or storage.items[data.name].removing then return end
+        selectedDeleteItem = data.name
+      end
+      buttonList:updatePage()
       return
     end
 
@@ -315,6 +386,8 @@ function storagePage.cleanup()
   hook.remove("cc_storage_change", "update_view")
   hook.remove("mouse_click", "clear_search")
   timer.remove("inventory_delay")
+  timer.remove("edit_mode_revert")
+  timer.remove("delete_mode_revert")
 
   timer.remove("idle_clear_search")
   hook.remove("key", "idle_clear_search")
