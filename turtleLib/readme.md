@@ -19,7 +19,7 @@ cc_storage.setStorageId(10) -- Replace 10 with your ID
 cc_storage.setEnderChestId(5) -- Replace 5 with your ID
 ```
 _To get storage ID, run `id` on your storage computer, or look in the remote config menu on a pocket computer_  
-_To get enderchest ID, connect the enderchest to the network and look at the number after `enderstorage:ender_chest_`
+_To get enderchest ID, connect the enderchest to the network and look at the number after `enderstorage:ender_chest_`_
 
 ## Usage
 ### Inputting (From turtle into the storage computer)
