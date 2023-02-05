@@ -29,6 +29,7 @@ function storage.remote.sharedFunctionClient(names, functionStr)
     while true do
       local evt, timerId, chan, _, data = os.pullEvent()
       if evt == "modem_message" and chan == storage.remote.funcChannel and data.computerID == os.getComputerID() and data.id == messageId then
+        os.cancelTimer(timeoutTimerId)
         return table.unpack(data.args, 1, data.args.n)
       elseif evt == "timer" and timerId == timeoutTimerId then
         os.reboot()

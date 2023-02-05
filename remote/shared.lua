@@ -17,6 +17,8 @@ local sharedFuncs = {
   "storage.enderChest.getChestNames",
   "storage.enderChest.chestExists",
   "storage.enderChest.isChestPaused",
+  "storage.enderChest.obtainTurtleLock",
+  "storage.enderChest.releaseTurtleLock",
   -- Lock
   "storage.lock.getOnlinePlayers",
   "storage.lock.getAuthorisedPlayers",

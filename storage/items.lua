@@ -280,7 +280,7 @@ function storage.dropItemToUnsafe(key, count, chest, useReserved)
   if not useReserved then
     itemChanged(key, -count, item)
   end
-  return true
+  return true, count
 end
 
 storage.dropItemTo = storage.withLock(storage.dropItemToUnsafe)

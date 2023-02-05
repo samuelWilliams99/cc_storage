@@ -30,19 +30,48 @@ function storage.enderChest.isChestPaused(chestName)
   return (storage.enderChest.chests[chestName] or {fullPaused = false}).fullPaused
 end
 
-function storage.enderChest.dropItem(chestName, key, count)
-  local chestData = storage.enderChest.chests[chestName]
-  if not chestData then return false, "No such chest" end
+local function runLocked(chestData, f, ...)
   while chestData.inputting do
     sleep(0.05)
   end
-  -- Do a full pause while items are being moved into the chest, then switch to itemPause
-  local oldFulledPaused = chestData.fullPaused
-  chestData.fullPaused = true
-  storage.dropItemTo(key, count, chestData.chest)
-  chestData.fullPaused = oldFulledPaused
-  chestData.itemPaused = true
+
+  chestData.inputting = true
+  local ret = table.pack(f(chestData, ...))
+  chestData.inputting = false
+  return table.unpack(ret, 1, ret.n)
+end
+
+function storage.enderChest.obtainTurtleLock(chestName)
+  local chestData = storage.enderChest.chests[chestName]
+  if not chestData then return false, "No such chest" end
+
+  while chestData.turtleLock do
+    sleep(0.5)
+  end
+
+  chestData.turtleLock = true
+
+  timer.create("autoReleaseTurtleLock" .. chestName, 10, 1, function()
+    storage.enderChest.releaseTurtleLock(chestName)
+  end)
   return true
+end
+
+function storage.enderChest.dropItem(chestName, key, count)
+  local chestData = storage.enderChest.chests[chestName]
+  if not chestData then return false, "No such chest" end
+
+  local success, realCount = runLocked(chestData, function()
+    local oldFulledPaused = chestData.fullPaused
+    -- Do a full pause while items are being moved into the chest, then switch to itemPause
+    chestData.fullPaused = true
+    local success, realCount = storage.dropItemTo(key, count, chestData.chest)
+    chestData.fullPaused = oldFulledPaused
+    chestData.itemPaused = true
+    return success, realCount
+  end)
+
+  return true, success and realCount or 0
 end
 
 function storage.enderChest.itemPauseChest(chestName)
@@ -79,12 +108,20 @@ local function inputChest(chestData)
   storage.inputChest(chestData.chest, false, items)
 end
 
+function storage.enderChest.releaseTurtleLock(chestName)
+  local chestData = storage.enderChest.chests[chestName]
+  if not chestData then return false, "No such chest" end
+
+  timer.remove("autoReleaseTurtleLock" .. chestName)
+  chestData.turtleLock = false
+  chestData.itemPaused = false
+  inputChest(chestData)
+end
+
 function storage.enderChest.startInputTimer()
   timer.create("inputEnderChests", 0.5, 0, function()
     for _, chestData in pairs(storage.enderChest.chests) do
-      chestData.inputting = true
-      inputChest(chestData)
-      chestData.inputting = false
+      runLocked(chestData, inputChest)
     end
   end)
 end
