@@ -82,6 +82,7 @@ local function withTurtleChest(f, ...)
 
   local args = table.pack(...)
 
+  turtle.select(selectedSlot)
   local ret = table.pack(withTurtleLock(function()
     return f(table.unpack(args, 1, args.n))
   end))
