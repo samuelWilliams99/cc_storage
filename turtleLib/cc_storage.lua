@@ -3,6 +3,7 @@ if not turtle then error("Library should only be run on turtles") end
 local idCounter = 0
 local modem = peripheral.find("modem")
 local funcChannel = 12394
+modem.open(funcChannel)
 
 local storageId = nil
 local enderChestId = nil
@@ -38,7 +39,7 @@ end
 local function setEnderChestId(n)
   if not storageId then error("Must call setStorageId before setEnderChestId") end
   enderChestId = "enderstorage:ender_chest_" .. n
-  local chests = callRemote("storage.remote.getChestNames", 0.5)
+  local chests = callRemote("storage.enderChest.getChestNames", 0.5)
   if not chests then error("No computer") end
   for _, chest in ipairs(chests) do
     if chest == enderChestId then return end
@@ -137,6 +138,10 @@ local function inputChestByBlacklist(blacklist)
   inputChestBySlots(slots)
 end
 
+local function inputChest()
+  inputChestByBlacklist({})
+end
+
 -- takes {itemName = count}
 -- returns real {itemName = count}
 local function getItems(items)
@@ -153,7 +158,7 @@ end
 
 -- returns the count
 local function getItem(itemName, count)
-  return getItems({[itemName] = count}).itemName
+  return getItems({[itemName] = count})[itemName]
 end
 
 return {
@@ -162,6 +167,7 @@ return {
   inputChestBySlots = inputChestBySlots,
   inputChestByWhitelist = inputChestByWhitelist,
   inputChestByBlacklist = inputChestByBlacklist,
+  inputChest = inputChest,
   getItem = getItem,
   getItems = getItems,
 }
