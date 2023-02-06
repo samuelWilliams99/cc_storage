@@ -59,3 +59,11 @@ cc_storage.getItems{
 _Note that all this functionality will handle placing the enderchest, removing it, and should input to your currently selected slot._
 
 _IMPORTANT NOTE: Requesting items uses the cc_storage item key, which is defined as `itemName .. itemNBT`. For items that have NBT, like tools, fireworks, etc., raw item name will not work._
+
+### Other utility
+
+You can query the count of an item using
+```lua
+cc_storage.getItemCount("minecraft:torch")
+```
+_Note that the same rules above about cc_storage item keys apply here, querying the count of `minecraft:firework_rocket` will always give 0, whereas if you know the metadata hex string and append it, you'll get a real number_

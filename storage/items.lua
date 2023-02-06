@@ -314,6 +314,10 @@ function storage.dropItemsTo(locations, count, chest)
   end
 end
 
+function storage.getItemCount(itemKey)
+  return storage.items[itemKey] and storage.items[itemKey].count or 0
+end
+
 function storage.startInputTimer()
   timer.create("input", 0.5, 0, function() storage.inputChest(storage.input) end)
 end

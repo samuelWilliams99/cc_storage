@@ -8,6 +8,7 @@ storage.wirelessModem.open(storage.remote.hookChannel)
 local sharedFuncs = {
   -- Items
   "storage.getTotalSlotCount",
+  "storage.getItemCount",
   -- Ender chest
   "storage.enderChest.dropItem",
   "storage.enderChest.pauseChest",

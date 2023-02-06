@@ -162,6 +162,10 @@ local function getItem(itemName, count)
   return getItems({[itemName] = count})[itemName]
 end
 
+local function getItemCount(itemName)
+  return callRemote("storage.getItemCount", nil, itemName)
+end
+
 return {
   setStorageId = setStorageId,
   setEnderChestId = setEnderChestId,
@@ -171,4 +175,5 @@ return {
   inputChest = inputChest,
   getItem = getItem,
   getItems = getItems,
+  getItemCount = getItemCount,
 }
