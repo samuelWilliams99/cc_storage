@@ -14,11 +14,32 @@ storage.crafting.reservedPlans = {}
 storage.crafting.planIdCounter = 0
 
 -- TODO: crafting UI
+-- I wanna see what each turtle is doing, show the tree with a turtle list next to each item to show which ones are doing what
+-- update the numbers automatically ofc
+
+-- TODO: furnace/generic build support
+
+-- TODO: crafting via the terminal? or at least remote crafting with the remote terminals + pouch
+
+-- TODO: better crafting parallelism, say we're making 100 buttons, it shouldnt need to craft all 100 planks before starting on the buttons
+--   we can auto split up jobs in the dep tree based on max crafting
 
 -- TODO: Recipes can be invalid, should throw a reasonable error in this case
 -- or, force verification when adding a recipe?
+-- Could add a "complete by crafting" button in the recipe setup menu, which will try to craft the recipe you inputted
+-- and finishes the craft if it was valid, puts the recipe back if its not
+-- then an "enter manual" button with big warning for legacy behaviour
+-- and finally an option to have the crafter give you back the thing you made after inputting the recipe
 
 -- TODO: oredict crafting
+-- This is hard..., i dont think theres a way to read oredict in game
+-- we may also need per item oredict? idk
+
+-- TODO: BUGS:
+--   crafting.lua:346: No such item key: computercraft:wireless_modem_advanced - when crafting a turtle and probably a modem at the same time
+--     So i assume the wireless modem craft failed in some way, maybe the gold got robbed?
+--     I should add some debugging to the turtle, so if ever it fails a craft, it should snapshot its inv and current job and save it
+-- TODO: allow dropping metadata from output item
 
 local craftingPortOut = 1357
 local craftingPortIn = craftingPortOut + 1
@@ -363,12 +384,11 @@ end
 -- Calculates the max of this item that a crafter can craft
 function storage.crafting.getMaxPerCrafter(recipe)
   local minCount = 64
-  for itemName, count in pairs(recipe.ingredients) do
+  for itemName, _ in pairs(recipe.ingredients) do
     local item = storage.items[itemName]
     if not item then return end
-    local maxCountForIngredient = math.floor(item.detail.maxCount / count)
-    if maxCountForIngredient < minCount then
-      minCount = maxCountForIngredient
+    if item.detail.maxCount < minCount then
+      minCount = item.detail.maxCount
     end
   end
   return math.min(minCount, recipe.maxCrafts)

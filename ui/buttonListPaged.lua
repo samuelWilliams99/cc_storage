@@ -171,9 +171,13 @@ function ui.buttonListPaged.create(parent)
 
   hook.add("mouse_scroll", "page_scroll_" .. elem.id, function(dir)
     if dir == 1 then
-      elem.rightButton:onClick()
+      if elem.rightButton then
+        elem.rightButton:onClick()
+      end
     else
-      elem.leftButton:onClick()
+      if elem.leftButton then
+        elem.leftButton:onClick()
+      end
     end
   end)
   
