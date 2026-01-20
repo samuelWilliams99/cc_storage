@@ -68,7 +68,7 @@ function editItemPage.setup(itemKey, returnToList)
 
   local midX = math.floor(w / 2)
 
-  local hasRecipe = storage.crafting.getRecipeNames()[itemKey] and true or false
+  local hasRecipe = storage.crafting.getRecipeDisplayNamesAndMods()[itemKey] and true or false
   local itemSetting = storage.burnItems.getItemSetting(itemKey)
 
   local amountText = pages.elem(ui.text.create())

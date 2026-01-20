@@ -33,7 +33,7 @@ pages.pages.configure.setupOtherPages()
 if not storage.remote.isRemote then
   storage.findTurtles()
   storage.crafting.pingCrafters()
-  storage.updateChests()
+  storage.updateStorageInventories()
   storage.burnItems.setup()
   storage.updateItemMapping()
   storage.crafting.loadRecipes()

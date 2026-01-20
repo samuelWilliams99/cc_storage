@@ -7,11 +7,12 @@ storage.crafting.recipeFilePath = "recipes.txt"
 local dropper = peripheral.find("minecraft:dropper")
 if not dropper then error("No dropper found, please connect one to the computer to use") end
 
-function storage.crafting.addRecipe(itemName, displayName, recipePlacement, count, maxCount, names, override)
+function storage.crafting.addRecipe(itemName, displayName, modName, recipePlacement, count, maxCount, names, override)
   if not override and storage.crafting.recipes[itemName] then return end
   local rawRecipe = {
     itemName = itemName,
     displayName = displayName,
+    modName = modName,
     recipePlacement = recipePlacement,
     ingredientDisplayNames = names,
     count = count,
@@ -21,19 +22,19 @@ function storage.crafting.addRecipe(itemName, displayName, recipePlacement, coun
   storage.crafting.saveRecipe(rawRecipe)
 end
 
-function storage.crafting.getRecipeNames()
-  local names = {}
+function storage.crafting.getRecipeDisplayNamesAndMods()
+  local nameData = {}
   for itemName, recipe in pairs(storage.crafting.recipes) do
-    names[itemName] = recipe.displayName
+    nameData[itemName] = {displayName = recipe.displayName, modName = recipe.modName}
   end
-  return names
+  return nameData
 end
 
 function storage.crafting.updateRecipe(itemName, rawRecipe)
   local recipeData = readFile(storage.crafting.recipeFilePath) or {}
   recipeData[itemName] = rawRecipe
   writeFile(storage.crafting.recipeFilePath, recipeData)
-  hook.run("cc_recipes_change", storage.crafting.getRecipeNames())
+  hook.run("cc_recipes_change", storage.crafting.getRecipeDisplayNamesAndMods())
 end
 
 function storage.crafting.removeRecipe(itemName)
@@ -139,7 +140,8 @@ function storage.crafting.getCraftedItemFromInventory(isDropper, chestName)
   if storage.crafting.recipes[itemKey] then
     return false, "Recipe for this item already exists.\nTo replace, remove this recipe on the left"
   end
-  return true, itemKey, itemDetail.displayName, item.count, itemDetail.maxCount
+  local modName = string.gmatch(item.name, "([^:]+)")()
+  return true, itemKey, itemDetail.displayName, modName, item.count, itemDetail.maxCount
 end
 
 function storage.crafting.preCacheRecipe(rawRecipe)
@@ -159,6 +161,7 @@ function storage.crafting.preCacheRecipe(rawRecipe)
     itemName = rawRecipe.itemName,
     count = count,
     displayName = rawRecipe.displayName,
+    modName = rawRecipe.modName,
     -- max crafts to fit all output
     -- turtle has 16 slots, so can fit 16 * maxCount in its inventory
     maxCrafts = math.floor((16 * maxCount) / count)

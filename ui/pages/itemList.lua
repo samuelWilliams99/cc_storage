@@ -8,7 +8,7 @@ pages.addPage("itemList", storagePage)
 
 function storagePage.setup()
   local hasCrafters = storage.crafting.hasCrafters()
-  local recipeNames = storage.crafting.getRecipeNames()
+  local recipeNameData = storage.crafting.getRecipeDisplayNamesAndMods()
   local craftingPlanCount = storage.crafting.getActivePlanCount()
   local totalSlotCount = storage.getTotalSlotCount()
 
@@ -31,8 +31,9 @@ function storagePage.setup()
 
   local function getItemData(name)
     if storage.items[name] then return storage.items[name] end
-    local recipeName = recipeNames[name]
-    return {detail = {displayName = recipeName}, count = 0, isRecipe = true}
+    local recipeData = recipeNameData[name]
+
+    return {detail = {displayName = recipeData.displayName}, modName = recipeData.modName, count = 0, isRecipe = true}
   end
 
   local function getCountText(count, maxCount)
@@ -77,7 +78,7 @@ function storagePage.setup()
     local displayName = getDisplayText(item)
 
     local countText = item.isRecipe and "CRAFT" or getCountText(item.count, item.detail.maxCount)
-    if not item.isRecipe and recipeNames[name] and hasCrafters then -- If we have some but its also craftable
+    if not item.isRecipe and recipeNameData[name] and hasCrafters then -- If we have some but its also craftable
       countText = countText .. " *" -- Add a star :)
     end
 
@@ -234,9 +235,13 @@ function storagePage.setup()
 
     local function filter(name)
       if storage.items[name] and storage.items[name].count == 0 then return false end
-      if searchString == "" then return true end
+      if searchString == "" or searchString == "@" then return true end
       local itemData = getItemData(name)
-      return itemData.detail.displayName:lower():find(searchString, nil, true)
+      if searchString:sub(1, 1) == "@" then
+        return itemData.modName:lower():find(searchString:sub(2), nil, true)
+      else
+        return itemData.detail.displayName:lower():find(searchString, nil, true)
+      end
     end
 
     local itemKeys = {}
@@ -248,7 +253,7 @@ function storagePage.setup()
     end
 
     if hasCrafters then
-      for name in pairs(recipeNames) do
+      for name in pairs(recipeNameData) do
         if not storage.items[name] and filter(name) then
           table.insert(itemKeys, name)
         end
@@ -297,7 +302,7 @@ function storagePage.setup()
       return
     end
 
-    local canCraft = recipeNames[data.name] and hasCrafters
+    local canCraft = recipeNameData[data.name] and hasCrafters
     local dropItem = storage.remote.isRemote and storage.remote.dropItem or storage.dropItem
 
     if canCraft and (btn == 3 or not storage.items[data.name]) then
@@ -352,8 +357,8 @@ function storagePage.setup()
   hook.add("mouse_click", "idle_clear_search", idleClear)
   hook.add("mouse_scroll", "idle_clear_search", idleClear)
 
-  hook.add("cc_recipes_change", "update_menu", function(_recipeNames)
-    recipeNames = _recipeNames
+  hook.add("cc_recipes_change", "update_menu", function(_recipeNameData)
+    recipeNameData = _recipeNameData
     updateDisplay()
   end)
 

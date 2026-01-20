@@ -72,6 +72,14 @@ function table.contains(t, val)
   return false
 end
 
+-- Appends all of srcList onto the end of DestList
+-- Both must be sequential lists
+function table.insertAll(destList, srcList)
+  for _, elem in ipairs(srcList) do
+    table.insert(destList, elem)
+  end
+end
+
 function readFile(path)
   local handle = io.open(path, "r")
   if not handle then return end

@@ -13,7 +13,7 @@ pages.addPage("recipes", recipesPage)
 local w, h = term.getSize()
 
 function recipesPage.setup()
-  local recipeNames = storage.crafting.getRecipeNames()
+  local recipeNames = storage.crafting.getRecipeDisplayNamesAndMods()
   recipesPage.addRecipeStep = 1
 
   -- Vertical line
@@ -176,9 +176,9 @@ function recipesPage.setup()
       instructionsPanel:writeText("Scanning crafted items...")
       recipesPage.addRecipeStep = nil
       updateAddRecipeButton()
-      local success, itemName, displayName, count, maxCount = storage.crafting.getCraftedItemFromInventory(not storage.remote.isRemote, storage.remote.clientChestName)
+      local success, itemName, displayName, modName, count, maxCount = storage.crafting.getCraftedItemFromInventory(not storage.remote.isRemote, storage.remote.clientChestName)
       if success then
-        storage.crafting.addRecipe(itemName, displayName, recipesPage.placement, count, maxCount, recipesPage.names)
+        storage.crafting.addRecipe(itemName, displayName, modName, recipesPage.placement, count, maxCount, recipesPage.names)
         if storage.remote.isRemote then
           storage.enderChest.itemPauseChest(storage.remote.clientChestName)
           storage.enderChest.unpauseChest(storage.remote.clientChestName)

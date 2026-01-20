@@ -37,7 +37,7 @@ local sharedFuncs = {
   "storage.crafting.getRecipe",
   "storage.crafting.addRecipe",
   "storage.crafting.removeRecipe",
-  "storage.crafting.getRecipeNames",
+  "storage.crafting.getRecipeDisplayNamesAndMods",
   "storage.crafting.getPlacementFromInventory",
   "storage.crafting.getCraftedItemFromInventory",
   -- Remote

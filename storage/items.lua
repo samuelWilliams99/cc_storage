@@ -3,6 +3,10 @@ require "utils.timer"
 require "storage.crafting"
 require "storage.burnItems"
 
+-- List here the peripheral names of additional valid storage inventories
+-- Must implement the inventory interface
+local additionalValidStorageInventories = {}
+
 -- TODO: Implement item waiting if the dropped-to inv is full, we don't currently check it
 
 -- Must not use peripherals that are wrapped sides, as pushItems doesn't work with them. Must instead be through the wired modem.
@@ -19,19 +23,23 @@ function storage.findTurtles()
   sleep(0.5)
 end
 
-function storage.updateChests()
+function storage.updateStorageInventories()
   local chests = {peripheral.find("minecraft:chest", avoidSides)}
-  storage.chests = {}
+  storage.storageInventories = {}
   storage.crafting.candidates = {}
   for _, chest in ipairs(chests) do
     if chest.size() == 27 and table.isEmpty(chest.list()) then
       table.insert(storage.crafting.candidates, chest)
     else
-      table.insert(storage.chests, chest)
+      table.insert(storage.storageInventories, chest)
     end
   end
 
-  print("Found " .. #storage.chests .. " chests, " .. #storage.crafting.candidates .. " crafter candidates and " .. #storage.turtles .. " turtles")
+  for _, storageInventoryPeripheralName in ipairs(additionalValidStorageInventories) do
+    table.insertAll(storage.storageInventories, {peripheral.find(storageInventoryPeripheralName, avoidSides)})
+  end
+
+  print("Found " .. #storage.storageInventories .. " storage inventories, " .. #storage.crafting.candidates .. " crafter candidates and " .. #storage.turtles .. " turtles")
 
   local trappedChests = {peripheral.find("minecraft:trapped_chest", avoidSides)}
 
@@ -91,9 +99,10 @@ function storage.saveItem(item, chest, slot, useReserved)
   local items = storage.items
   local key = storage.getItemKey(item)
   local didLookup = false
+  local modName = string.gmatch(item.name, "([^:]+)")()
 
   -- Pulled out into a var as "getItemDetail" takes time, and can lead to an item being detail-less while inputting
-  local newItem = items[key] or {count = 0, locations = {}, reservedCount = 0, key = key}
+  local newItem = items[key] or {count = 0, locations = {}, reservedCount = 0, key = key, modName = modName}
   if useReserved then
     newItem.reservedCount = newItem.reservedCount + item.count
   else
@@ -190,10 +199,10 @@ function storage.updateItemMapping()
   local _, termY = term.getCursorPos()
 
   local uniqueItemKeys = {}
-  local chestCount = table.count(storage.chests)
+  local chestCount = table.count(storage.storageInventories)
   local chestCounter = 1
   local chestsData = {}
-  for chestKey, chest in ipairs(storage.chests) do
+  for chestKey, chest in ipairs(storage.storageInventories) do
     local chestItems = chest.list()
     for _, item in pairs(chestItems) do
       uniqueItemKeys[storage.getItemKey(item)] = true
