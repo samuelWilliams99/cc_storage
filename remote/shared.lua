@@ -2,8 +2,12 @@ storage.remote = {}
 storage.remote.funcChannel = 12394
 storage.remote.hookChannel = 12395
 
-storage.wirelessModem.open(storage.remote.funcChannel)
-storage.wirelessModem.open(storage.remote.hookChannel)
+if storage.wirelessModem then
+  storage.wirelessModem.open(storage.remote.funcChannel)
+  storage.wirelessModem.open(storage.remote.hookChannel)
+else
+  print("No wireless modem found, pocket terminals cannot be used")
+end
 
 local sharedFuncs = {
   -- Items
