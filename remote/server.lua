@@ -27,9 +27,11 @@ hook.add("modem_message", "remote_function_handler", function(_, chan, _, data)
 end)
 
 function storage.remote.sharedHookServer(hookName)
-  hook.add(hookName, "remote_forwarder", function(...)
-    storage.wirelessModem.transmit(storage.remote.hookChannel, storage.remote.hookChannel, {hookName = hookName, args = table.pack(...), storageId = os.getComputerID()})
-  end)
+  if storage.wirelessModem then
+    hook.add(hookName, "remote_forwarder", function(...)
+      storage.wirelessModem.transmit(storage.remote.hookChannel, storage.remote.hookChannel, {hookName = hookName, args = table.pack(...), storageId = os.getComputerID()})
+    end)
+  end
 end
 
 function storage.remote.getStorageId()
