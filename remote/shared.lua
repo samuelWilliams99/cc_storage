@@ -53,6 +53,7 @@ local sharedFuncs = {
   "storage.burnItems.burnAllOfItem",
   "storage.burnItems.reclaimItems",
   "storage.burnItems.burnChestNow",
+  "storage.burnItems.isDisabled",
   -- Util
   "printMon"
 }

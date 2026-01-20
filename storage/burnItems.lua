@@ -32,6 +32,10 @@ function storage.burnItems.saveSettings()
   writeFile(storage.burnItems.itemSettingsPath, storage.burnItems.itemSettings)
 end
 
+function storage.burnItems.isDisabled()
+  return storage.burnItems.disabled or false
+end
+
 --[[
 itemSettings: {
   itemKey: {
@@ -41,6 +45,14 @@ itemSettings: {
 ]]
 function storage.burnItems.setup()
   storage.burnItems.itemSettings = readFile(storage.burnItems.itemSettingsPath) or {}
+
+  if storage.burnItems.chest then
+    print("Found burner chest")
+  else
+    print("Could not find burner chest, please setup the double trapped_chest and burner bot. Burning disabled")
+    storage.burnItems.disabled = true
+  end
+
   for _, turtle in ipairs(storage.turtles) do
     if turtle.getLabel() == "burner" then
       storage.burnItems.turtle = turtle
@@ -48,7 +60,10 @@ function storage.burnItems.setup()
       return
     end
   end
-  error("No burner turtle found")
+  if not storage.burnItems.turtle then
+    storage.burnItems.disabled = true
+    print("No burner turtle found. Burning disabled")
+  end
 end
 
 function storage.burnItems.burnChest(ignoreSlots)
@@ -180,6 +195,7 @@ function storage.burnItems.burnAllOfItem(itemKey)
 end
 
 function storage.burnItems.bringAllItemsToLimit()
+  if storage.burnItems.disabled then return end
   hook.runInHandlerContext(function()
     for itemKey in pairs(storage.burnItems.itemSettings) do
       storage.burnItems.bringToLimit(itemKey)
@@ -205,6 +221,7 @@ end
 storage.burnItems.burnItem = storage.burnItems.withBurnAndItemLock(storage.burnItems.burnItemUnsafe)
 
 function storage.burnItems.preInputHandler(itemKey, chest, slot, count)
+  if storage.burnItems.disabled then return count end
   if storage.burnItems.noPreHandle then return count end
   local currentCount = storage.items[itemKey] and storage.items[itemKey].count or 0
   local itemSetting = storage.burnItems.itemSettings[itemKey]

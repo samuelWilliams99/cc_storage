@@ -57,12 +57,6 @@ function storage.updateStorageInventories()
     error("Could not find dropper chest, please add a single trapped_chest to the network")
   end
 
-  if storage.burnItems.chest then
-    print("Found burner chest")
-  else
-    error("Could not find burner chest, please setup the double trapped_chest and burner bot")
-  end
-
   storage.input = peripheral.find("minecraft:barrel", avoidSides)
   if storage.input then
     print("Found input barrel")

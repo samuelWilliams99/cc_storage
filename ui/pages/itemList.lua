@@ -168,10 +168,12 @@ function storagePage.setup()
   updateEditButton()
 
   local deleteMode = false
+
   local deleteButton = pages.elem(ui.text.create())
   deleteButton:setPos(20, h - 1)
   deleteButton:setSize(11, 1)
-
+  if storage.burnItems.isDisabled() then deleteButton:disable() end
+  
   local function updateDeleteButton()
     deleteButton:setText(deleteMode and "  Cancel" or "Remove Item")
     deleteButton:setBgColor(deleteMode and colors.red or colors.gray)

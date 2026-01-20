@@ -93,15 +93,19 @@ function editItemPage.setup(itemKey, returnToList)
   updateAmountText()
   updateHasRecipeText()
 
-  local limitSetter = addOptionalNumberSetting("Item limit", 1, itemSetting.limit, 10000, 100000, function(new)
-    storage.burnItems.setItemLimit(itemKey, new)
-  end)
+  if not storage.burnItems.isDisabled() then
 
-  hook.add("cc_burn_items_setting_change", "update_menu", function(_itemKey, _itemSetting)
-    if itemKey ~= _itemKey then return end
-    itemSetting = _itemSetting
-    limitSetter(itemSetting.limit)
-  end)
+    local limitSetter = addOptionalNumberSetting("Item limit", 1, itemSetting.limit, 10000, 100000, function(new)
+      storage.burnItems.setItemLimit(itemKey, new)
+    end)
+
+    hook.add("cc_burn_items_setting_change", "update_menu", function(_itemKey, _itemSetting)
+      if itemKey ~= _itemKey then return end
+      itemSetting = _itemSetting
+      limitSetter(itemSetting.limit)
+    end)
+
+  end
 
   hook.add("cc_storage_change", "update_menu", updateAmountText)
 

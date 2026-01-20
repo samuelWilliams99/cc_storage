@@ -82,6 +82,20 @@ function Base:remove()
   end
 end
 
+function Base:enable()
+  if self.removed then return end
+  self.disabled = false
+end
+
+function Base:disable()
+  if self.removed then return end
+  self.disabled = false
+end
+
+function Base:isEnabled()
+  return not self.disabled
+end
+
 function ui.makeElement(parent)
   local element = {}
   ui.elementIdCounter = ui.elementIdCounter + 1
@@ -100,6 +114,7 @@ function ui.makeElement(parent)
 end
 
 local function getAtPosition(x, y, element, deepest)
+  if element.disabled then return end
   if x < element.pos.x + 1 or x > element.pos.x + element.size.x then return end
   if y < element.pos.y + 1 or y > element.pos.y + element.size.y then return end
 

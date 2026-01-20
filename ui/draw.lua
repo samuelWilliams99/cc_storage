@@ -67,6 +67,7 @@ function ui.drawText(_x, _y, text, textCol, bgCol)
 end
 
 function ui.classes.Base:doDraw()
+  if self.disabled then return end
   ui._drawPositioning = {pos = ui.Vector(self:localisePosition(0, 0)), size = self.size}
   ui.drawFilledBox(0, 0, self.size.x - 1, self.size.y - 1, colors.black)
   self:draw()
