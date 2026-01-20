@@ -1,7 +1,7 @@
 storage.lock = {}
 
 local playerDetector = peripheral.find("playerDetector") or peripheral.find("player_detector")
-if not playerDetector then error("No player detector found, please connect one to the computer to use") end
+if not playerDetector then print("No player detector found, please connect one to the computer to use locking functionality") end
 
 local authorisedPlayers = readFile("users.txt") or {}
 
@@ -18,6 +18,10 @@ end
 
 function storage.lock.getAuthorisedPlayers()
   return authorisedPlayers
+end
+
+function storage.lock.hasDetector()
+  return playerDetector and true or false
 end
 
 function storage.lock.authorisePlayer(plyName)
@@ -50,7 +54,7 @@ function storage.lock.startAutoLockTimer()
   end)
 
   timer.create("autolock", 5, 0, function()
-    if pages.pages.lock.active or not storage.lock.enabled then return end
+    if pages.pages.lock.active or not storage.lock.enabled or not playerDetector then return end
     local plys = playerDetector.getPlayersInRange(5) or {}
     local foundPlayer = false
     for _, ply in pairs(plys) do

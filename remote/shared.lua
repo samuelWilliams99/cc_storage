@@ -27,6 +27,7 @@ local sharedFuncs = {
   "storage.lock.unauthorisePlayer",
   "storage.lock.setEnabled",
   "storage.lock.getEnabled",
+  "storage.lock.hasDetector",
   -- Crafting
   "storage.crafting.unreservePlan",
   "storage.crafting.runPlan",

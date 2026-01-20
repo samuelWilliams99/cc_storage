@@ -7,7 +7,9 @@ local editLockPage = {
   configName = "Lock Manager"
 }
 
-pages.addPage("editLock", editLockPage)
+if storage.lock.hasDetector() then
+  pages.addPage("editLock", editLockPage)
+end
 
 local w, h = term.getSize()
 
