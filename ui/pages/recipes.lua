@@ -15,6 +15,8 @@ local w, h = term.getSize()
 function recipesPage.setup()
   local recipeNames = storage.crafting.getRecipeDisplayNamesAndMods()
   recipesPage.addRecipeStep = 1
+  -- If not remote and no local dropper, we can't add recipes
+  local missingDropper = not storage.remote.isRemote and not storage.crafting.hasDropper()
 
   -- Vertical line
   term.setTextColor(colors.gray)
@@ -95,19 +97,26 @@ function recipesPage.setup()
   addRecipeButton:setPos(lineX + 2 + 12 + 2, h - 4)
   addRecipeButton:setSize(w - lineX - 4 - 12 - 4 - 12 - 2, 3)
   local function updateAddRecipeButton()
-    if recipesPage.addRecipeStep == 1 then
-      addRecipeButton:setTextDrawPos(math.floor(addRecipeButton.size.x / 2) - 5, 1)
-      addRecipeButton:setText("Add recipe")
-    else
-      addRecipeButton:setTextDrawPos(math.floor(addRecipeButton.size.x / 2) - 4, 1)
-      addRecipeButton:setText("Continue")
-    end
-    if recipesPage.addRecipeStep then
-      addRecipeButton:setTextColor(colors.white)
-      addRecipeButton:setBgColor(colors.gray)
-    else
-      addRecipeButton:setTextColor(colors.black)
+    if missingDropper then
+      addRecipeButton:setTextDrawPos(math.floor(addRecipeButton.size.x / 2) - 10, 1)
+      addRecipeButton:setText("No dropper detected!")
+      addRecipeButton:setTextColor(colors.red)
       addRecipeButton:setBgColor(colors.black)
+    else
+      if recipesPage.addRecipeStep == 1 then
+        addRecipeButton:setTextDrawPos(math.floor(addRecipeButton.size.x / 2) - 5, 1)
+        addRecipeButton:setText("Add recipe")
+      else
+        addRecipeButton:setTextDrawPos(math.floor(addRecipeButton.size.x / 2) - 4, 1)
+        addRecipeButton:setText("Continue")
+      end
+      if recipesPage.addRecipeStep then
+        addRecipeButton:setTextColor(colors.white)
+        addRecipeButton:setBgColor(colors.gray)
+      else
+        addRecipeButton:setTextColor(colors.black)
+        addRecipeButton:setBgColor(colors.black)
+      end
     end
   end
 
@@ -128,6 +137,7 @@ function recipesPage.setup()
   updateAddRecipeButton()
 
   function addRecipeButton:onClick()
+    if missingDropper then return end
     if not recipesPage.addRecipeStep then return end
     for _ = 1, recipesPage.removeLastLines or 0 do
       instructionsPanel:removeLastLine()

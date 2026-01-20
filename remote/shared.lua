@@ -40,6 +40,7 @@ local sharedFuncs = {
   "storage.crafting.getRecipeDisplayNamesAndMods",
   "storage.crafting.getPlacementFromInventory",
   "storage.crafting.getCraftedItemFromInventory",
+  "storage.crafting.hasDropper",
   -- Remote
   "storage.remote.getItems",
   "storage.remote.getStorageId",

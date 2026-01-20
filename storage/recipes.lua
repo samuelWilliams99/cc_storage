@@ -5,7 +5,10 @@ storage.crafting.recipes = storage.crafting.recipes or {}
 storage.crafting.recipeFilePath = "recipes.txt"
 
 local dropper = peripheral.find("minecraft:dropper")
-if not dropper then error("No dropper found, please connect one to the computer to use") end
+
+function storage.crafting.hasDropper()
+  return dropper and true or false
+end
 
 function storage.crafting.addRecipe(itemName, displayName, modName, recipePlacement, count, maxCount, names, override)
   if not override and storage.crafting.recipes[itemName] then return end
