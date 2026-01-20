@@ -98,8 +98,8 @@ function recipesPage.setup()
   addRecipeButton:setSize(w - lineX - 4 - 12 - 4 - 12 - 2, 3)
   local function updateAddRecipeButton()
     if missingDropper then
-      addRecipeButton:setTextDrawPos(math.floor(addRecipeButton.size.x / 2) - 10, 1)
-      addRecipeButton:setText("No dropper detected!")
+      addRecipeButton:setTextDrawPos(math.floor(addRecipeButton.size.x / 2) - 5, 1)
+      addRecipeButton:setText("No dropper!")
       addRecipeButton:setTextColor(colors.red)
       addRecipeButton:setBgColor(colors.black)
     else
