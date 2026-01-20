@@ -1,6 +1,6 @@
 storage.lock = {}
 
-local playerDetector = peripheral.find("playerDetector")
+local playerDetector = peripheral.find("playerDetector") or peripheral.find("player_detector")
 if not playerDetector then error("No player detector found, please connect one to the computer to use") end
 
 local authorisedPlayers = readFile("users.txt") or {}
