@@ -89,7 +89,7 @@ end
 
 function Base:disable()
   if self.removed then return end
-  self.disabled = false
+  self.disabled = true
 end
 
 function Base:isEnabled()
