@@ -4,12 +4,11 @@ require "utils.helpers"
 local editLockPage = {
   shouldMakeBackButton = true,
   title = "Lock Manager",
-  configName = "Lock Manager"
+  configName = "Lock Manager",
+  configCondition = function() return storage.lock.hasDetector() end
 }
 
-if storage.lock.hasDetector() then
-  pages.addPage("editLock", editLockPage)
-end
+pages.addPage("editLock", editLockPage)
 
 local w, h = term.getSize()
 

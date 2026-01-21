@@ -22,7 +22,11 @@ local w = term.getSize()
 function configurePage.setup()
   local configPages = {}
   for _, page in pairs(pages.pages) do
-    if page.configName then table.insert(configPages, page) end
+    if page.configName then
+      local shouldAdd = true
+      if page.configCondition then shouldAdd = page.configCondition() end
+      if shouldAdd then table.insert(configPages, page) end
+    end
   end
 
   table.sort(configPages, function(a, b) return a.configName < b.configName end)
