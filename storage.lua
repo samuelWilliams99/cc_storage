@@ -82,6 +82,7 @@ hook.setPreError(function(event, handlerName, err, stack)
   local logs = readFile("logs.txt") or {}
   table.insert(logs, {time = os.date(), event = event, handlerName = handlerName, err = err, stack = stack})
   writeFile("logs.txt", logs)
+  os.reboot()
 end)
 
 if not storage.remote.isRemote then
