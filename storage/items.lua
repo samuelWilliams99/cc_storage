@@ -375,9 +375,17 @@ function storage.inputItemFromUnsafe(slot, item, chest, useReserved)
   local newSlot = table.remove(storage.emptySlots, 1)
   storage.emptySlotCount = storage.emptySlotCount - 1
 
-  chest.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot)
+  local movedItems = chest.pushItems(peripheral.getName(newSlot.chest), slot, item.count, newSlot.slot)
   
-  storage.saveItem(item, newSlot.chest, newSlot.slot, useReserved)
+  if movedItems > 0 then
+    storage.saveItem(item, newSlot.chest, newSlot.slot, useReserved)
+  else
+    -- This means the item was removed from the input chest before we got to this point, can happen with ender pouches sometimes
+    -- we abort in this case, putting the empty slot back into the stable
+    table.insert(storage.emptySlots, 1, newSlot)
+    storage.emptySlotCount = storage.emptySlotCount + 1
+    return
+  end
   
   if not useReserved then
     itemChanged(key, startingCount, storedItem)
