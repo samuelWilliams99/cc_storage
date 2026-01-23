@@ -46,6 +46,7 @@ function storage.remote.simplifyItem(item)
     count = item.count,
     reservedCount = item.reservedCount,
     key = item.key,
+    modName = item.modName,
     detail = {
       displayName = item.detail.displayName,
       maxCount = item.detail.maxCount,
