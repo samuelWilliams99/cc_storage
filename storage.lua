@@ -26,6 +26,7 @@ require "ui.pages.recipes"
 require "ui.pages.configure"
 require "ui.pages.editItem"
 require "ui.pages.editItemList"
+require "ui.pages.defrag"
 
 storage.remote.registerFunctions()
 pages.pages.configure.setupOtherPages()
