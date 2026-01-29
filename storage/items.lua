@@ -420,3 +420,16 @@ function storage.inputItemsFrom(item, slot, newItem, chest, useReserved)
     end
   end
 end
+
+function storage.getDefragSummary()
+  local suboptimalItemCount, wastedSlotCount = 0, 0
+
+  for _key, item in pairs(storage.items) do
+    local minLocations = math.ceil(item.count/item.detail.maxCount)
+    if #item.locations > minLocations then
+      suboptimalItemCount = suboptimalItemCount + 1
+      wastedSlotCount = wastedSlotCount + (#item.locations - minLocations)
+    end
+  end
+  return {suboptimalItemCount = suboptimalItemCount, wastedSlotCount = wastedSlotCount}
+end

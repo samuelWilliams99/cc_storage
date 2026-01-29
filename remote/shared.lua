@@ -13,6 +13,7 @@ local sharedFuncs = {
   -- Items
   "storage.getTotalSlotCount",
   "storage.getItemCount",
+  "storage.getDefragSummary",
   -- Ender chest
   "storage.enderChest.dropItem",
   "storage.enderChest.pauseChest",
